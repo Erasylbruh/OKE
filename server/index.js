@@ -18,6 +18,13 @@ app.use(express.json());
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+console.log('Database Config:', {
+    host: `'${process.env.DB_HOST}'`,
+    user: `'${process.env.DB_USER}'`,
+    port: process.env.DB_PORT,
+    db: process.env.DB_NAME
+});
+
 const db = mysql.createPool({
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'root',
