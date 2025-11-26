@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import API_URL from '../config';
 
 function StyleControls({ styles, onUpdate }) {
     const [fonts, setFonts] = useState([]);
@@ -11,7 +12,7 @@ function StyleControls({ styles, onUpdate }) {
         const fetchFonts = async () => {
             setLoading(true);
             try {
-                const res = await fetch('/api/fonts');
+                const res = await fetch(`${API_URL}/api/fonts`);
                 if (res.ok) {
                     const data = await res.json();
                     setFonts(data);

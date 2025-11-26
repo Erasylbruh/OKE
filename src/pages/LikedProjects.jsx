@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LikeButton from '../components/LikeButton';
+import API_URL from '../config';
 
 function LikedProjects() {
     const [projects, setProjects] = useState([]);
@@ -16,7 +17,7 @@ function LikedProjects() {
             }
 
             try {
-                const res = await fetch('/api/users/likes', {
+                const res = await fetch(`${API_URL}/api/users/likes`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (res.ok) {

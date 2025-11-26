@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import API_URL from '../config';
 
 function AdminDashboard() {
     const [users, setUsers] = useState([]);
@@ -13,14 +14,14 @@ function AdminDashboard() {
         const token = localStorage.getItem('token');
         try {
             if (activeTab === 'users') {
-                const res = await fetch(`/api/admin/users?search=${query}`, {
+                const res = await fetch(`${API_URL}/api/admin/users?search=${query}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (res.ok) {
                     setUsers(await res.json());
                 }
             } else {
-                const res = await fetch(`/api/admin/projects?search=${query}`, {
+                const res = await fetch(`${API_URL}/api/admin/projects?search=${query}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (res.ok) {
@@ -51,7 +52,7 @@ function AdminDashboard() {
 
         const token = localStorage.getItem('token');
         try {
-            const res = await fetch(`/api/admin/users/${userId}`, {
+            const res = await fetch(`${API_URL}/api/admin/users/${userId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -70,7 +71,7 @@ function AdminDashboard() {
 
         const token = localStorage.getItem('token');
         try {
-            const res = await fetch(`/api/projects/${projectId}`, {
+            const res = await fetch(`${API_URL}/api/projects/${projectId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });

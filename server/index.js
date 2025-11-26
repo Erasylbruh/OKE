@@ -22,7 +22,11 @@ const dbConfig = {
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD !== undefined ? (process.env.DB_PASSWORD === '' ? undefined : process.env.DB_PASSWORD) : 'password',
-    database: process.env.DB_NAME || 'karaoke_animator'
+    database: process.env.DB_NAME || 'karaoke_animator',
+    port: process.env.DB_PORT || 3306,
+    ssl: {
+        rejectUnauthorized: false
+    }
 };
 console.log('Server DB Config:', { ...dbConfig, password: dbConfig.password ? (dbConfig.password === '' ? 'EMPTY_STRING' : 'SET') : 'UNDEFINED' });
 

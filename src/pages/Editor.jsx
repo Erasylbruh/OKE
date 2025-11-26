@@ -6,6 +6,7 @@ import StyleControls from '../components/StyleControls';
 import Preview from '../components/Preview';
 import CommentsSection from '../components/CommentsSection';
 import LikeButton from '../components/LikeButton';
+import API_URL from '../config';
 import '../App.css';
 
 function Editor() {
@@ -37,7 +38,7 @@ function Editor() {
             const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
 
             try {
-                const res = await fetch(`/api/projects/${id}`, { headers });
+                const res = await fetch(`${API_URL}/api/projects/${id}`, { headers });
                 if (res.ok) {
                     const project = await res.json();
                     setProjectName(project.name);
@@ -136,7 +137,7 @@ function Editor() {
 
         try {
             setIsSaving(true);
-            const res = await fetch(`/api/projects/${id}`, {
+            const res = await fetch(`${API_URL}/api/projects/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

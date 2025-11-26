@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import API_URL from '../config';
 
 function LikeButton({ projectId, initialLiked = false }) {
     const [liked, setLiked] = useState(initialLiked);
@@ -12,7 +13,7 @@ function LikeButton({ projectId, initialLiked = false }) {
             if (!token) return;
 
             try {
-                const res = await fetch(`/api/projects/${projectId}/like`, {
+                const res = await fetch(`${API_URL}/api/projects/${projectId}/like`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (res.ok) {
@@ -38,7 +39,7 @@ function LikeButton({ projectId, initialLiked = false }) {
         setLoading(true);
 
         try {
-            const res = await fetch(`/api/projects/${projectId}/like`, {
+            const res = await fetch(`${API_URL}/api/projects/${projectId}/like`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
             });

@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import API_URL from '../config';
 
 function Dashboard() {
     const [projects, setProjects] = useState([]);
     const [user, setUser] = useState(JSON.parse(localStorage.getItem('user') || '{}'));
     const [isEditing, setIsEditing] = useState(false);
     const [nickname, setNickname] = useState(user.nickname || '');
-    const [avatarUrl] = useState(user.avatar_url || '');
+    const [avatarUrl, setAvatarUrl] = useState(user.avatar_url || '');
     const [selectedFile, setSelectedFile] = useState(null);
     const [previewUrl, setPreviewUrl] = useState(user.avatar_url || '');
     const [showCreateModal, setShowCreateModal] = useState(false);
@@ -19,7 +20,7 @@ function Dashboard() {
             if (!token) return navigate('/');
 
             try {
-                const response = await fetch('/api/projects', {
+                const response = await fetch(`${API_URL}/api/projects`, {
                     headers: { 'Authorization': `Bearer ${token}` },
                 });
                 if (response.ok) {
@@ -40,7 +41,7 @@ function Dashboard() {
 
         const token = localStorage.getItem('token');
         try {
-            const res = await fetch('/api/projects', {
+            const res = await fetch(`${API_URL}/api/projects`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -98,7 +99,7 @@ function Dashboard() {
         }
 
         try {
-            const res = await fetch('/api/users/profile', {
+            const res = await fetch(`${API_URL}/api/users/profile`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -124,7 +125,7 @@ function Dashboard() {
         const newStatus = !project.is_public;
 
         try {
-            const res = await fetch(`/api/projects/${project.id}/visibility`, {
+            const res = await fetch(`${API_URL}/api/projects/${project.id}/visibility`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -329,7 +330,7 @@ function Dashboard() {
                                     e.stopPropagation();
                                     if (window.confirm('Delete this project?')) {
                                         const token = localStorage.getItem('token');
-                                        fetch(`/api/projects/${project.id}`, {
+                                        fetch(`${API_URL}/api/projects/${project.id}`, {
                                             method: 'DELETE',
                                             headers: { 'Authorization': `Bearer ${token}` }
                                         }).then(res => {

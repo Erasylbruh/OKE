@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import API_URL from '../config';
 
 function CommentsSection({ projectId }) {
     const [comments, setComments] = useState([]);
@@ -8,7 +9,7 @@ function CommentsSection({ projectId }) {
 
     const fetchComments = React.useCallback(async () => {
         try {
-            const res = await fetch(`/api/projects/${projectId}/comments`);
+            const res = await fetch(`${API_URL}/api/projects/${projectId}/comments`);
             if (res.ok) {
                 const data = await res.json();
                 setComments(data);
@@ -32,7 +33,7 @@ function CommentsSection({ projectId }) {
         if (!token) return alert('Please login to comment');
 
         try {
-            const res = await fetch(`/api/projects/${projectId}/comments`, {
+            const res = await fetch(`${API_URL}/api/projects/${projectId}/comments`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -57,7 +58,7 @@ function CommentsSection({ projectId }) {
 
         const token = localStorage.getItem('token');
         try {
-            const res = await fetch(`/api/comments/${commentId}`, {
+            const res = await fetch(`${API_URL}/api/comments/${commentId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`
