@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import API_URL from '../config';
 
 function ForYou() {
     const [projects, setProjects] = useState([]);
@@ -8,7 +9,7 @@ function ForYou() {
     useEffect(() => {
         const fetchPublicProjects = async () => {
             try {
-                const response = await fetch('http://localhost:3000/api/projects/public');
+                const response = await fetch(`${API_URL}/api/projects/public`);
                 if (response.ok) {
                     const data = await response.json();
                     setProjects(data);

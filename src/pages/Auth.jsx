@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import API_URL from '../config';
+
 function Auth() {
     const [isLogin, setIsLogin] = useState(true);
     const [username, setUsername] = useState('');
@@ -31,7 +33,7 @@ function Auth() {
         const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
 
         try {
-            const response = await fetch(`http://localhost:3000${endpoint}`, {
+            const response = await fetch(`${API_URL}${endpoint}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password }),
@@ -49,7 +51,7 @@ function Auth() {
                 navigate('/dashboard');
             } else {
                 // Auto-login after register
-                const loginRes = await fetch('http://localhost:3000/api/auth/login', {
+                const loginRes = await fetch(`${API_URL}/api/auth/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password }),

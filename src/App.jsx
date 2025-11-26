@@ -39,7 +39,7 @@ function Editor() {
       const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
 
       try {
-        const res = await fetch(`http://localhost:3000/api/projects/${id}`, { headers });
+        const res = await fetch(`${API_URL}/api/projects/${id}`, { headers });
         if (res.ok) {
           const project = await res.json();
           setProjectName(project.name);
