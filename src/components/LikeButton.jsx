@@ -43,6 +43,10 @@ function LikeButton({ projectId, initialLiked = false }) {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
+            if (!res.ok) {
+                const errorText = await res.text();
+                throw new Error(errorText || res.statusText);
+            }
             if (res.ok) {
                 const data = await res.json();
                 setLiked(data.liked);

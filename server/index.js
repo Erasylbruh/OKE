@@ -73,6 +73,17 @@ const initDb = async () => {
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
             )
         `);
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS likes (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id INT NOT NULL,
+                project_id INT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+                FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
+                UNIQUE KEY unique_like (user_id, project_id)
+            )
+        `);
         console.log('Database initialized');
     } catch (err) {
         console.error('Error initializing database:', err);
