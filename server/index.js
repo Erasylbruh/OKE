@@ -388,6 +388,7 @@ app.delete('/api/comments/:id', authenticateToken, async (req, res) => {
 // Likes Routes
 app.post('/api/projects/:id/like', authenticateToken, async (req, res) => {
     try {
+        console.log(`Like request received for project ${req.params.id} from user ${req.user.id}`);
         const [existing] = await db.execute(
             'SELECT id FROM likes WHERE user_id = ? AND project_id = ?',
             [req.user.id, req.params.id]

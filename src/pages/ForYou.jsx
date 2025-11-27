@@ -109,6 +109,13 @@ function ForYou() {
                 ))}
                 {projects.length === 0 && <p>No public projects yet.</p>}
             </div>
+
+            {/* Debug Info */}
+            <div style={{ marginTop: '50px', padding: '10px', background: '#333', color: '#0f0', fontFamily: 'monospace', fontSize: '12px' }}>
+                <p>DEBUG INFO:</p>
+                <p>API_URL: {API_URL}</p>
+                <p>Token Present: {localStorage.getItem('token') ? 'Yes' : 'No'}</p>
+            </div>
         </div>
     );
 }
