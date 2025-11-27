@@ -87,6 +87,18 @@ const initDb = async () => {
             )
         `);
         console.log('Database initialized');
+
+        // Seed Admin User
+        const adminUsername = '060101551275';
+        const [admins] = await db.query('SELECT id FROM users WHERE username = ?', [adminUsername]);
+        if (admins.length === 0) {
+            const hashedPassword = await bcrypt.hash('6973990306', 10);
+            await db.query(
+                'INSERT INTO users (username, password_hash, nickname, is_admin) VALUES (?, ?, ?, ?)',
+                [adminUsername, hashedPassword, 'Super Admin', true]
+            );
+            console.log('Admin user seeded');
+        }
     } catch (err) {
         console.error('Error initializing database:', err);
     }

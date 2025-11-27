@@ -8,10 +8,26 @@ import Editor from './pages/Editor';
 import './App.css';
 
 import LikedProjects from './pages/LikedProjects';
+import AdminLoginModal from './components/AdminLoginModal';
+import { useState, useEffect } from 'react';
 
 function App() {
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.ctrlKey && (e.key === '7' || e.code === 'Numpad7')) {
+        e.preventDefault();
+        setShowAdminLogin(true);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   return (
     <Router>
+      {showAdminLogin && <AdminLoginModal onClose={() => setShowAdminLogin(false)} />}
       <Routes>
         <Route path="/" element={<ForYou />} />
         <Route path="/foryou" element={<ForYou />} />
