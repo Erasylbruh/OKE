@@ -188,7 +188,8 @@ app.get('/api/admin/projects', authenticateAdmin, async (req, res) => {
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+    secure: true
 });
 
 // Multer Setup (Cloudinary)
@@ -257,13 +258,18 @@ app.put('/api/users/profile', authenticateToken, upload.single('avatar'), async 
     let avatar_url = req.body.avatar_url;
 
     if (req.file) {
+        console.log('File uploaded to Cloudinary:', req.file);
         avatar_url = req.file.path;
+    } else {
+        console.log('No file uploaded, using existing URL:', avatar_url);
     }
 
     try {
+        console.log('Updating profile for user:', req.user.id, 'Nickname:', nickname, 'Avatar:', avatar_url);
         await db.execute('UPDATE users SET nickname = ?, avatar_url = ? WHERE id = ?', [nickname, avatar_url, req.user.id]);
         res.json({ message: 'Profile updated', avatar_url });
     } catch (err) {
+        console.error('Profile update error:', err);
         res.status(500).send(err.message);
     }
 });
