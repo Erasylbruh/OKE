@@ -243,7 +243,7 @@ function Dashboard() {
                 </div>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <div className="dashboard-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                 <h1>My Projects</h1>
                 <div style={{ display: 'flex', gap: '10px' }}>
                     <button

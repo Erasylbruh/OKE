@@ -102,7 +102,7 @@ function ForYou() {
 
                         {/* Like Button */}
                         {/* Like Button */}
-                        <div onClick={(e) => e.stopPropagation()}>
+                        <div onClick={(e) => e.stopPropagation()} style={{ flexShrink: 0 }}>
                             {project.id && <LikeButton projectId={project.id} />}
                         </div>
                     </div>

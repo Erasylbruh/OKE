@@ -66,7 +66,7 @@ function LikeButton({ projectId, initialLiked = false }) {
                 background: 'none',
                 border: 'none',
                 cursor: 'pointer',
-                padding: '5px',
+                padding: '10px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
