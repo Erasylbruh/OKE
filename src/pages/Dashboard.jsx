@@ -60,7 +60,8 @@ function Dashboard() {
                 const data = await res.json();
                 navigate(`/editor/${data.id}`);
             } else {
-                alert('Failed to create project');
+                const msg = await res.text();
+                alert(`Failed to create project: ${msg}`);
             }
         } catch (err) {
             console.error(err);
