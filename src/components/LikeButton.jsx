@@ -28,7 +28,7 @@ function LikeButton({ projectId, initialLiked = false }) {
     }, [projectId]);
 
     const handleToggleLike = async (e) => {
-        e.stopPropagation(); // Prevent triggering parent click events (e.g., opening project)
+        e.stopPropagation(); // Prevent triggering parent click events
         const token = localStorage.getItem('token');
         if (!token) {
             alert('Please login to like projects');
@@ -36,6 +36,10 @@ function LikeButton({ projectId, initialLiked = false }) {
         }
 
         if (loading) return;
+
+        // Optimistic update
+        const previousLiked = liked;
+        setLiked(!liked);
         setLoading(true);
 
         try {
@@ -43,16 +47,19 @@ function LikeButton({ projectId, initialLiked = false }) {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
+
             if (!res.ok) {
                 const errorText = await res.text();
                 throw new Error(errorText || res.statusText);
             }
-            if (res.ok) {
-                const data = await res.json();
-                setLiked(data.liked);
-            }
+
+            const data = await res.json();
+            // Ensure state matches server (though it should be the same as our optimistic guess)
+            setLiked(data.liked);
         } catch (err) {
             console.error('Error toggling like:', err);
+            // Revert on error
+            setLiked(previousLiked);
             alert(`Failed to update like status: ${err.message}`);
         } finally {
             setLoading(false);

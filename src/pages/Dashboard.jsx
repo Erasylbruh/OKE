@@ -12,6 +12,7 @@ function Dashboard() {
     const [previewUrl, setPreviewUrl] = useState(user.avatar_url || '');
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [newProjectName, setNewProjectName] = useState('');
+    const [isCreating, setIsCreating] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -38,8 +39,10 @@ function Dashboard() {
 
     const handleCreateNew = async () => {
         if (!newProjectName.trim()) return;
+        if (isCreating) return;
 
         const token = localStorage.getItem('token');
+        setIsCreating(true);
         try {
             const res = await fetch(`${API_URL}/api/projects`, {
                 method: 'POST',
@@ -62,6 +65,8 @@ function Dashboard() {
         } catch (err) {
             console.error(err);
             alert('Error creating project');
+        } finally {
+            setIsCreating(false);
         }
     };
 
@@ -167,7 +172,9 @@ function Dashboard() {
                         />
                         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
                             <button onClick={() => setShowCreateModal(false)} style={{ backgroundColor: 'transparent', border: '1px solid #555' }}>Cancel</button>
-                            <button onClick={handleCreateNew} style={{ backgroundColor: '#1db954', color: 'black' }}>Create</button>
+                            <button onClick={handleCreateNew} disabled={isCreating} style={{ backgroundColor: '#1db954', color: 'black', opacity: isCreating ? 0.7 : 1 }}>
+                                {isCreating ? 'Creating...' : 'Create'}
+                            </button>
                         </div>
                     </div>
                 </div>
