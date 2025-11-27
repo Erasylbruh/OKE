@@ -49,6 +49,7 @@ function LikeButton({ projectId, initialLiked = false }) {
             }
         } catch (err) {
             console.error('Error toggling like:', err);
+            alert('Failed to update like status. Please check your connection.');
         } finally {
             setLoading(false);
         }
