@@ -15,14 +15,28 @@ function App() {
   const [showAdminLogin, setShowAdminLogin] = useState(false);
 
   useEffect(() => {
+    const pressedKeys = new Set();
+
     const handleKeyDown = (e) => {
-      if (e.ctrlKey && (e.key === '7' || e.code === 'Numpad7')) {
+      pressedKeys.add(e.code);
+      if (pressedKeys.has('Numpad6') && pressedKeys.has('Numpad9')) {
         e.preventDefault();
         setShowAdminLogin(true);
+        pressedKeys.clear(); // Reset after triggering
       }
     };
+
+    const handleKeyUp = (e) => {
+      pressedKeys.delete(e.code);
+    };
+
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
   }, []);
 
   return (
