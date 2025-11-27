@@ -50,22 +50,23 @@ function TimingEditor({ lyrics, onUpdate }) {
     return (
         <div className="timing-editor">
             {lyrics.map((line, index) => (
-                <div key={line.id} style={{
+                <div key={line.id} className="timing-row" style={{
                     display: 'flex',
                     alignItems: 'center',
                     gap: '10px',
                     marginBottom: '10px',
-                    padding: '0 15px', // Horizontal padding
+                    padding: '0 15px',
                     backgroundColor: '#282828',
                     borderRadius: '4px',
-                    height: '80px', // Requested h80
-                    width: '600px', // Requested w600
+                    minHeight: '80px',
+                    width: '100%',
+                    maxWidth: '600px',
                     boxSizing: 'border-box'
                 }}>
                     <span style={{ width: '20px', color: '#b3b3b3' }}>{index + 1}</span>
-                    <div style={{ flex: 1, textAlign: 'left' }}>
+                    <div style={{ flex: 1, textAlign: 'left', width: '100%' }}>
                         <div style={{ fontWeight: 'bold', marginBottom: '4px', color: 'white' }}>{line.text}</div>
-                        <div style={{ display: 'flex', gap: '10px' }}>
+                        <div className="timing-inputs" style={{ display: 'flex', gap: '10px' }}>
                             <label style={{ fontSize: '0.8em', color: '#b3b3b3' }}>
                                 Start:
                                 <TimeInput
@@ -88,7 +89,7 @@ function TimingEditor({ lyrics, onUpdate }) {
                     </div>
                 </div>
             ))}
-        </div>
+        </div >
     );
 }
 

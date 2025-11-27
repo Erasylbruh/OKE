@@ -19,7 +19,7 @@ function LyricInput({ onParse }) {
     };
 
     return (
-        <div className="lyric-input" style={{ width: '600px' }}>
+        <div className="lyric-input" style={{ width: '100%', maxWidth: '600px' }}>
             <p style={{ fontSize: '0.9em', color: '#b3b3b3', marginBottom: '8px' }}>
                 Enter lyrics separated by commas (e.g. "Hello world, this is a test, karaoke time")
             </p>

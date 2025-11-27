@@ -178,10 +178,10 @@ function Editor() {
     return (
         <div className="editor-container">
             <div className="editor-panel" style={{ flex: 1, overflowY: 'auto', paddingRight: '10px' }}>
-                <div style={{ padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#121212', borderBottom: '1px solid #282828' }}>
+                <div className="editor-header" style={{ padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#121212', borderBottom: '1px solid #282828' }}>
                     <button onClick={handleBack} style={{ backgroundColor: 'transparent', border: '1px solid #555' }}>&larr; Back</button>
                     <h1 style={{ margin: 0, fontSize: '1.5em' }}>Editor {projectName && `- ${projectName}`}</h1>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    <div className="editor-header-controls" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                         {isOwner && (
                             <>
                                 <div

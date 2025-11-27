@@ -71,7 +71,7 @@ function StyleControls({ styles, onUpdate }) {
     return (
         <div className="style-controls" style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
             {/* Top Section: Size Controls */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}> {/* Requested gap 10 */}
+            <div className="style-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}> {/* Requested gap 10 */}
                 <label>
                     Font Size (px)
                     <input
@@ -93,7 +93,7 @@ function StyleControls({ styles, onUpdate }) {
             </div>
 
             {/* Font Filters */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}> {/* Requested gap 10 */}
+            <div className="style-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}> {/* Requested gap 10 */}
                 <label>
                     Category
                     <select

@@ -52,6 +52,8 @@
   flex-direction: row;
 }
 
+
+
 @media (max-width: 768px) {
   .editor-container {
     flex-direction: column;
@@ -62,6 +64,7 @@
     width: 100%;
     overflow-y: visible !important;
     flex: none !important;
+    padding-right: 0 !important;
   }
 
   .preview-panel {
@@ -71,5 +74,61 @@
     border-top: 1px solid #333;
     padding-top: 20px;
     flex: none !important;
+  }
+
+  .editor-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 10px;
+  }
+
+  .editor-header h1 {
+    font-size: 1.2em !important;
+  }
+
+  .editor-header-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .profile-section {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .profile-section>div {
+    width: 100%;
+  }
+
+  .profile-actions {
+    align-items: center;
+  }
+
+  .modal-content {
+    width: 90% !important;
+    padding: 20px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .timing-row {
+    flex-direction: column;
+    height: auto !important;
+    padding: 10px !important;
+    align-items: flex-start !important;
+  }
+
+  .timing-inputs {
+    width: 100%;
+    justify-content: space-between;
+    margin-top: 5px;
+  }
+
+  .style-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  #root {
+    padding: 1rem !important;
   }
 }
