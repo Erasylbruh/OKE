@@ -8,6 +8,8 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+import { v2 as cloudinary } from 'cloudinary';
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
 
 dotenv.config();
 
@@ -170,17 +172,19 @@ app.get('/api/admin/projects', authenticateAdmin, async (req, res) => {
     }
 });
 
-// Multer Setup
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        const uploadDir = path.join(__dirname, 'uploads');
-        if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir);
-        }
-        cb(null, uploadDir);
-    },
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname));
+// Cloudinary Config
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+// Multer Setup (Cloudinary)
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'avatars',
+        allowed_formats: ['jpg', 'png', 'jpeg', 'gif']
     }
 });
 const upload = multer({ storage });
@@ -241,7 +245,7 @@ app.put('/api/users/profile', authenticateToken, upload.single('avatar'), async 
     let avatar_url = req.body.avatar_url;
 
     if (req.file) {
-        avatar_url = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+        avatar_url = req.file.path;
     }
 
     try {
@@ -502,27 +506,7 @@ app.delete('/api/admin/users/:id', authenticateAdmin, async (req, res) => {
     }
 });
 
-app.get('/api/admin/projects', authenticateAdmin, async (req, res) => {
-    const { search } = req.query;
-    try {
-        let query = `
-            SELECT p.id, p.name, p.created_at, u.username 
-            FROM projects p 
-            JOIN users u ON p.user_id = u.id
-        `;
-        let params = [];
-        if (search) {
-            query += ' WHERE p.name LIKE ? OR u.username LIKE ?';
-            params = [`%${search}%`, `%${search}%`];
-        }
-        query += ' ORDER BY p.created_at DESC';
 
-        const [projects] = await db.execute(query, params);
-        res.json(projects);
-    } catch (err) {
-        res.status(500).send(err.message);
-    }
-});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
