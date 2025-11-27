@@ -1,4 +1,50 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+
+function TimeInput({ value, onChange, placeholder, style }) {
+    // Helper to format seconds to mm.ss.ms
+    const formatTime = (seconds) => {
+        if (seconds === undefined || seconds === null || isNaN(seconds)) return '00.00.00';
+        const m = Math.floor(seconds / 60);
+        const s = Math.floor(seconds % 60);
+        const ms = Math.floor((seconds % 1) * 100);
+        return `${String(m).padStart(2, '0')}.${String(s).padStart(2, '0')}.${String(ms).padStart(2, '0')}`;
+    };
+
+    // Helper to parse mm.ss.ms to seconds
+    const parseTime = (timeStr) => {
+        const parts = timeStr.split('.');
+        if (parts.length !== 3) return 0;
+        const m = parseInt(parts[0], 10) || 0;
+        const s = parseInt(parts[1], 10) || 0;
+        const ms = parseInt(parts[2], 10) || 0;
+        return m * 60 + s + ms / 100;
+    };
+
+    const [displayValue, setDisplayValue] = useState(formatTime(value));
+
+    // Sync with external value changes
+    useEffect(() => {
+        setDisplayValue(formatTime(value));
+    }, [value]);
+
+    const handleBlur = () => {
+        const seconds = parseTime(displayValue);
+        onChange(seconds);
+        // Re-format to ensure consistent display
+        setDisplayValue(formatTime(seconds));
+    };
+
+    return (
+        <input
+            type="text"
+            value={displayValue}
+            onChange={(e) => setDisplayValue(e.target.value)}
+            onBlur={handleBlur}
+            placeholder={placeholder}
+            style={style}
+        />
+    );
+}
 
 function TimingEditor({ lyrics, onUpdate }) {
     return (
@@ -9,32 +55,33 @@ function TimingEditor({ lyrics, onUpdate }) {
                     alignItems: 'center',
                     gap: '10px',
                     marginBottom: '10px',
-                    padding: '10px',
+                    padding: '0 15px', // Horizontal padding
                     backgroundColor: '#282828',
-                    borderRadius: '4px'
+                    borderRadius: '4px',
+                    height: '80px', // Requested h80
+                    width: '600px', // Requested w600
+                    boxSizing: 'border-box'
                 }}>
                     <span style={{ width: '20px', color: '#b3b3b3' }}>{index + 1}</span>
                     <div style={{ flex: 1, textAlign: 'left' }}>
-                        <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>{line.text}</div>
+                        <div style={{ fontWeight: 'bold', marginBottom: '4px', color: 'white' }}>{line.text}</div>
                         <div style={{ display: 'flex', gap: '10px' }}>
                             <label style={{ fontSize: '0.8em', color: '#b3b3b3' }}>
                                 Start:
-                                <input
-                                    type="number"
-                                    step="0.1"
+                                <TimeInput
                                     value={line.start}
-                                    onChange={(e) => onUpdate(index, 'start', parseFloat(e.target.value))}
-                                    style={{ width: '60px', marginLeft: '5px' }}
+                                    onChange={(val) => onUpdate(index, 'start', val)}
+                                    placeholder="mm.ss.ms"
+                                    style={{ width: '80px', marginLeft: '5px', backgroundColor: '#333', border: '1px solid #444', color: 'white', padding: '2px 5px', borderRadius: '3px' }}
                                 />
                             </label>
                             <label style={{ fontSize: '0.8em', color: '#b3b3b3' }}>
                                 End:
-                                <input
-                                    type="number"
-                                    step="0.1"
+                                <TimeInput
                                     value={line.end}
-                                    onChange={(e) => onUpdate(index, 'end', parseFloat(e.target.value))}
-                                    style={{ width: '60px', marginLeft: '5px' }}
+                                    onChange={(val) => onUpdate(index, 'end', val)}
+                                    placeholder="mm.ss.ms"
+                                    style={{ width: '80px', marginLeft: '5px', backgroundColor: '#333', border: '1px solid #444', color: 'white', padding: '2px 5px', borderRadius: '3px' }}
                                 />
                             </label>
                         </div>

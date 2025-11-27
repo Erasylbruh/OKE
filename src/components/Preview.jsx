@@ -4,6 +4,7 @@ function Preview({ lyrics, styles, resetTrigger }) {
     const [currentTime, setCurrentTime] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
     const activeLineRef = useRef(null);
+    const scrollContainerRef = useRef(null);
 
     // Reset when trigger changes
     useEffect(() => {
@@ -11,7 +12,7 @@ function Preview({ lyrics, styles, resetTrigger }) {
         setCurrentTime(0);
     }, [resetTrigger]);
 
-    // Better simple player logic
+    // Player logic
     useEffect(() => {
         let interval;
         if (isPlaying) {
@@ -20,13 +21,12 @@ function Preview({ lyrics, styles, resetTrigger }) {
                 const time = (Date.now() - start) / 1000;
                 setCurrentTime(time);
 
-                // Auto-stop logic: End + 5s
                 const lastEnd = lyrics.length > 0 ? Math.max(...lyrics.map(l => l.end)) : 0;
-                if (time > lastEnd + 5) {
+                if (time > lastEnd + 2) { // Stop 2s after last end
                     setIsPlaying(false);
-                    setCurrentTime(0); // Optional: reset to start after finish
+                    setCurrentTime(0);
                 }
-            }, 50);
+            }, 16); // ~60fps
         }
         return () => clearInterval(interval);
     }, [isPlaying, lyrics]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -43,7 +43,11 @@ function Preview({ lyrics, styles, resetTrigger }) {
     };
 
     const handleSeek = (e) => {
-        setCurrentTime(parseFloat(e.target.value));
+        const newTime = parseFloat(e.target.value);
+        setCurrentTime(newTime);
+        // If playing, we need to adjust the start time in the interval, but since interval depends on state, 
+        // we can just toggle play to reset it or let the effect handle it if we structured it differently.
+        // For this simple implementation, pausing briefly is easiest to sync.
         if (isPlaying) {
             setIsPlaying(false);
             setTimeout(() => setIsPlaying(true), 10);
@@ -51,7 +55,12 @@ function Preview({ lyrics, styles, resetTrigger }) {
     };
 
     const lastEnd = lyrics.length > 0 ? Math.max(...lyrics.map(l => l.end)) : 0;
-    const maxTime = lastEnd + 5;
+    const maxTime = lastEnd + 2;
+
+    // Format time for display
+    const formatTimeSimple = (t) => {
+        return t.toFixed(1) + 's';
+    };
 
     return (
         <div className="preview-container" style={{
@@ -65,33 +74,189 @@ function Preview({ lyrics, styles, resetTrigger }) {
             overflow: 'hidden',
             position: 'relative'
         }}>
-            {/* Header / Controls */}
-            <div style={{ padding: '20px', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <button onClick={togglePlay} style={{ width: '40px', height: '40px', borderRadius: '50%', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {isPlaying ? '⏸' : '▶'}
+            {/* Player Controls - Top */}
+            <div style={{
+                padding: '15px 20px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '15px',
+                backgroundColor: 'rgba(0, 0, 0, 0.3)', // Semi-transparent dark
+                backdropFilter: 'blur(5px)', // Glass effect
+                borderRadius: '12px',
+                margin: '20px',
+                boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                zIndex: 10
+            }}>
+                <button
+                    onClick={togglePlay}
+                    style={{
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '50%',
+                        padding: 0,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: 'transparent',
+                        border: '2px solid white',
+                        color: 'white',
+                        cursor: 'pointer',
+                        flexShrink: 0
+                    }}
+                >
+                    {isPlaying ? (
+                        <div style={{ width: '12px', height: '12px', backgroundColor: 'white', borderRadius: '2px' }} />
+                    ) : (
+                        <div style={{
+                            width: 0,
+                            height: 0,
+                            borderTop: '8px solid transparent',
+                            borderBottom: '8px solid transparent',
+                            borderLeft: '14px solid white',
+                            marginLeft: '4px'
+                        }} />
+                    )}
                 </button>
-                <input
-                    type="range"
-                    min="0"
-                    max={maxTime || 10}
-                    step="0.1"
-                    value={currentTime}
-                    onChange={handleSeek}
-                    style={{ flex: 1 }}
-                />
-                <span style={{ minWidth: '50px', textAlign: 'right' }}>{currentTime.toFixed(1)}s</span>
+
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                    {/* Custom Range Input Styling */}
+                    <style>
+                        {`
+                            input[type=range].custom-range {
+                                -webkit-appearance: none;
+                                width: 100%;
+                                background: transparent;
+                                cursor: pointer;
+                                height: 20px; /* Hit area */
+                                margin: 0;
+                            }
+                            input[type=range].custom-range:focus {
+                                outline: none;
+                            }
+                            
+                            /* Webkit (Chrome, Safari, Edge) */
+                            input[type=range].custom-range::-webkit-slider-runnable-track {
+                                width: 100%;
+                                height: 4px;
+                                cursor: pointer;
+                                background: rgba(255,255,255,0.2);
+                                border-radius: 2px;
+                            }
+                            input[type=range].custom-range::-webkit-slider-thumb {
+                                height: 12px;
+                                width: 12px;
+                                border-radius: 50%;
+                                background: ${styles.fillColor};
+                                cursor: pointer;
+                                -webkit-appearance: none;
+                                margin-top: -4px; /* Center thumb on track */
+                            }
+                            
+                            /* Firefox */
+                            input[type=range].custom-range::-moz-range-track {
+                                width: 100%;
+                                height: 4px;
+                                cursor: pointer;
+                                background: rgba(255,255,255,0.2);
+                                border-radius: 2px;
+                            }
+                            input[type=range].custom-range::-moz-range-thumb {
+                                height: 12px;
+                                width: 12px;
+                                border: none;
+                                border-radius: 50%;
+                                background: ${styles.fillColor};
+                                cursor: pointer;
+                            }
+                        `}
+                    </style>
+                    <div style={{ position: 'relative', height: '4px', width: '100%', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '2px', marginBottom: '8px' }}>
+                        {/* Filled portion of the bar */}
+                        <div style={{
+                            position: 'absolute',
+                            left: 0,
+                            top: 0,
+                            height: '100%',
+                            width: `${(currentTime / (maxTime || 1)) * 100}%`,
+                            backgroundColor: styles.fillColor,
+                            borderRadius: '2px',
+                            pointerEvents: 'none'
+                        }} />
+                        <input
+                            type="range"
+                            className="custom-range"
+                            min="0"
+                            max={maxTime || 10}
+                            step="0.01"
+                            value={currentTime}
+                            onChange={handleSeek}
+                            style={{
+                                position: 'absolute',
+                                top: '-8px', // Align input over the visual bar
+                                left: 0,
+                                width: '100%',
+                                opacity: 0, // Hide default input, use custom visual
+                                height: '20px',
+                                zIndex: 2
+                            }}
+                        />
+                        <div style={{
+                            position: 'absolute',
+                            left: `${(currentTime / (maxTime || 1)) * 100}%`,
+                            top: '-4px',
+                            width: '12px',
+                            height: '12px',
+                            backgroundColor: styles.fillColor,
+                            borderRadius: '50%',
+                            transform: 'translateX(-50%)',
+                            pointerEvents: 'none',
+                            zIndex: 1
+                        }} />
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#ccc', marginTop: '0px' }}>
+                        <span>{formatTimeSimple(currentTime)}</span>
+                        <span>{formatTimeSimple(maxTime)}</span>
+                    </div>
+                </div>
             </div>
 
+            {/* Static Header Text */}
+            {styles.headerText && (
+                <div style={{
+                    position: 'absolute',
+                    top: '100px', // Below player controls
+                    left: '40px', // Aligned with lyrics padding
+                    textAlign: 'left',
+                    fontSize: '18px',
+                    fontWeight: 'bold',
+                    zIndex: 5,
+                    pointerEvents: 'none',
+                    color: styles.color,
+                    opacity: 1,
+                    textShadow: '0 2px 4px rgba(0,0,0,0.8)'
+                }}>
+                    {styles.headerText}
+                </div>
+            )}
+
             {/* Lyrics Display */}
-            <div className="lyrics-display" style={{
-                flex: 1,
-                overflowY: 'auto',
-                padding: '40px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '20px',
-                textAlign: 'left' // Left align
-            }}>
+            <div
+                ref={scrollContainerRef}
+                className="lyrics-display"
+                style={{
+                    flex: 1,
+                    overflowY: 'auto',
+                    padding: '0 40px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    // Use 50% of container height to push content to center
+                    paddingTop: 'calc(50% - 20px)',
+                    paddingBottom: 'calc(50% - 20px)',
+                    textAlign: 'left',
+                    alignItems: 'flex-start'
+                }}
+            >
                 {lyrics.map((line, index) => {
                     const isActive = currentTime >= line.start && currentTime <= line.end;
                     const isPast = currentTime > line.end;
@@ -109,17 +274,22 @@ function Preview({ lyrics, styles, resetTrigger }) {
                     return (
                         <div
                             key={index}
-                            ref={isActive ? activeLineRef : null} // Ref for auto-scroll
+                            ref={isActive ? activeLineRef : null}
                             style={{
-                                marginBottom: '20px',
+                                marginBottom: '30px',
                                 position: 'relative',
-                                display: 'block', // Block to allow full width
-                                width: 'fit-content', // Fit content so mask aligns with text
+                                display: 'block',
+                                width: 'fit-content',
                                 textAlign: 'left',
                                 fontSize: isActive ? `${styles.activeFontSize}px` : `${styles.fontSize}px`,
                                 fontFamily: styles.fontFamily,
-                                transition: 'font-size 0.2s ease-out',
-                                whiteSpace: 'nowrap' // Prevent wrapping for karaoke
+                                fontWeight: 'bold', // Spotify style bold
+                                transition: 'all 0.3s ease-out',
+                                whiteSpace: 'nowrap',
+                                opacity: isActive ? 1 : 0.3, // Lower opacity for inactive to mimic dark/inactive look
+                                transform: isActive ? 'scale(1.05)' : 'scale(1)',
+                                transformOrigin: 'left center',
+                                cursor: 'default'
                             }}
                         >
                             {/* Inactive Layer (Background) */}
@@ -140,7 +310,7 @@ function Preview({ lyrics, styles, resetTrigger }) {
                             }}>
                                 <div style={{
                                     color: styles.fillColor,
-                                    position: 'absolute', // Absolute to pin to left
+                                    position: 'absolute',
                                     left: 0,
                                     top: 0,
                                 }}>
@@ -150,7 +320,7 @@ function Preview({ lyrics, styles, resetTrigger }) {
                         </div>
                     );
                 })}
-                {lyrics.length === 0 && <div style={{ opacity: 0.5 }}>Lyrics will appear here...</div>}
+                {lyrics.length === 0 && <div style={{ opacity: 0.5, fontWeight: 'bold', padding: '20px' }}>Lyrics will appear here...</div>}
             </div>
         </div>
     );

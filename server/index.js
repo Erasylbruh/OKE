@@ -24,9 +24,11 @@ const dbConfig = {
     password: process.env.DB_PASSWORD !== undefined ? (process.env.DB_PASSWORD === '' ? undefined : process.env.DB_PASSWORD) : 'password',
     database: process.env.DB_NAME || 'karaoke_animator',
     port: process.env.DB_PORT || 3306,
-    ssl: {
-        rejectUnauthorized: false
-    }
+    ...(process.env.DB_SSL === 'true' && {
+        ssl: {
+            rejectUnauthorized: false
+        }
+    })
 };
 console.log('Server DB Config:', { ...dbConfig, password: dbConfig.password ? (dbConfig.password === '' ? 'EMPTY_STRING' : 'SET') : 'UNDEFINED' });
 

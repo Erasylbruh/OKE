@@ -119,7 +119,8 @@ function Editor() {
             const newLyrics = [...prev];
             newLyrics[index] = { ...newLyrics[index], [field]: value };
             if (field === 'end' && index < newLyrics.length - 1) {
-                newLyrics[index + 1].start = value;
+                // Immutable update for the next line
+                newLyrics[index + 1] = { ...newLyrics[index + 1], start: value };
             }
             return newLyrics;
         });
