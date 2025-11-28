@@ -122,96 +122,92 @@ function Preview({ lyrics, styles, resetTrigger, audioUrl, backgroundImageUrl })
                 boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
                 zIndex: 10
             }}>
-                <button
-                    onClick={togglePlay}
-                    style={{
-                        width: '60px', // Increased size for vinyl look
-                        height: '60px',
+                {/* Vinyl & Play Button Container */}
+                <div style={{ position: 'relative', width: '60px', height: '60px', flexShrink: 0 }}>
+                    {/* Rotating Vinyl */}
+                    <div style={{
+                        width: '100%',
+                        height: '100%',
                         borderRadius: '50%',
-                        padding: 0,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        background: backgroundImageUrl ? `url(${backgroundImageUrl})` : 'transparent',
-                        backgroundSize: 'contain',
-                        backgroundRepeat: 'no-repeat',
-                        backgroundPosition: 'center',
-                        border: backgroundImageUrl ? 'none' : '2px solid white',
-                        color: 'white',
-                        cursor: 'pointer',
-                        flexShrink: 0,
-                        animation: isPlaying && backgroundImageUrl ? 'rotate 4s linear infinite' : 'none',
                         position: 'relative',
-                        boxShadow: backgroundImageUrl ? '0 2px 5px rgba(0,0,0,0.5)' : 'none'
-                    }}
-                >
-                    {/* Rotation Keyframes */}
-                    <style>
-                        {`
-                            @keyframes rotate {
-                                from { transform: rotate(0deg); }
-                                to { transform: rotate(360deg); }
-                            }
-                        `}
-                    </style>
+                        overflow: 'hidden',
+                        animation: isPlaying && backgroundImageUrl ? 'rotate 4s linear infinite' : 'none',
+                        boxShadow: backgroundImageUrl ? '0 2px 5px rgba(0,0,0,0.5)' : 'none',
+                        border: backgroundImageUrl ? 'none' : '2px solid white',
+                        backgroundColor: '#181818'
+                    }}>
+                        <style>
+                            {`
+                                @keyframes rotate {
+                                    from { transform: rotate(0deg); }
+                                    to { transform: rotate(360deg); }
+                                }
+                            `}
+                        </style>
+                        {backgroundImageUrl && (
+                            <img
+                                src={backgroundImageUrl}
+                                alt="Vinyl"
+                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            />
+                        )}
 
-                    {/* Overlay for play/pause icon if image is present */}
-                    {backgroundImageUrl && (
+                        {/* Vinyl Grooves */}
                         <div style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            width: '100%',
-                            height: '100%',
-                            backgroundColor: 'rgba(0,0,0,0.3)',
-                            borderRadius: '50%'
-                        }} />
-                    )}
-
-                    {/* Center Hole for Vinyl Look */}
-                    {backgroundImageUrl && (
-                        <div style={{
-                            position: 'absolute',
-                            width: '15%',
-                            height: '15%',
-                            backgroundColor: '#181818',
-                            borderRadius: '50%',
-                            zIndex: 1
-                        }} />
-                    )}
-
-                    {/* Vinyl Grooves Effect (Subtle overlay) */}
-                    {backgroundImageUrl && (
-                        <div style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            width: '100%',
-                            height: '100%',
+                            position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
                             background: 'repeating-radial-gradient(#000 0, #000 2px, transparent 3px, transparent 4px)',
-                            opacity: 0.1,
-                            borderRadius: '50%',
-                            zIndex: 1,
-                            pointerEvents: 'none'
+                            opacity: 0.1, pointerEvents: 'none'
                         }} />
-                    )}
+                    </div>
 
-                    {isPlaying ? (
-                        <div style={{ width: '12px', height: '12px', backgroundColor: 'white', borderRadius: '2px', zIndex: 2 }} />
-                    ) : (
-                        <div style={{
-                            width: 0,
-                            height: 0,
-                            borderTop: '8px solid transparent',
-                            borderBottom: '8px solid transparent',
-                            borderLeft: '14px solid white',
-                            marginLeft: '4px',
-                            zIndex: 2
-                        }} />
-                    )}
-                </button>
+                    {/* Static Play Button Overlay */}
+                    <button
+                        onClick={togglePlay}
+                        style={{
+                            position: 'absolute',
+                            top: '50%', left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            width: '24px', height: '24px',
+                            borderRadius: '50%',
+                            backgroundColor: 'rgba(0,0,0,0.6)',
+                            border: 'none',
+                            color: 'white',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            cursor: 'pointer',
+                            padding: 0,
+                            zIndex: 10
+                        }}
+                    >
+                        {isPlaying ? (
+                            <div style={{ width: '8px', height: '8px', backgroundColor: 'white', borderRadius: '2px' }} />
+                        ) : (
+                            <div style={{
+                                width: 0, height: 0,
+                                borderTop: '5px solid transparent',
+                                borderBottom: '5px solid transparent',
+                                borderLeft: '9px solid white',
+                                marginLeft: '2px'
+                            }} />
+                        )}
+                    </button>
+                </div>
 
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                    {/* Header Text Moved Here */}
+                    {styles.headerText && (
+                        <div style={{
+                            fontSize: '14px',
+                            fontWeight: 'bold',
+                            color: 'white',
+                            marginBottom: '5px',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis'
+                        }}>
+                            {styles.headerText}
+                        </div>
+                    )}
+
                     {/* Custom Range Input Styling */}
                     <style>
                         {`
