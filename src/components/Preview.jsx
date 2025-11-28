@@ -97,6 +97,7 @@ function Preview({ lyrics, styles, resetTrigger, audioUrl }) {
     return (
         <div className="preview-container" style={{
             height: '100%',
+            width: '100%', // Ensure full width of parent (569px)
             display: 'flex',
             flexDirection: 'column',
             backgroundColor: styles.backgroundColor,
