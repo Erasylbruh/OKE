@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API_URL from '../config';
-
 import ProjectCard from '../components/ProjectCard';
+import { useLanguage } from '../context/LanguageContext';
 
 function AdminDashboard() {
     const [users, setUsers] = useState([]);
@@ -11,6 +11,7 @@ function AdminDashboard() {
     const [activeTab, setActiveTab] = useState('users'); // 'users' or 'projects'
     const navigate = useNavigate();
     const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+    const { t } = useLanguage();
 
     const fetchData = React.useCallback(async (query = '') => {
         const token = localStorage.getItem('token');
@@ -116,32 +117,25 @@ function AdminDashboard() {
     };
 
     return (
-        <div style={{ padding: '20px', maxWidth: '1000px', margin: '0 auto', minHeight: '80vh' }}>
-            <div className="admin-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h1>Admin Dashboard</h1>
-                <button onClick={() => navigate('/dashboard')}>Back to App</button>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+            <div className="admin-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+                <h1 style={{ margin: 0 }}>{t('admin_dashboard')}</h1>
             </div>
 
-            <div style={{ marginBottom: '20px', display: 'flex', gap: '10px' }}>
+            <div style={{ marginBottom: '30px', display: 'flex', gap: '15px' }}>
                 <button
                     onClick={() => setActiveTab('users')}
-                    style={{
-                        backgroundColor: activeTab === 'users' ? '#1db954' : '#444',
-                        color: activeTab === 'users' ? 'black' : 'white',
-                        border: 'none', padding: '10px 20px', borderRadius: '20px'
-                    }}
+                    className={activeTab === 'users' ? 'primary' : 'secondary'}
+                    style={{ borderRadius: '20px', padding: '10px 24px' }}
                 >
-                    Users
+                    {t('users') || 'Users'}
                 </button>
                 <button
                     onClick={() => setActiveTab('projects')}
-                    style={{
-                        backgroundColor: activeTab === 'projects' ? '#1db954' : '#444',
-                        color: activeTab === 'projects' ? 'black' : 'white',
-                        border: 'none', padding: '10px 20px', borderRadius: '20px'
-                    }}
+                    className={activeTab === 'projects' ? 'primary' : 'secondary'}
+                    style={{ borderRadius: '20px', padding: '10px 24px' }}
                 >
-                    Projects
+                    {t('projects') || 'Projects'}
                 </button>
             </div>
 
@@ -150,43 +144,70 @@ function AdminDashboard() {
                 placeholder={`Search ${activeTab}...`}
                 value={search}
                 onChange={handleSearch}
-                style={{ width: '100%', maxWidth: '1000px', height: '40px', padding: '10px', marginBottom: '20px', borderRadius: '4px', border: '1px solid #333', backgroundColor: '#282828', color: 'white', fontSize: '16px' }}
+                style={{
+                    width: '100%',
+                    maxWidth: '400px',
+                    height: '48px',
+                    padding: '0 20px',
+                    marginBottom: '30px',
+                    borderRadius: '24px',
+                    border: '1px solid var(--border-color)',
+                    backgroundColor: 'var(--bg-card)',
+                    color: 'var(--text-main)',
+                    fontSize: '16px'
+                }}
             />
 
             {activeTab === 'users' ? (
-                <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: '#282828', borderRadius: '8px' }}>
-                    <thead>
-                        <tr style={{ borderBottom: '1px solid #444', textAlign: 'left' }}>
-                            <th style={{ padding: '15px' }}>ID</th>
-                            <th style={{ padding: '15px' }}>Username</th>
-                            <th style={{ padding: '15px' }}>Nickname</th>
-                            <th style={{ padding: '15px' }}>Admin</th>
-                            <th style={{ padding: '15px' }}>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {users.map(user => (
-                            <tr key={user.id} style={{ borderBottom: '1px solid #333' }}>
-                                <td style={{ padding: '15px' }}>{user.id}</td>
-                                <td style={{ padding: '15px' }}>{user.username}</td>
-                                <td style={{ padding: '15px' }}>{user.nickname || '-'}</td>
-                                <td style={{ padding: '15px' }}>{user.is_admin ? 'Yes' : 'No'}</td>
-                                <td style={{ padding: '15px' }}>
-                                    {!user.is_admin && (
-                                        <button
-                                            onClick={() => handleDeleteUser(user.id)}
-                                            style={{ backgroundColor: '#ff4444', color: 'white', padding: '5px 10px', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-                                        >
-                                            Delete
-                                        </button>
-                                    )}
-                                </td>
+                <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                        <thead>
+                            <tr style={{ borderBottom: '1px solid var(--border-color)', textAlign: 'left', backgroundColor: 'rgba(255,255,255,0.02)' }}>
+                                <th style={{ padding: '20px', color: 'var(--text-muted)' }}>ID</th>
+                                <th style={{ padding: '20px', color: 'var(--text-muted)' }}>{t('username')}</th>
+                                <th style={{ padding: '20px', color: 'var(--text-muted)' }}>Nickname</th>
+                                <th style={{ padding: '20px', color: 'var(--text-muted)' }}>Admin</th>
+                                <th style={{ padding: '20px', color: 'var(--text-muted)' }}>Actions</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {users.map(user => (
+                                <tr key={user.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                    <td style={{ padding: '20px' }}>{user.id}</td>
+                                    <td style={{ padding: '20px', fontWeight: 'bold' }}>{user.username}</td>
+                                    <td style={{ padding: '20px' }}>{user.nickname || '-'}</td>
+                                    <td style={{ padding: '20px' }}>
+                                        {user.is_admin ? (
+                                            <span style={{ color: '#1db954', fontWeight: 'bold' }}>Yes</span>
+                                        ) : (
+                                            <span style={{ color: 'var(--text-muted)' }}>No</span>
+                                        )}
+                                    </td>
+                                    <td style={{ padding: '20px' }}>
+                                        {!user.is_admin && (
+                                            <button
+                                                onClick={() => handleDeleteUser(user.id)}
+                                                className="danger"
+                                                style={{ padding: '6px 12px', fontSize: '0.9rem' }}
+                                            >
+                                                {t('delete')}
+                                            </button>
+                                        )}
+                                    </td>
+                                </tr>
+                            ))}
+                            {users.length === 0 && (
+                                <tr>
+                                    <td colSpan="5" style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                                        No users found.
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
             ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+                <div className="grid-3">
                     {projects.map((project) => (
                         <ProjectCard
                             key={project.id}
@@ -200,7 +221,7 @@ function AdminDashboard() {
                             }}
                         />
                     ))}
-                    {projects.length === 0 && <p>No projects found.</p>}
+                    {projects.length === 0 && <p style={{ color: 'var(--text-muted)' }}>No projects found.</p>}
                 </div>
             )}
         </div>

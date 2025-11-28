@@ -1,0 +1,133 @@
+import React from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { useLanguage } from '../context/LanguageContext';
+
+function Sidebar() {
+    const { t } = useLanguage();
+    const navigate = useNavigate();
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const isAdmin = user.is_admin === 1;
+
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        navigate('/auth');
+    };
+
+    return (
+        <div className="sidebar">
+            <div className="sidebar-header">
+                <h2 style={{ margin: 0, color: 'var(--primary)' }}>Gravity</h2>
+            </div>
+
+            <nav className="sidebar-nav">
+                <NavLink to="/dashboard" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+                    {t('my_dashboard')}
+                </NavLink>
+
+                <NavLink to={`/user/${user.username}`} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+                    {t('edit_profile')} {/* Using 'Edit Profile' as placeholder for Profile link */}
+                </NavLink>
+
+                {isAdmin && (
+                    <NavLink to="/admin" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+                        {t('admin_dashboard')}
+                    </NavLink>
+                )}
+
+                <NavLink to="/settings" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+                    {t('settings')}
+                </NavLink>
+
+                <NavLink to="/liked-projects" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+                    {t('liked_projects')}
+                </NavLink>
+            </nav>
+
+            <div className="sidebar-footer">
+                <button onClick={handleLogout} className="logout-btn">
+                    {t('logout')}
+                </button>
+            </div>
+
+            <style>{`
+                .sidebar {
+                    width: var(--sidebar-width);
+                    height: 100vh;
+                    background-color: #181818; /* Slightly lighter than body */
+                    border-right: 1px solid var(--border-color);
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    display: flex;
+                    flex-direction: column;
+                    padding: 20px;
+                    box-sizing: border-box;
+                    z-index: 1000;
+                }
+
+                .sidebar-header {
+                    margin-bottom: 40px;
+                    padding-left: 10px;
+                }
+
+                .sidebar-nav {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 10px;
+                    flex: 1;
+                }
+
+                .nav-item {
+                    color: var(--text-muted);
+                    text-decoration: none;
+                    padding: 12px 16px;
+                    border-radius: 8px;
+                    transition: all 0.2s;
+                    font-weight: 500;
+                    display: flex;
+                    align-items: center;
+                }
+
+                .nav-item:hover {
+                    background-color: rgba(255, 255, 255, 0.05);
+                    color: var(--text-main);
+                }
+
+                .nav-item.active {
+                    background-color: rgba(29, 185, 84, 0.1);
+                    color: var(--primary);
+                    font-weight: 600;
+                }
+
+                .sidebar-footer {
+                    margin-top: auto;
+                    padding-top: 20px;
+                    border-top: 1px solid var(--border-color);
+                }
+
+                .logout-btn {
+                    width: 100%;
+                    background: none;
+                    border: 1px solid var(--border-color);
+                    color: var(--text-muted);
+                    padding: 10px;
+                    text-align: center;
+                }
+
+                .logout-btn:hover {
+                    border-color: var(--danger);
+                    color: var(--danger);
+                }
+
+                @media (max-width: 768px) {
+                    .sidebar {
+                        display: none; /* Hide on mobile for now, will implement mobile nav later */
+                    }
+                }
+            `}</style>
+        </div>
+    );
+}
+
+export default Sidebar;

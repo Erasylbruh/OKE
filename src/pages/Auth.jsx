@@ -11,28 +11,42 @@ function Auth() {
     const navigate = useNavigate();
     const { t } = useLanguage();
 
-    // Validation States
+    // Validation Logic
     const hasLength = password.length >= 8;
     const hasNum = /\d/.test(password);
     const hasSpecial = /[@#$%&]/.test(password);
-    const hasLetters = /[a-zA-Z]/.test(password); // Implied requirement
+    const hasLetters = /[a-zA-Z]/.test(password);
 
     const isPasswordValid = hasLength && hasNum && hasSpecial && hasLetters;
+
+    // Password Strength Calculation
+    const getStrength = () => {
+        if (!password) return 0;
+        let score = 0;
+        if (hasLength) score++;
+        if (hasNum) score++;
+        if (hasSpecial) score++;
+        if (hasLetters) score++;
+        return score; // 0 to 4
+    };
+
+    const strength = getStrength();
+    const strengthColor = strength < 2 ? '#E53935' : strength < 4 ? '#FDD835' : '#1DB954';
+    const strengthWidth = `${(strength / 4) * 100}%`;
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
 
         if (!isLogin) {
-            // Username validation
             const usernameRegex = /^(?=.*[a-z])(?=.*\d)[a-z0-9]{6,}$/;
             if (!usernameRegex.test(username)) {
-                setError('Invalid username format');
+                setError('Username must be 6+ chars, lowercase, letters & numbers');
                 return;
             }
 
             if (!isPasswordValid) {
-                setError('Please meet all password requirements');
+                setError('Password is too weak');
                 return;
             }
         }
@@ -80,109 +94,136 @@ function Auth() {
         }
     };
 
-    const containerStyle = {
-        width: '440px',
-        height: isLogin ? '280px' : '380px', // Increased slightly to fit validation text comfortably
-        margin: '100px auto',
-        padding: '20px',
-        backgroundColor: '#282828',
-        borderRadius: '8px',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center', // Center content vertically
-        boxSizing: 'border-box',
-        transition: 'height 0.3s ease'
-    };
-
-    const inputStyle = {
-        width: '100%', // 400px effectively (440 - 40 padding)
-        height: '35px',
-        padding: '0 10px',
-        boxSizing: 'border-box',
-        borderRadius: '4px',
-        border: '1px solid #444',
-        backgroundColor: '#121212',
-        color: 'white',
-        fontSize: '14px'
-    };
-
-    const buttonStyle = {
-        width: '100%',
-        height: '40px',
-        backgroundColor: '#1db954',
-        border: 'none',
-        borderRadius: '4px',
-        color: 'black',
-        fontWeight: 'bold',
-        cursor: 'pointer',
-        fontSize: '16px',
-        marginTop: '10px'
-    };
-
-    const ValidationItem = ({ satisfied, text }) => (
-        <div style={{
-            color: satisfied ? '#1db954' : '#ff4444',
-            fontSize: '12px',
-            transition: 'color 0.3s ease',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '5px'
-        }}>
-            <span>{satisfied ? '✓' : '•'}</span>
-            {text}
-        </div>
-    );
-
     return (
-        <div style={containerStyle}>
-            <h2 style={{ textAlign: 'center', marginBottom: '20px', marginTop: 0 }}>{isLogin ? t('login') : t('register')}</h2>
-            {error && <div style={{ color: '#ff4444', marginBottom: '10px', fontSize: '14px', textAlign: 'center' }}>{error}</div>}
+        <div className="card" style={{
+            width: '400px',
+            position: 'relative',
+            boxShadow: '0 4px 30px rgba(0, 0, 0, 0.5)',
+            padding: '40px'
+        }}>
+            {/* Close Button */}
+            <button
+                onClick={() => navigate('/')}
+                style={{
+                    position: 'absolute',
+                    top: '15px',
+                    right: '15px',
+                    background: 'none',
+                    border: 'none',
+                    color: '#888',
+                    fontSize: '24px',
+                    cursor: 'pointer',
+                    padding: '5px'
+                }}
+            >
+                &times;
+            </button>
 
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                <input
-                    type="text"
-                    placeholder={t('username')}
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value.toLowerCase())}
-                    required
-                    style={inputStyle}
-                />
+            <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+                <h1 style={{ margin: 0, color: 'var(--primary)', fontSize: '2rem' }}>Gravity</h1>
+                <p style={{ color: '#888', marginTop: '5px' }}>
+                    {isLogin ? 'Welcome back' : 'Create your account'}
+                </p>
+            </div>
+
+            {error && (
+                <div style={{
+                    backgroundColor: 'rgba(229, 57, 53, 0.1)',
+                    color: '#E53935',
+                    padding: '10px',
+                    borderRadius: '8px',
+                    marginBottom: '20px',
+                    fontSize: '14px',
+                    textAlign: 'center'
+                }}>
+                    {error}
+                </div>
+            )}
+
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div>
+                    <label style={{ display: 'block', color: '#888', marginBottom: '8px', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                        {t('username')}
+                    </label>
+                    <input
+                        type="text"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value.toLowerCase())}
+                        required
+                        style={{ height: '48px', backgroundColor: '#121212' }}
+                    />
+                </div>
 
                 <div>
+                    <label style={{ display: 'block', color: '#888', marginBottom: '8px', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                        {t('password')}
+                    </label>
                     <input
                         type="password"
-                        placeholder={t('password')}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
-                        style={inputStyle}
+                        style={{ height: '48px', backgroundColor: '#121212' }}
                     />
+
                     {!isLogin && (
-                        <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                            <ValidationItem satisfied={hasLength} text="At least 8 characters" />
-                            <ValidationItem satisfied={hasNum} text="Contains a number" />
-                            <ValidationItem satisfied={hasSpecial} text="Contains special char (@, #, $, %, &)" />
+                        <div style={{ marginTop: '10px' }}>
+                            <div style={{
+                                height: '4px',
+                                backgroundColor: '#333',
+                                borderRadius: '2px',
+                                overflow: 'hidden'
+                            }}>
+                                <div style={{
+                                    width: strengthWidth,
+                                    height: '100%',
+                                    backgroundColor: strengthColor,
+                                    transition: 'all 0.3s ease'
+                                }} />
+                            </div>
+                            <p style={{
+                                fontSize: '12px',
+                                color: strengthColor,
+                                marginTop: '5px',
+                                textAlign: 'right'
+                            }}>
+                                {strength < 2 ? 'Weak' : strength < 4 ? 'Medium' : 'Strong'}
+                            </p>
                         </div>
                     )}
                 </div>
 
-                <button type="submit" style={{ ...buttonStyle, opacity: (!isLogin && !isPasswordValid) ? 0.5 : 1, cursor: (!isLogin && !isPasswordValid) ? 'not-allowed' : 'pointer' }} disabled={!isLogin && !isPasswordValid}>
+                <button
+                    type="submit"
+                    className="primary"
+                    style={{
+                        height: '48px',
+                        fontSize: '16px',
+                        marginTop: '10px',
+                        opacity: (!isLogin && !isPasswordValid) ? 0.7 : 1
+                    }}
+                >
                     {isLogin ? t('login') : t('register')}
                 </button>
             </form>
 
-            <p style={{ marginTop: '15px', fontSize: '14px', textAlign: 'center', color: '#888' }}>
-                {isLogin ? t('dont_have_account') : t('already_have_account')}{' '}
-                <span
+            <div style={{ textAlign: 'center', marginTop: '20px' }}>
+                <span style={{ color: '#888' }}>
+                    {isLogin ? t('dont_have_account') : t('already_have_account')}{' '}
+                </span>
+                <button
                     onClick={() => { setIsLogin(!isLogin); setError(''); }}
-                    style={{ color: '#1db954', cursor: 'pointer', textDecoration: 'underline' }}
+                    style={{
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--primary)',
+                        cursor: 'pointer',
+                        fontWeight: 'bold',
+                        padding: 0,
+                        marginLeft: '5px'
+                    }}
                 >
                     {isLogin ? t('register') : t('login')}
-                </span>
-            </p>
-            <div style={{ textAlign: 'center', marginTop: '10px' }}>
-                <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer' }}>
-                    Back to Main
                 </button>
             </div>
         </div>

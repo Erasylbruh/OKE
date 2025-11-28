@@ -7,11 +7,6 @@ import { useLanguage } from '../context/LanguageContext';
 function Dashboard() {
     const [projects, setProjects] = useState([]);
     const [user, setUser] = useState(JSON.parse(localStorage.getItem('user') || '{}'));
-    const [isEditing, setIsEditing] = useState(false);
-    const [nickname, setNickname] = useState(user.nickname || '');
-    const [avatarUrl, setAvatarUrl] = useState(user.avatar_url || '');
-    const [selectedFile, setSelectedFile] = useState(null);
-    const [previewUrl, setPreviewUrl] = useState(user.avatar_url || '');
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [newProjectName, setNewProjectName] = useState('');
     const [isCreating, setIsCreating] = useState(false);
@@ -21,7 +16,7 @@ function Dashboard() {
     useEffect(() => {
         const fetchProjects = async () => {
             const token = localStorage.getItem('token');
-            if (!token) return navigate('/');
+            if (!token) return navigate('/auth');
 
             try {
                 const response = await fetch(`${API_URL}/api/projects`, {
@@ -32,7 +27,7 @@ function Dashboard() {
                     setProjects(data);
                 } else {
                     localStorage.removeItem('token');
-                    navigate('/');
+                    navigate('/auth');
                 }
             } catch (err) {
                 console.error(err);
@@ -75,62 +70,8 @@ function Dashboard() {
         }
     };
 
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        navigate('/');
-    };
-
-    const handleFileSelect = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            setSelectedFile(file);
-            setPreviewUrl(URL.createObjectURL(file));
-        }
-    };
-
-    const handleDrop = (e) => {
-        e.preventDefault();
-        const file = e.dataTransfer.files[0];
-        if (file) {
-            setSelectedFile(file);
-            setPreviewUrl(URL.createObjectURL(file));
-        }
-    };
-
-    const handleUpdateProfile = async () => {
-        const token = localStorage.getItem('token');
-        const formData = new FormData();
-        formData.append('nickname', nickname);
-        if (selectedFile) {
-            formData.append('avatar', selectedFile);
-        } else {
-            formData.append('avatar_url', avatarUrl);
-        }
-
-        try {
-            const res = await fetch(`${API_URL}/api/users/profile`, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                },
-                body: formData
-            });
-            if (res.ok) {
-                const data = await res.json();
-                const newUser = { ...user, nickname, avatar_url: data.avatar_url || avatarUrl };
-                localStorage.setItem('user', JSON.stringify(newUser));
-                setUser(newUser);
-                setIsEditing(false);
-                setSelectedFile(null);
-            }
-        } catch (err) {
-            console.error(err);
-        }
-    };
-
     const handleToggleVisibility = async (e, project) => {
-        e.stopPropagation(); // Prevent navigation
+        e.stopPropagation();
         const token = localStorage.getItem('token');
         const newStatus = !project.is_public;
 
@@ -158,26 +99,25 @@ function Dashboard() {
     };
 
     return (
-        <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
             {/* Create Modal */}
             {showCreateModal && (
                 <div style={{
                     position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                    backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
+                    backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000
                 }}>
-                    <div className="modal-content" style={{ backgroundColor: '#282828', padding: '30px', borderRadius: '12px', width: '400px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                        <h2>{t('create_new_project')}</h2>
+                    <div className="card" style={{ width: '400px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                        <h2 style={{ margin: 0 }}>{t('create_new_project')}</h2>
                         <input
                             type="text"
                             placeholder={t('project_name')}
                             value={newProjectName}
                             onChange={(e) => setNewProjectName(e.target.value)}
-                            style={{ padding: '10px', fontSize: '1.1em', borderRadius: '4px', border: '1px solid #444', backgroundColor: '#121212', color: 'white' }}
                             autoFocus
                         />
                         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                            <button onClick={() => setShowCreateModal(false)} style={{ backgroundColor: 'transparent', border: '1px solid #555' }}>{t('cancel')}</button>
-                            <button onClick={handleCreateNew} disabled={isCreating} style={{ backgroundColor: '#1db954', color: 'black', opacity: isCreating ? 0.7 : 1 }}>
+                            <button onClick={() => setShowCreateModal(false)} style={{ background: 'transparent', border: '1px solid #555', color: '#fff', padding: '8px 16px' }}>{t('cancel')}</button>
+                            <button onClick={handleCreateNew} disabled={isCreating} className="primary">
                                 {isCreating ? 'Creating...' : t('create')}
                             </button>
                         </div>
@@ -185,112 +125,55 @@ function Dashboard() {
                 </div>
             )}
 
-            {/* Profile Section */}
-            <div className="profile-section" style={{ backgroundColor: '#282828', padding: '20px', borderRadius: '8px', marginBottom: '30px', display: 'flex', alignItems: 'center', gap: '20px', minHeight: '124px' }}>
-                <div
-                    style={{
+            {/* Hero Section */}
+            <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: '40px',
+                paddingBottom: '20px',
+                borderBottom: '1px solid var(--border-color)'
+            }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                    <div style={{
                         width: '80px',
                         height: '80px',
                         borderRadius: '50%',
-                        overflow: 'hidden',
-                        position: 'relative',
-                        cursor: isEditing ? 'pointer' : 'default',
-                        border: isEditing ? '2px dashed #1db954' : 'none'
+                        backgroundColor: '#333',
+                        backgroundImage: user.avatar_url ? `url(${user.avatar_url})` : 'none',
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '2rem',
+                        color: '#888'
+                    }}>
+                        {!user.avatar_url && (user.nickname?.[0] || user.username?.[0] || '?').toUpperCase()}
+                    </div>
+                    <div>
+                        <h1 style={{ margin: 0, fontSize: '2rem' }}>{user.nickname || user.username}</h1>
+                        <p style={{ color: 'var(--text-muted)', margin: '5px 0 0 0' }}>
+                            {projects.length} {t('projects')}
+                        </p>
+                    </div>
+                </div>
+
+                <button
+                    onClick={() => navigate(`/user/${user.username}`)}
+                    style={{
+                        background: 'transparent',
+                        border: '1px solid var(--border-color)',
+                        color: 'var(--text-main)',
+                        padding: '8px 16px'
                     }}
-                    onDragOver={(e) => e.preventDefault()}
-                    onDrop={isEditing ? handleDrop : null}
-                    onClick={() => isEditing && document.getElementById('fileInput').click()}
                 >
-                    {previewUrl ? (
-                        <img src={previewUrl} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    ) : (
-                        <div style={{ width: '100%', height: '100%', backgroundColor: '#444', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2em' }}>
-                            {user.username?.[0]?.toUpperCase()}
-                        </div>
-                    )}
-                    {isEditing && (
-                        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(0,0,0,0.6)', fontSize: '0.6em', textAlign: 'center', padding: '2px' }}>
-                            {t('change')}
-                        </div>
-                    )}
-                    <input
-                        type="file"
-                        id="fileInput"
-                        style={{ display: 'none' }}
-                        onChange={handleFileSelect}
-                        accept="image/*"
-                    />
-                </div>
-
-                <div style={{ flex: 1 }}>
-                    {isEditing ? (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                            <input
-                                type="text"
-                                placeholder="Nickname"
-                                value={nickname}
-                                onChange={(e) => setNickname(e.target.value)}
-                                style={{ padding: '5px' }}
-                            />
-                            <div>
-                                <button onClick={handleUpdateProfile} style={{ marginRight: '10px', backgroundColor: '#1db954', color: 'black' }}>{t('save')}</button>
-                                <button onClick={() => { setIsEditing(false); setPreviewUrl(user.avatar_url); setSelectedFile(null); }}>{t('cancel')}</button>
-                            </div>
-                        </div>
-                    ) : (
-                        <div>
-                            <h2 style={{ margin: 0 }}>{user.nickname || user.username}</h2>
-                            <p style={{ color: '#888', margin: '5px 0' }}>@{user.username}</p>
-                            <button onClick={() => setIsEditing(true)} style={{ fontSize: '0.8em', padding: '5px 10px' }}>{t('edit_profile')}</button>
-                        </div>
-                    )}
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    <button onClick={() => navigate('/foryou')}>{t('main')}</button>
-                    <button onClick={() => navigate('/settings')}>{t('settings')}</button>
-                    {!!user.is_admin && (
-                        <button onClick={() => navigate('/admin')} style={{ backgroundColor: '#ff4444' }}>{t('admin_dashboard')}</button>
-                    )}
-                    <button onClick={handleLogout}>{t('logout')}</button>
-                </div>
+                    {t('edit_profile')}
+                </button>
             </div>
 
-            <div className="dashboard-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h1>{t('my_projects')}</h1>
-                <div style={{ display: 'flex', gap: '10px' }}>
-                    <button
-                        onClick={() => navigate('/liked-projects')}
-                        style={{
-                            padding: '10px 20px',
-                            backgroundColor: '#e91e63',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '20px',
-                            cursor: 'pointer',
-                            fontWeight: 'bold'
-                        }}
-                    >
-                        ❤️ {t('liked_projects')}
-                    </button>
-                    <button
-                        onClick={() => setShowCreateModal(true)}
-                        style={{
-                            padding: '10px 20px',
-                            backgroundColor: '#1db954',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '20px',
-                            cursor: 'pointer',
-                            fontWeight: 'bold'
-                        }}
-                    >
-                        + {t('new_project')}
-                    </button>
-                </div>
-            </div>
-
-            <div style={{ display: 'grid', gap: '10px' }}>
+            {/* Projects Grid */}
+            <div className="grid-3">
                 {projects.map((project) => (
                     <ProjectCard
                         key={project.id}
@@ -320,8 +203,38 @@ function Dashboard() {
                         }}
                     />
                 ))}
-                {projects.length === 0 && <p>{t('no_projects')}</p>}
             </div>
+
+            {projects.length === 0 && (
+                <div style={{ textAlign: 'center', color: 'var(--text-muted)', marginTop: '50px' }}>
+                    <p>{t('no_projects')}</p>
+                </div>
+            )}
+
+            {/* FAB */}
+            <button
+                onClick={() => setShowCreateModal(true)}
+                style={{
+                    position: 'fixed',
+                    bottom: '40px',
+                    right: '40px',
+                    width: '60px',
+                    height: '60px',
+                    borderRadius: '50%',
+                    backgroundColor: 'var(--primary)',
+                    color: '#fff',
+                    border: 'none',
+                    fontSize: '30px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
+                    cursor: 'pointer',
+                    zIndex: 100
+                }}
+            >
+                +
+            </button>
         </div>
     );
 }

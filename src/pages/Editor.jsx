@@ -7,12 +7,15 @@ import Preview from '../components/Preview';
 import CommentsSection from '../components/CommentsSection';
 import LikeButton from '../components/LikeButton';
 import API_URL from '../config';
+import { useLanguage } from '../context/LanguageContext';
 import '../App.css';
 
 function Editor() {
     const { id } = useParams();
     const navigate = useNavigate();
     const location = useLocation();
+    const { t } = useLanguage();
+
     const [lyrics, setLyrics] = useState([]);
     const [styles, setStyles] = useState({
         fontSize: 24,
@@ -28,7 +31,6 @@ function Editor() {
     const [isSaving, setIsSaving] = useState(false);
     const [resetTrigger, setResetTrigger] = useState(0);
     const [isOwner, setIsOwner] = useState(true);
-
     const [projectOwnerId, setProjectOwnerId] = useState(null);
     const [previewUrls, setPreviewUrls] = useState([null, null, null]);
 
@@ -88,7 +90,6 @@ function Editor() {
         };
         fetchProject();
     }, [id, navigate, location.state]);
-
 
     // Reset animation on change
     useEffect(() => {
@@ -263,134 +264,176 @@ function Editor() {
     };
 
     return (
-        <div className="editor-container">
-            <div className="editor-panel" style={{ flex: 1, overflowY: 'auto', paddingRight: '10px' }}>
-                <div className="editor-header" style={{ padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#121212', borderBottom: '1px solid #282828' }}>
-                    <button onClick={handleBack} style={{ backgroundColor: 'transparent', border: '1px solid #555' }}>&larr; Back</button>
-                    <h1 style={{ margin: 0, fontSize: '1.5em' }}>Editor {projectName && `- ${projectName}`}</h1>
-                    <div className="editor-header-controls" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                        {isOwner && (
-                            <>
-                                <div
-                                    onClick={() => setIsPublic(!isPublic)}
-                                    style={{
-                                        display: 'inline-flex',
-                                        alignItems: 'center',
-                                        cursor: 'pointer',
-                                        backgroundColor: isPublic ? '#1db954' : '#555',
-                                        padding: '5px 10px',
-                                        borderRadius: '20px',
-                                        transition: 'background-color 0.3s',
-                                        userSelect: 'none'
-                                    }}
-                                >
-                                    <span style={{ marginRight: '8px', fontSize: '0.9em', fontWeight: 'bold' }}>
-                                        {isPublic ? 'Public' : 'Private'}
-                                    </span>
-                                    <div style={{
-                                        width: '16px',
-                                        height: '16px',
-                                        backgroundColor: 'white',
-                                        borderRadius: '50%',
-                                        transform: isPublic ? 'translateX(0)' : 'translateX(-2px)',
-                                        transition: 'transform 0.3s'
-                                    }} />
-                                </div>
-
-                                <button id="save-btn" onClick={handleSave} disabled={isSaving} style={{ backgroundColor: '#1db954', color: 'black', minWidth: '100px' }}>
-                                    {isSaving ? 'Saving...' : 'Save'}
-                                </button>
-                            </>
-                        )}
-                    </div>
+        <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#121212', color: 'white' }}>
+            {/* Toolbar */}
+            <div style={{
+                height: '60px',
+                borderBottom: '1px solid #333',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '0 20px',
+                backgroundColor: '#181818'
+            }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                    <button onClick={handleBack} style={{ background: 'none', border: 'none', color: '#ccc', cursor: 'pointer', fontSize: '1.2rem' }}>
+                        &larr;
+                    </button>
+                    <h1 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 'bold' }}>
+                        {projectName || 'Untitled Project'}
+                    </h1>
                 </div>
 
-                {isOwner ? (
-                    <>
-                        <section>
-                            <h2>1. Input Lyrics</h2>
-                            <LyricInput onParse={handleLyricsParsed} />
-                        </section>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    {!isOwner && <LikeButton projectId={id} />}
+                    {isOwner && (
+                        <>
+                            <div
+                                onClick={() => setIsPublic(!isPublic)}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    cursor: 'pointer',
+                                    backgroundColor: '#333',
+                                    padding: '6px 12px',
+                                    borderRadius: '20px'
+                                }}
+                            >
+                                <div style={{
+                                    width: '10px',
+                                    height: '10px',
+                                    borderRadius: '50%',
+                                    backgroundColor: isPublic ? '#1db954' : '#888'
+                                }} />
+                                <span style={{ fontSize: '0.9rem' }}>{isPublic ? t('public') : t('private')}</span>
+                            </div>
+                            <button
+                                id="save-btn"
+                                onClick={handleSave}
+                                disabled={isSaving}
+                                className="primary"
+                                style={{ padding: '8px 24px', borderRadius: '20px' }}
+                            >
+                                {isSaving ? 'Saving...' : t('save')}
+                            </button>
+                        </>
+                    )}
+                </div>
+            </div>
 
-                        {lyrics.length > 0 && (
-                            <>
+            {/* Main Content - Studio Layout */}
+            <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+
+                {/* Left Panel: Lyrics & Timing (Owner Only) */}
+                {isOwner && (
+                    <div style={{
+                        width: '350px',
+                        borderRight: '1px solid #333',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        backgroundColor: '#181818'
+                    }}>
+                        <div style={{ padding: '20px', overflowY: 'auto', flex: 1 }}>
+                            <section style={{ marginBottom: '30px' }}>
+                                <h3 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>Lyrics</h3>
+                                <LyricInput onParse={handleLyricsParsed} />
+                            </section>
+
+                            {lyrics.length > 0 && (
                                 <section>
-                                    <h2>2. Edit Timing</h2>
+                                    <h3 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>Timing</h3>
                                     <TimingEditor lyrics={lyrics} onUpdate={updateLyric} />
                                 </section>
+                            )}
+                        </div>
+                    </div>
+                )}
 
-                                <section>
-                                    <h2>3. Style</h2>
+                {/* Center Panel: Preview */}
+                <div style={{
+                    flex: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: '#121212',
+                    position: 'relative'
+                }}>
+                    <Preview lyrics={lyrics} styles={styles} resetTrigger={resetTrigger} />
+                </div>
+
+                {/* Right Panel: Settings (Owner) or Comments (Viewer) */}
+                <div style={{
+                    width: '320px',
+                    borderLeft: '1px solid #333',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    backgroundColor: '#181818'
+                }}>
+                    <div style={{ padding: '20px', overflowY: 'auto', flex: 1 }}>
+                        {isOwner ? (
+                            <>
+                                <section style={{ marginBottom: '30px' }}>
+                                    <h3 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>Style</h3>
                                     <StyleControls styles={styles} onUpdate={setStyles} />
                                 </section>
 
                                 <section>
-                                    <h2>4. Preview Gallery</h2>
-                                    <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '10px' }}>
+                                    <h3 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>Backgrounds</h3>
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
                                         {previewUrls.map((url, index) => (
                                             <div
                                                 key={index}
-                                                style={{ position: 'relative', width: '100px', height: '100px', flexShrink: 0 }}
+                                                style={{
+                                                    position: 'relative',
+                                                    aspectRatio: '1',
+                                                    borderRadius: '8px',
+                                                    overflow: 'hidden',
+                                                    border: index === 0 ? '2px solid #1db954' : '1px solid #333',
+                                                    cursor: 'pointer',
+                                                    backgroundColor: '#282828'
+                                                }}
                                                 onDragOver={(e) => e.preventDefault()}
                                                 onDrop={(e) => handleSlotDrop(e, index)}
+                                                onClick={() => document.getElementById(`preview-upload-${index}`).click()}
                                             >
-                                                <div
-                                                    onClick={() => document.getElementById(`preview-upload-${index}`).click()}
-                                                    style={{
-                                                        width: '100%', height: '100%',
-                                                        borderRadius: '8px',
-                                                        overflow: 'hidden',
-                                                        backgroundColor: '#333',
-                                                        cursor: 'pointer',
-                                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                        border: index === 0 ? '2px solid #1db954' : '2px dashed #555',
-                                                        position: 'relative'
-                                                    }}
-                                                >
-                                                    {url ? (
-                                                        <>
-                                                            <img src={url} alt={`Preview ${index + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                                            <button
-                                                                onClick={(e) => { e.stopPropagation(); handleDeletePreview(index); }}
-                                                                style={{
-                                                                    position: 'absolute', top: '2px', right: '2px',
-                                                                    background: 'rgba(0,0,0,0.7)', color: 'white',
-                                                                    border: 'none', borderRadius: '50%',
-                                                                    width: '20px', height: '20px',
-                                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                                    cursor: 'pointer', fontSize: '12px'
-                                                                }}
-                                                            >
-                                                                ✕
-                                                            </button>
-                                                            {index !== 0 && (
-                                                                <button
-                                                                    onClick={(e) => { e.stopPropagation(); handleSetMainPreview(index); }}
-                                                                    style={{
-                                                                        position: 'absolute', bottom: '2px', right: '2px',
-                                                                        background: 'rgba(0,0,0,0.7)', color: '#1db954',
-                                                                        border: 'none', borderRadius: '4px',
-                                                                        padding: '2px 4px', fontSize: '10px',
-                                                                        cursor: 'pointer'
-                                                                    }}
-                                                                >
-                                                                    ★
-                                                                </button>
-                                                            )}
-                                                        </>
-                                                    ) : (
-                                                        <span style={{ fontSize: '2em', color: '#555' }}>+</span>
-                                                    )}
-                                                    {index === 0 && (
-                                                        <div style={{
-                                                            position: 'absolute', bottom: '0', left: '0', right: '0',
-                                                            background: 'rgba(29, 185, 84, 0.8)', color: 'white',
-                                                            fontSize: '10px', textAlign: 'center', padding: '2px'
-                                                        }}>
-                                                            Main
-                                                        </div>
-                                                    )}
-                                                </div>
+                                                {url ? (
+                                                    <img src={url} alt={`Slot ${index}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                ) : (
+                                                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#555', fontSize: '1.5rem' }}>+</div>
+                                                )}
+
+                                                {url && (
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); handleDeletePreview(index); }}
+                                                        style={{
+                                                            position: 'absolute', top: '2px', right: '2px',
+                                                            background: 'rgba(0,0,0,0.6)', color: 'white',
+                                                            border: 'none', borderRadius: '50%',
+                                                            width: '18px', height: '18px',
+                                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                            cursor: 'pointer', fontSize: '10px'
+                                                        }}
+                                                    >
+                                                        ✕
+                                                    </button>
+                                                )}
+
+                                                {url && index !== 0 && (
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); handleSetMainPreview(index); }}
+                                                        style={{
+                                                            position: 'absolute', bottom: '2px', right: '2px',
+                                                            background: 'rgba(0,0,0,0.6)', color: '#1db954',
+                                                            border: 'none', borderRadius: '4px',
+                                                            padding: '2px 4px', fontSize: '8px',
+                                                            cursor: 'pointer'
+                                                        }}
+                                                    >
+                                                        ★
+                                                    </button>
+                                                )}
+
                                                 <input
                                                     type="file"
                                                     id={`preview-upload-${index}`}
@@ -401,25 +444,16 @@ function Editor() {
                                             </div>
                                         ))}
                                     </div>
+                                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '10px' }}>
+                                        Drag & drop images or click to upload. First slot is the cover.
+                                    </p>
                                 </section>
                             </>
-                        )}
-                    </>
-                ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                            <p style={{ margin: 0 }}>You are viewing this post in read-only mode.</p>
-                            <LikeButton projectId={id} />
-                        </div>
-                        <div style={{ flex: 1, overflow: 'hidden' }}>
+                        ) : (
                             <CommentsSection projectId={id} projectOwnerId={projectOwnerId} />
-                        </div>
+                        )}
                     </div>
-                )}
-            </div>
-
-            <div className="preview-panel" style={{ flex: 1, borderLeft: '1px solid #333', paddingLeft: '20px' }}>
-                <Preview lyrics={lyrics} styles={styles} resetTrigger={resetTrigger} />
+                </div>
             </div>
         </div>
     );
