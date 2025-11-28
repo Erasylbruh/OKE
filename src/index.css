@@ -64,3 +64,27 @@ textarea:focus {
   outline: 2px solid var(--accent-color);
   border-color: transparent;
 }
+
+@media (max-width: 768px) {
+  #root {
+    padding: 1rem;
+    padding-bottom: 80px;
+    /* Space for bottom nav */
+  }
+
+  .grid-3,
+  .grid-4 {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Ensure full width on mobile */
+  .editor-container {
+    flex-direction: column !important;
+  }
+
+  .editor-panel {
+    width: 100% !important;
+    max-width: none !important;
+    height: auto !important;
+  }
+}

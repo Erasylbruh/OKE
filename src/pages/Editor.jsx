@@ -34,6 +34,7 @@ function Editor() {
     const [projectOwnerId, setProjectOwnerId] = useState(null);
     const [audioUrl, setAudioUrl] = useState(null);
     const [previewUrls, setPreviewUrls] = useState([null, null, null]);
+    const [activeTab, setActiveTab] = useState('preview'); // 'preview' or 'controls'
 
     // Load project
     useEffect(() => {
@@ -336,7 +337,7 @@ function Editor() {
     };
 
     return (
-        <div style={{
+        <div className="editor-container" style={{
             height: '100vh',
             width: '100%', // Full width container
             display: 'flex',
@@ -345,6 +346,80 @@ function Editor() {
             color: 'white',
             overflow: 'hidden' // Prevent page scroll
         }}>
+            {/* Mobile Tab Switcher */}
+            <div className="mobile-tabs">
+                <button
+                    className={`tab-btn ${activeTab === 'preview' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('preview')}
+                >
+                    Preview
+                </button>
+                <button
+                    className={`tab-btn ${activeTab === 'controls' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('controls')}
+                >
+                    Controls
+                </button>
+            </div>
+
+            <style>{`
+                .mobile-tabs {
+                    display: none;
+                    position: fixed;
+                    bottom: 0;
+                    left: 0;
+                    width: 100%;
+                    background-color: #181818;
+                    border-top: 1px solid #333;
+                    z-index: 100;
+                    height: 50px;
+                }
+
+                .tab-btn {
+                    flex: 1;
+                    background: none;
+                    border: none;
+                    color: #888;
+                    font-weight: bold;
+                    text-transform: uppercase;
+                    cursor: pointer;
+                    font-size: 14px;
+                }
+
+                .tab-btn.active {
+                    color: #1db954;
+                    border-top: 2px solid #1db954;
+                }
+
+                @media (max-width: 768px) {
+                    .mobile-tabs {
+                        display: flex;
+                    }
+
+                    .editor-panel {
+                        width: 100% !important;
+                        height: calc(100vh - 50px) !important; /* Subtract tab height */
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        padding-bottom: 50px; /* Space for tabs */
+                    }
+
+                    .mobile-hidden {
+                        display: none !important;
+                    }
+
+                    .mobile-visible {
+                        display: flex !important;
+                    }
+                    
+                    /* Hide right panel on mobile for now */
+                    .right-panel {
+                        display: none !important;
+                    }
+                }
+            `}</style>
+
             {/* Toolbar */}
             <div style={{
                 height: '60px',
@@ -442,11 +517,11 @@ function Editor() {
             </div>
 
             {/* Main Content - Studio Layout */}
-            <div style={{ flex: 1, display: 'flex', justifyContent: 'center', overflow: 'hidden' }}>
+            <div style={{ flex: 1, display: 'flex', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}>
 
                 {/* Left Panel: Lyrics & Timing (Owner Only) */}
                 {isOwner && (
-                    <div style={{
+                    <div className={`editor-panel left-panel ${activeTab === 'controls' ? 'mobile-visible' : 'mobile-hidden'}`} style={{
                         width: '450px', // Fixed width 450px
                         borderRight: '1px solid #333',
                         display: 'flex',
@@ -471,7 +546,7 @@ function Editor() {
                 )}
 
                 {/* Center Panel: Preview */}
-                <div style={{
+                <div className={`editor-panel center-panel ${activeTab === 'preview' ? 'mobile-visible' : 'mobile-hidden'}`} style={{
                     width: '569px', // Fixed width 569px
                     display: 'flex',
                     alignItems: 'center',
@@ -484,7 +559,7 @@ function Editor() {
                 </div>
 
                 {/* Right Panel: Settings (Owner) or Comments (Viewer) */}
-                <div style={{
+                <div className="editor-panel right-panel mobile-hidden" style={{
                     width: '450px', // Fixed width 450px
                     borderLeft: '1px solid #333',
                     display: 'flex',
@@ -623,6 +698,29 @@ function Editor() {
                 </div>
             </div>
         </div>
+    );
+}
+id = {`preview-upload-${index}`}
+style = {{ display: 'none' }}
+accept = "image/*"
+onChange = {(e) => handlePreviewUpload(index, e.target.files[0])}
+            />
+        </div >
+    ))
+}
+                                    </div >
+    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '10px' }}>
+        Drag & drop images or click to upload. First slot is the cover.
+    </p>
+                                </section >
+                            </>
+                        ) : (
+    <CommentsSection projectId={id} projectOwnerId={projectOwnerId} />
+)}
+                    </div >
+                </div >
+            </div >
+        </div >
     );
 }
 
