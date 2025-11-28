@@ -121,6 +121,12 @@ function Editor() {
             const url = URL.createObjectURL(file);
             setAudioUrl(url);
         }
+        // Reset file input
+        e.target.value = null;
+    };
+
+    const handleDeleteAudio = () => {
+        setAudioUrl(null);
     };
 
     const handleLyricsParsed = (parsedLines) => {
@@ -321,6 +327,25 @@ function Editor() {
                             <span>🎵 {audioUrl ? 'Change Audio' : 'Upload Audio'}</span>
                             <input type="file" accept="audio/*" onChange={handleAudioUpload} style={{ display: 'none' }} />
                         </label>
+                        {audioUrl && (
+                        <button
+                            onClick={handleDeleteAudio}
+                            style={{
+                                background: '#333',
+                                border: 'none',
+                                color: '#ff5555',
+                                cursor: 'pointer',
+                                padding: '6px 12px',
+                                borderRadius: '20px',
+                                fontSize: '0.9rem',
+                                display: 'flex',
+                                alignItems: 'center'
+                            }}
+                            title="Remove Audio"
+                        >
+                            ✕
+                        </button>
+                    )}
                     )}
 
                     {!isOwner && <LikeButton projectId={id} />}
@@ -399,7 +424,7 @@ function Editor() {
                     position: 'relative',
                     height: '100%' // Full height
                 }}>
-                    <Preview lyrics={lyrics} styles={styles} resetTrigger={resetTrigger} audioUrl={audioUrl} />
+                    <Preview lyrics={lyrics} styles={styles} resetTrigger={resetTrigger} audioUrl={audioUrl} backgroundImageUrl={previewUrls[0]} />
                 </div>
 
                 {/* Right Panel: Settings (Owner) or Comments (Viewer) */}
@@ -479,13 +504,22 @@ function Editor() {
                                                     <button
                                                         onClick={(e) => { e.stopPropagation(); handleDeletePreview(index); }}
                                                         style={{
-                                                            position: 'absolute', top: '5px', right: '5px',
-                                                            background: 'rgba(0,0,0,0.8)', color: 'white',
-                                                            border: 'none', borderRadius: '50%',
-                                                            width: '20px', height: '20px',
-                                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                            cursor: 'pointer', fontSize: '12px',
-                                                            zIndex: 3
+                                                            position: 'absolute',
+                                                            top: '50%',
+                                                            left: '50%',
+                                                            transform: 'translate(-50%, -50%)',
+                                                            background: 'rgba(0,0,0,0.8)',
+                                                            color: 'white',
+                                                            border: 'none',
+                                                            borderRadius: '50%',
+                                                            width: '30px',
+                                                            height: '30px',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            cursor: 'pointer',
+                                                            fontSize: '16px',
+                                                            zIndex: 10
                                                         }}
                                                     >
                                                         ✕

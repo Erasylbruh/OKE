@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-function Preview({ lyrics, styles, resetTrigger, audioUrl }) {
+function Preview({ lyrics, styles, resetTrigger, audioUrl, backgroundImageUrl }) {
     const [currentTime, setCurrentTime] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
     const activeLineRef = useRef(null);
@@ -125,22 +125,62 @@ function Preview({ lyrics, styles, resetTrigger, audioUrl }) {
                 <button
                     onClick={togglePlay}
                     style={{
-                        width: '40px',
-                        height: '40px',
+                        width: '60px', // Increased size for vinyl look
+                        height: '60px',
                         borderRadius: '50%',
                         padding: 0,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        background: 'transparent',
-                        border: '2px solid white',
+                        background: backgroundImageUrl ? `url(${backgroundImageUrl})` : 'transparent',
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        border: backgroundImageUrl ? 'none' : '2px solid white',
                         color: 'white',
                         cursor: 'pointer',
-                        flexShrink: 0
+                        flexShrink: 0,
+                        animation: isPlaying && backgroundImageUrl ? 'rotate 4s linear infinite' : 'none',
+                        position: 'relative',
+                        boxShadow: backgroundImageUrl ? '0 2px 5px rgba(0,0,0,0.5)' : 'none'
                     }}
                 >
+                    {/* Rotation Keyframes */}
+                    <style>
+                        {`
+                            @keyframes rotate {
+                                from { transform: rotate(0deg); }
+                                to { transform: rotate(360deg); }
+                            }
+                        `}
+                    </style>
+
+                    {/* Overlay for play/pause icon if image is present */}
+                    {backgroundImageUrl && (
+                        <div style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: '100%',
+                            backgroundColor: 'rgba(0,0,0,0.3)',
+                            borderRadius: '50%'
+                        }} />
+                    )}
+
+                    {/* Center Hole for Vinyl Look */}
+                    {backgroundImageUrl && (
+                        <div style={{
+                            position: 'absolute',
+                            width: '15%',
+                            height: '15%',
+                            backgroundColor: '#181818',
+                            borderRadius: '50%',
+                            zIndex: 1
+                        }} />
+                    )}
+
                     {isPlaying ? (
-                        <div style={{ width: '12px', height: '12px', backgroundColor: 'white', borderRadius: '2px' }} />
+                        <div style={{ width: '12px', height: '12px', backgroundColor: 'white', borderRadius: '2px', zIndex: 2 }} />
                     ) : (
                         <div style={{
                             width: 0,
@@ -148,7 +188,8 @@ function Preview({ lyrics, styles, resetTrigger, audioUrl }) {
                             borderTop: '8px solid transparent',
                             borderBottom: '8px solid transparent',
                             borderLeft: '14px solid white',
-                            marginLeft: '4px'
+                            marginLeft: '4px',
+                            zIndex: 2
                         }} />
                     )}
                 </button>
