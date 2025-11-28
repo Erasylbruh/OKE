@@ -812,4 +812,28 @@ app.get('/api/admin/projects', authenticateAdmin, async (req, res) => {
         if (search) {
             query += ' WHERE p.name LIKE ? OR u.username LIKE ?';
             params = [`%${search}%`, `%${search}%`];
-        });
+        }
+        query += ' ORDER BY p.created_at DESC';
+
+        const [projects] = await db.execute(query, params);
+        res.json(projects);
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
+app.delete('/api/admin/users/:id', authenticateAdmin, async (req, res) => {
+    try {
+        await db.execute('DELETE FROM projects WHERE user_id = ?', [req.params.id]);
+        const [result] = await db.execute('DELETE FROM users WHERE id = ?', [req.params.id]);
+        if (result.affectedRows === 0) return res.status(404).send('User not found');
+        res.json({ message: 'User deleted' });
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
