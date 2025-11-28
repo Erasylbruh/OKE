@@ -94,7 +94,25 @@ function Editor() {
         fetchProject();
     }, [id, navigate, location.state]);
 
-    // ... (keep existing effects)
+    // Reset animation on change
+    useEffect(() => {
+        setResetTrigger(prev => prev + 1);
+    }, [lyrics, styles]);
+
+    // Dynamic Font Loading
+    useEffect(() => {
+        if (styles.fontUrl) {
+            const linkId = 'custom-font-link';
+            let link = document.getElementById(linkId);
+            if (!link) {
+                link = document.createElement('link');
+                link.id = linkId;
+                link.rel = 'stylesheet';
+                document.head.appendChild(link);
+            }
+            link.href = styles.fontUrl;
+        }
+    }, [styles.fontUrl]);
 
     const handleAudioUpload = (e) => {
         const file = e.target.files[0];
@@ -104,7 +122,157 @@ function Editor() {
         }
     };
 
-    // ... (keep existing handlers)
+    const handleLyricsParsed = (parsedLines) => {
+        const initializedLyrics = parsedLines.map((text, index) => ({
+            id: index,
+            text: text.trim(),
+            start: 0,
+            end: 0,
+        }));
+        setLyrics(initializedLyrics);
+    };
+
+    const updateLyric = (index, field, value) => {
+        setLyrics((prev) => {
+            const newLyrics = [...prev];
+            newLyrics[index] = { ...newLyrics[index], [field]: value };
+            if (field === 'end' && index < newLyrics.length - 1) {
+                newLyrics[index + 1] = { ...newLyrics[index + 1], start: value };
+            }
+            return newLyrics;
+        });
+    };
+
+    const handleSave = async () => {
+        const token = localStorage.getItem('token');
+        if (!token) return alert('Please login to save');
+
+        const payload = {
+            name: projectName,
+            is_public: isPublic,
+            data: { lyrics, styles }
+        };
+
+        try {
+            setIsSaving(true);
+            const res = await fetch(`${API_URL}/api/projects/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                const btn = document.getElementById('save-btn');
+                if (btn) {
+                    const originalText = btn.innerText;
+                    btn.innerText = 'Saved!';
+                    setTimeout(() => btn.innerText = originalText, 2000);
+                }
+            } else {
+                const msg = await res.text();
+                alert(`Error saving project: ${msg}`);
+            }
+        } catch (err) {
+            console.error(err);
+            alert(`Error saving project: ${err.message}`);
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleBack = () => {
+        if (location.state && location.state.from === 'main') {
+            navigate('/foryou');
+        } else {
+            navigate('/dashboard');
+        }
+    };
+
+    const handlePreviewUpload = async (slot, file) => {
+        if (!file) return;
+        const formData = new FormData();
+        formData.append('preview', file);
+        formData.append('slot', slot);
+        const token = localStorage.getItem('token');
+
+        try {
+            const res = await fetch(`${API_URL}/api/projects/${id}/preview`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData
+            });
+            if (res.ok) {
+                const data = await res.json();
+                const newUrls = data.preview_urls || [];
+                while (newUrls.length < 3) newUrls.push(null);
+                setPreviewUrls(newUrls);
+            } else {
+                alert('Failed to upload preview');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Error uploading preview');
+        }
+    };
+
+    const handleDeletePreview = async (slot) => {
+        if (!confirm('Delete this preview image?')) return;
+        const token = localStorage.getItem('token');
+        try {
+            const res = await fetch(`${API_URL}/api/projects/${id}/preview/${slot}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                const newUrls = data.preview_urls || [];
+                while (newUrls.length < 3) newUrls.push(null);
+                setPreviewUrls(newUrls);
+            } else {
+                alert('Failed to delete preview');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Error deleting preview');
+        }
+    };
+
+    const handleSetMainPreview = async (slot) => {
+        const token = localStorage.getItem('token');
+        try {
+            const res = await fetch(`${API_URL}/api/projects/${id}/preview/main`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ slot })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                const newUrls = data.preview_urls || [];
+                while (newUrls.length < 3) newUrls.push(null);
+                setPreviewUrls(newUrls);
+            } else {
+                alert('Failed to update main preview');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Error updating main preview');
+        }
+    };
+
+    const handleSlotDrop = (e, slot) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) {
+            handlePreviewUpload(slot, file);
+        }
+    };
 
     return (
         <div style={{
