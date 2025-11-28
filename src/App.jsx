@@ -4,9 +4,8 @@ import Auth from './pages/Auth';
 import Dashboard from './pages/Dashboard';
 import ForYou from './pages/ForYou';
 import AdminDashboard from './pages/AdminDashboard';
-import Editor from './pages/Editor';
-import './App.css';
-
+import Settings from './pages/Settings';
+import UserProfile from './pages/UserProfile';
 import LikedProjects from './pages/LikedProjects';
 import AdminLoginModal from './components/AdminLoginModal';
 import { useState, useEffect } from 'react';
@@ -47,6 +46,8 @@ function App() {
         <Route path="/foryou" element={<ForYou />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/user/:username" element={<UserProfile />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/editor/:id?" element={<Editor />} />
         <Route path="/liked-projects" element={<LikedProjects />} />

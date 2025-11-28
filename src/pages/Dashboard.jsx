@@ -245,6 +245,7 @@ function Dashboard() {
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     <button onClick={() => navigate('/foryou')}>Main</button>
+                    <button onClick={() => navigate('/settings')}>Settings</button>
                     {!!user.is_admin && (
                         <button onClick={() => navigate('/admin')} style={{ backgroundColor: '#ff4444' }}>Admin Dashboard</button>
                     )}
@@ -290,7 +291,7 @@ function Dashboard() {
                 {projects.map((project) => (
                     <ProjectCard
                         key={project.id}
-                        project={project}
+                        project={{ ...project, username: user.username, nickname: user.nickname, avatar_url: user.avatar_url }}
                         onClick={() => navigate(`/editor/${project.id}`)}
                         isOwner={true}
                         onToggleVisibility={handleToggleVisibility}

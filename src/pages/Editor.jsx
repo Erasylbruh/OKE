@@ -29,7 +29,7 @@ function Editor() {
     const [resetTrigger, setResetTrigger] = useState(0);
     const [isOwner, setIsOwner] = useState(true);
 
-    const [previewUrls, setPreviewUrls] = useState([null, null, null]);
+    const [projectOwnerId, setProjectOwnerId] = useState(null);
 
     // Load project
     useEffect(() => {
@@ -45,6 +45,7 @@ function Editor() {
                     const project = await res.json();
                     setProjectName(project.name);
                     setIsPublic(!!project.is_public);
+                    setProjectOwnerId(project.user_id);
 
                     const urls = project.preview_urls || [];
                     while (urls.length < 3) urls.push(null);
@@ -86,6 +87,7 @@ function Editor() {
         };
         fetchProject();
     }, [id, navigate, location.state]);
+
 
     // Reset animation on change
     useEffect(() => {
@@ -409,7 +411,7 @@ function Editor() {
                             <LikeButton projectId={id} />
                         </div>
                         <div style={{ flex: 1, overflow: 'hidden' }}>
-                            <CommentsSection projectId={id} />
+                            <CommentsSection projectId={id} projectOwnerId={projectOwnerId} />
                         </div>
                     </div>
                 )}

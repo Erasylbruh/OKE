@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import API_URL from '../config';
 
-function CommentsSection({ projectId }) {
+function CommentsSection({ projectId, projectOwnerId }) {
     const [comments, setComments] = useState([]);
     const [newComment, setNewComment] = useState('');
+    const [replyTo, setReplyTo] = useState(null); // commentId
+    const [replyContent, setReplyContent] = useState('');
     const [loading, setLoading] = useState(true);
     const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
 
     const fetchComments = React.useCallback(async () => {
         try {
-            const res = await fetch(`${API_URL}/api/projects/${projectId}/comments`);
+            const token = localStorage.getItem('token');
+            const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+            const res = await fetch(`${API_URL}/api/projects/${projectId}/comments?userId=${currentUser.id || 0}`, { headers });
             if (res.ok) {
                 const data = await res.json();
                 setComments(data);
@@ -19,15 +23,16 @@ function CommentsSection({ projectId }) {
         } finally {
             setLoading(false);
         }
-    }, [projectId]);
+    }, [projectId, currentUser.id]);
 
     useEffect(() => {
         fetchComments();
     }, [fetchComments]);
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e, parentId = null) => {
         e.preventDefault();
-        if (!newComment.trim()) return;
+        const content = parentId ? replyContent : newComment;
+        if (!content.trim()) return;
 
         const token = localStorage.getItem('token');
         if (!token) return alert('Please login to comment');
@@ -39,12 +44,17 @@ function CommentsSection({ projectId }) {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ content: newComment })
+                body: JSON.stringify({ content, parent_id: parentId })
             });
 
             if (res.ok) {
-                setNewComment('');
-                fetchComments(); // Refresh list
+                if (parentId) {
+                    setReplyContent('');
+                    setReplyTo(null);
+                } else {
+                    setNewComment('');
+                }
+                fetchComments();
             } else {
                 alert('Failed to post comment');
             }
@@ -60,25 +70,133 @@ function CommentsSection({ projectId }) {
         try {
             const res = await fetch(`${API_URL}/api/comments/${commentId}`, {
                 method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
+                headers: { 'Authorization': `Bearer ${token}` }
             });
 
             if (res.ok) {
                 setComments(comments.filter(c => c.id !== commentId));
-            } else {
-                alert('Failed to delete comment');
             }
         } catch (err) {
             console.error(err);
         }
     };
 
+    const handlePin = async (commentId) => {
+        const token = localStorage.getItem('token');
+        try {
+            const res = await fetch(`${API_URL}/api/comments/${commentId}/pin`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) fetchComments();
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const handleLike = async (commentId) => {
+        const token = localStorage.getItem('token');
+        if (!token) return alert('Please login to like');
+
+        try {
+            const res = await fetch(`${API_URL}/api/comments/${commentId}/like`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setComments(comments.map(c => {
+                    if (c.id === commentId) {
+                        return {
+                            ...c,
+                            is_liked: data.liked,
+                            likes_count: data.liked ? c.likes_count + 1 : c.likes_count - 1
+                        };
+                    }
+                    return c;
+                }));
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const renderComment = (comment, isReply = false) => (
+        <div key={comment.id} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', marginLeft: isReply ? '40px' : '0', marginBottom: '15px', position: 'relative' }}>
+            {/* Avatar */}
+            <div style={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', backgroundColor: '#444', flexShrink: 0, cursor: 'pointer' }} onClick={() => window.location.href = `/user/${comment.username}`}>
+                {comment.avatar_url ? (
+                    <img src={comment.avatar_url} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {comment.username[0].toUpperCase()}
+                    </div>
+                )}
+            </div>
+
+            <div style={{ flex: 1 }}>
+                {/* Header */}
+                <div style={{ fontSize: '0.9em', fontWeight: 'bold', color: '#ccc', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span onClick={() => window.location.href = `/user/${comment.username}`} style={{ cursor: 'pointer' }}>
+                        {comment.nickname || comment.username}
+                    </span>
+                    <span style={{ fontSize: '0.8em', color: '#666', fontWeight: 'normal' }}>
+                        {new Date(comment.created_at).toLocaleDateString()}
+                    </span>
+                    {comment.is_pinned && <span style={{ fontSize: '0.8em', color: '#1db954' }}>📌 Pinned by Author</span>}
+                </div>
+
+                {/* Content */}
+                <div style={{ marginTop: '5px', color: '#eee' }}>{comment.content}</div>
+
+                {/* Actions */}
+                <div style={{ display: 'flex', gap: '15px', marginTop: '5px', fontSize: '0.8em', color: '#888' }}>
+                    <span style={{ cursor: 'pointer', color: comment.is_liked ? '#e91e63' : '#888' }} onClick={() => handleLike(comment.id)}>
+                        {comment.is_liked ? '❤️' : '🤍'} {comment.likes_count || 0}
+                    </span>
+                    <span style={{ cursor: 'pointer' }} onClick={() => setReplyTo(replyTo === comment.id ? null : comment.id)}>Reply</span>
+
+                    {(Number(currentUser.id) === Number(comment.user_id) || !!currentUser.is_admin) && (
+                        <span style={{ cursor: 'pointer', color: '#ff4444' }} onClick={() => handleDelete(comment.id)}>Delete</span>
+                    )}
+
+                    {/* Pin Action (Owner Only) */}
+                    {Number(currentUser.id) === Number(projectOwnerId) && (
+                        <span style={{ cursor: 'pointer', color: '#1db954' }} onClick={() => handlePin(comment.id)}>
+                            {comment.is_pinned ? 'Unpin' : 'Pin'}
+                        </span>
+                    )}
+                </div>
+
+                {/* Reply Input */}
+                {replyTo === comment.id && (
+                    <form onSubmit={(e) => handleSubmit(e, comment.id)} style={{ marginTop: '10px', display: 'flex', gap: '10px' }}>
+                        <input
+                            type="text"
+                            value={replyContent}
+                            onChange={e => setReplyContent(e.target.value)}
+                            placeholder={`Reply to @${comment.username}...`}
+                            style={{ flex: 1, padding: '8px', borderRadius: '15px', border: 'none', backgroundColor: '#333', color: 'white', fontSize: '0.9em' }}
+                            autoFocus
+                        />
+                        <button type="submit" style={{ padding: '5px 15px', borderRadius: '15px', border: 'none', backgroundColor: '#1db954', color: 'black', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.9em' }}>
+                            Reply
+                        </button>
+                    </form>
+                )}
+            </div>
+        </div>
+    );
+
+    // Group comments (simple nesting for 1 level deep or flatten)
+    // For simplicity, let's just render top-level then their children
+    const topLevelComments = comments.filter(c => !c.parent_id);
+    const getReplies = (parentId) => comments.filter(c => c.parent_id === parentId);
+
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', color: 'white', height: '100%' }}>
             {/* Input Form at Top */}
-            <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+            <form onSubmit={(e) => handleSubmit(e)} style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
                 <input
                     type="text"
                     value={newComment}
@@ -92,38 +210,12 @@ function CommentsSection({ projectId }) {
             </form>
 
             {/* Comments List */}
-            <div style={{ flex: 1, overflowY: 'auto', minHeight: '200px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+            <div style={{ flex: 1, overflowY: 'auto', minHeight: '200px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
                 {loading ? <p>Loading...</p> : comments.length === 0 ? <p style={{ color: '#888' }}>No comments yet.</p> : (
-                    comments.map(comment => (
-                        <div key={comment.id} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
-                            <div style={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', backgroundColor: '#444', flexShrink: 0 }}>
-                                {comment.avatar_url ? (
-                                    <img src={comment.avatar_url} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                ) : (
-                                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                        {comment.username[0].toUpperCase()}
-                                    </div>
-                                )}
-                            </div>
-                            <div style={{ flex: 1 }}>
-                                <div style={{ fontSize: '0.9em', fontWeight: 'bold', color: '#ccc', display: 'flex', justifyContent: 'space-between' }}>
-                                    <span>
-                                        {comment.nickname || comment.username}
-                                        <span style={{ fontSize: '0.8em', color: '#666', marginLeft: '10px', fontWeight: 'normal' }}>
-                                            {new Date(comment.created_at).toLocaleDateString()}
-                                        </span>
-                                    </span>
-                                    {(Number(currentUser.id) === Number(comment.user_id) || !!currentUser.is_admin) && (
-                                        <button
-                                            onClick={() => handleDelete(comment.id)}
-                                            style={{ background: 'none', border: 'none', color: '#ff4444', cursor: 'pointer', fontSize: '0.8em' }}
-                                        >
-                                            Delete
-                                        </button>
-                                    )}
-                                </div>
-                                <div style={{ marginTop: '5px', color: '#eee' }}>{comment.content}</div>
-                            </div>
+                    topLevelComments.map(comment => (
+                        <div key={comment.id}>
+                            {renderComment(comment)}
+                            {getReplies(comment.id).map(reply => renderComment(reply, true))}
                         </div>
                     ))
                 )}

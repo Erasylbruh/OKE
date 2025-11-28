@@ -106,7 +106,15 @@ const ProjectCard = ({ project, onClick, isOwner, onToggleVisibility, onDelete }
                 borderTop: '1px solid #333'
             }}>
                 {/* User Info */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        if (project.username) {
+                            window.location.href = `/user/${project.username}`;
+                        }
+                    }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+                >
                     <div style={{
                         width: '24px',
                         height: '24px',
@@ -152,7 +160,13 @@ const ProjectCard = ({ project, onClick, isOwner, onToggleVisibility, onDelete }
 
                     {/* Like Button */}
                     <div onClick={(e) => e.stopPropagation()}>
-                        <LikeButton projectId={project.id} />
+                        <LikeButton projectId={project.id} initialCount={project.likes_count || 0} />
+                    </div>
+
+                    {/* Comment Count */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#ccc', fontSize: '0.9em' }} title="Comments">
+                        <span>💬</span>
+                        <span>{project.comments_count || 0}</span>
                     </div>
 
                     {/* Owner Actions */}

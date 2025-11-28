@@ -81,17 +81,31 @@ const initDb = async () => {
             // Ignore error if column already exists
         }
 
+        // Add language column to users if not exists
+        try {
+            await db.query("ALTER TABLE users ADD COLUMN language VARCHAR(10) DEFAULT 'en'");
+        } catch (e) { }
+
         await db.query(`
             CREATE TABLE IF NOT EXISTS comments (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 project_id INT NOT NULL,
                 user_id INT NOT NULL,
                 content TEXT NOT NULL,
+                parent_id INT DEFAULT NULL,
+                is_pinned BOOLEAN DEFAULT FALSE,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
-                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+                FOREIGN KEY (parent_id) REFERENCES comments(id) ON DELETE CASCADE
             )
         `);
+
+        // Add parent_id and is_pinned columns to comments if not exists
+        try { await db.query("ALTER TABLE comments ADD COLUMN parent_id INT DEFAULT NULL"); } catch (e) { }
+        try { await db.query("ALTER TABLE comments ADD COLUMN is_pinned BOOLEAN DEFAULT FALSE"); } catch (e) { }
+        try { await db.query("ALTER TABLE comments ADD CONSTRAINT fk_parent FOREIGN KEY (parent_id) REFERENCES comments(id) ON DELETE CASCADE"); } catch (e) { }
+
         await db.query(`
             CREATE TABLE IF NOT EXISTS likes (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -101,6 +115,44 @@ const initDb = async () => {
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
                 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
                 UNIQUE KEY unique_like (user_id, project_id)
+            )
+        `);
+
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS followers (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                follower_id INT NOT NULL,
+                following_id INT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (follower_id) REFERENCES users(id) ON DELETE CASCADE,
+                FOREIGN KEY (following_id) REFERENCES users(id) ON DELETE CASCADE,
+                UNIQUE KEY unique_follow (follower_id, following_id)
+            )
+        `);
+
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS comment_likes (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id INT NOT NULL,
+                comment_id INT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+                FOREIGN KEY (comment_id) REFERENCES comments(id) ON DELETE CASCADE,
+                UNIQUE KEY unique_comment_like (user_id, comment_id)
+            )
+        `);
+
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS notifications (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id INT NOT NULL,
+                type VARCHAR(50) NOT NULL, -- 'like', 'comment', 'reply', 'follow'
+                source_id INT NOT NULL, -- project_id, comment_id, or follower_id
+                trigger_user_id INT NOT NULL,
+                is_read BOOLEAN DEFAULT FALSE,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+                FOREIGN KEY (trigger_user_id) REFERENCES users(id) ON DELETE CASCADE
             )
         `);
         console.log('Database initialized');
@@ -230,7 +282,39 @@ app.post('/api/auth/login', async (req, res) => {
     }
 });
 
-// User Profile
+// User Profile & Settings
+app.get('/api/users/settings', authenticateToken, async (req, res) => {
+    try {
+        const [users] = await db.execute('SELECT username, nickname, avatar_url, language, is_admin FROM users WHERE id = ?', [req.user.id]);
+        if (users.length === 0) return res.status(404).send('User not found');
+        res.json(users[0]);
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
+app.put('/api/users/settings', authenticateToken, async (req, res) => {
+    const { password, language } = req.body;
+    try {
+        if (password) {
+            const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@#$%&])[a-zA-Z\d@#$%&]{8,}$/;
+            if (!passwordRegex.test(password)) {
+                return res.status(400).send('Password must be at least 8 characters and contain letters, digits, and a special character (@, #, $, %, &).');
+            }
+            const hashedPassword = await bcrypt.hash(password, 10);
+            await db.execute('UPDATE users SET password_hash = ? WHERE id = ?', [hashedPassword, req.user.id]);
+        }
+
+        if (language) {
+            await db.execute('UPDATE users SET language = ? WHERE id = ?', [language, req.user.id]);
+        }
+
+        res.json({ message: 'Settings updated' });
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
 app.put('/api/users/profile', authenticateToken, uploadAvatar.single('avatar'), async (req, res) => {
     const { nickname } = req.body;
     let avatar_url = req.body.avatar_url;
@@ -247,29 +331,44 @@ app.put('/api/users/profile', authenticateToken, uploadAvatar.single('avatar'), 
     }
 });
 
-// Projects
-app.get('/api/projects/public', async (req, res) => {
+// Public Profile & Following
+app.get('/api/users/:username', async (req, res) => {
     try {
-        const [projects] = await db.execute(
-            `SELECT p.id, p.name, p.preview_url, p.preview_urls, p.created_at, p.updated_at, u.username, u.nickname, u.avatar_url 
-             FROM projects p 
-             JOIN users u ON p.user_id = u.id 
-             WHERE p.is_public = TRUE 
-             ORDER BY p.updated_at DESC`
-        );
-        res.json(projects);
-    } catch (err) {
-        res.status(500).send(err.message);
-    }
-});
+        const [users] = await db.execute('SELECT id, username, nickname, avatar_url, created_at FROM users WHERE username = ?', [req.params.username]);
+        if (users.length === 0) return res.status(404).send('User not found');
+        const user = users[0];
 
-app.get('/api/projects', authenticateToken, async (req, res) => {
-    try {
-        const [projects] = await db.execute(
-            'SELECT id, name, preview_url, preview_urls, created_at, updated_at, is_public FROM projects WHERE user_id = ? ORDER BY updated_at DESC',
-            [req.user.id]
-        );
-        res.json(projects);
+        const [projects] = await db.execute(`
+            SELECT p.id, p.name, p.preview_url, p.preview_urls, p.created_at, p.updated_at,
+            (SELECT COUNT(*) FROM likes l WHERE l.project_id = p.id) as likes_count,
+            (SELECT COUNT(*) FROM comments c WHERE c.project_id = p.id) as comments_count
+            FROM projects p 
+            WHERE p.user_id = ? AND p.is_public = TRUE 
+            ORDER BY p.updated_at DESC
+        `, [user.id]);
+
+        const [followers] = await db.execute('SELECT COUNT(*) as count FROM followers WHERE following_id = ?', [user.id]);
+        const [following] = await db.execute('SELECT COUNT(*) as count FROM followers WHERE follower_id = ?', [user.id]);
+
+        // Check if current user is following (if authenticated)
+        let isFollowing = false;
+        const authHeader = req.headers['authorization'];
+        const token = authHeader && authHeader.split(' ')[1];
+        if (token) {
+            try {
+                const decoded = jwt.verify(token, SECRET_KEY);
+                const [check] = await db.execute('SELECT id FROM followers WHERE follower_id = ? AND following_id = ?', [decoded.id, user.id]);
+                isFollowing = check.length > 0;
+            } catch (e) { }
+        }
+
+        res.json({
+            ...user,
+            projects,
+            followersCount: followers[0].count,
+            followingCount: following[0].count,
+            isFollowing
+        });
     } catch (err) {
         res.status(500).send(err.message);
     }
@@ -470,12 +569,14 @@ app.patch('/api/projects/:id/visibility', authenticateToken, async (req, res) =>
 app.get('/api/projects/:id/comments', async (req, res) => {
     try {
         const [comments] = await db.execute(`
-            SELECT c.*, u.username, u.nickname, u.avatar_url 
+            SELECT c.*, u.username, u.nickname, u.avatar_url,
+            (SELECT COUNT(*) FROM comment_likes cl WHERE cl.comment_id = c.id) as likes_count,
+            EXISTS(SELECT 1 FROM comment_likes cl WHERE cl.comment_id = c.id AND cl.user_id = ?) as is_liked
             FROM comments c 
             JOIN users u ON c.user_id = u.id 
             WHERE c.project_id = ?
-            ORDER BY c.created_at DESC
-            `, [req.params.id]);
+            ORDER BY c.is_pinned DESC, c.created_at DESC
+            `, [req.query.userId || 0, req.params.id]);
         res.json(comments);
     } catch (err) {
         res.status(500).send(err.message);
@@ -483,13 +584,32 @@ app.get('/api/projects/:id/comments', async (req, res) => {
 });
 
 app.post('/api/projects/:id/comments', authenticateToken, async (req, res) => {
-    const { content } = req.body;
+    const { content, parent_id } = req.body;
     try {
-        await db.execute(
-            'INSERT INTO comments (project_id, user_id, content) VALUES (?, ?, ?)',
-            [req.params.id, req.user.id, content]
+        const [result] = await db.execute(
+            'INSERT INTO comments (project_id, user_id, content, parent_id) VALUES (?, ?, ?, ?)',
+            [req.params.id, req.user.id, content, parent_id || null]
         );
-        res.status(201).json({ message: 'Comment added' });
+
+        // Notification
+        const [project] = await db.execute('SELECT user_id FROM projects WHERE id = ?', [req.params.id]);
+        if (project.length > 0 && project[0].user_id !== req.user.id) {
+            await db.execute(
+                'INSERT INTO notifications (user_id, type, source_id, trigger_user_id) VALUES (?, ?, ?, ?)',
+                [project[0].user_id, 'comment', req.params.id, req.user.id]
+            );
+        }
+        if (parent_id) {
+            const [parent] = await db.execute('SELECT user_id FROM comments WHERE id = ?', [parent_id]);
+            if (parent.length > 0 && parent[0].user_id !== req.user.id) {
+                await db.execute(
+                    'INSERT INTO notifications (user_id, type, source_id, trigger_user_id) VALUES (?, ?, ?, ?)',
+                    [parent[0].user_id, 'reply', req.params.id, req.user.id]
+                );
+            }
+        }
+
+        res.status(201).json({ message: 'Comment added', id: result.insertId });
     } catch (err) {
         res.status(500).send(err.message);
     }
@@ -507,6 +627,43 @@ app.delete('/api/comments/:id', authenticateToken, async (req, res) => {
 
         await db.execute('DELETE FROM comments WHERE id = ?', [req.params.id]);
         res.json({ message: 'Comment deleted' });
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
+app.post('/api/comments/:id/pin', authenticateToken, async (req, res) => {
+    try {
+        const [comments] = await db.execute('SELECT project_id FROM comments WHERE id = ?', [req.params.id]);
+        if (comments.length === 0) return res.status(404).send('Comment not found');
+
+        const [projects] = await db.execute('SELECT user_id FROM projects WHERE id = ?', [comments[0].project_id]);
+        if (projects.length === 0 || projects[0].user_id !== req.user.id) return res.status(403).send('Unauthorized');
+
+        await db.execute('UPDATE comments SET is_pinned = NOT is_pinned WHERE id = ?', [req.params.id]);
+        res.json({ message: 'Pin status updated' });
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
+app.post('/api/comments/:id/like', authenticateToken, async (req, res) => {
+    try {
+        const [existing] = await db.execute(
+            'SELECT id FROM comment_likes WHERE user_id = ? AND comment_id = ?',
+            [req.user.id, req.params.id]
+        );
+
+        if (existing.length > 0) {
+            await db.execute('DELETE FROM comment_likes WHERE id = ?', [existing[0].id]);
+            res.json({ liked: false });
+        } else {
+            await db.execute(
+                'INSERT INTO comment_likes (user_id, comment_id) VALUES (?, ?)',
+                [req.user.id, req.params.id]
+            );
+            res.json({ liked: true });
+        }
     } catch (err) {
         res.status(500).send(err.message);
     }

@@ -1,11 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import API_URL from '../config';
 
-function LikeButton({ projectId, initialLiked = false }) {
+function LikeButton({ projectId, initialLiked = false, initialCount = 0 }) {
     const [liked, setLiked] = useState(initialLiked);
+    const [count, setCount] = useState(initialCount);
     const [loading, setLoading] = useState(false);
 
     if (!projectId) return null;
+
+    useEffect(() => {
+        // If initialLiked/Count changes from parent (e.g. refresh), update state
+        setLiked(initialLiked);
+        setCount(initialCount);
+    }, [initialLiked, initialCount]);
 
     useEffect(() => {
         const checkLikeStatus = async () => {
@@ -19,6 +26,7 @@ function LikeButton({ projectId, initialLiked = false }) {
                 if (res.ok) {
                     const data = await res.json();
                     setLiked(data.liked);
+                    // Note: We don't fetch count here separately usually, assuming parent passed correct initialCount
                 }
             } catch (err) {
                 console.error('Error checking like status:', err);
@@ -39,7 +47,9 @@ function LikeButton({ projectId, initialLiked = false }) {
 
         // Optimistic update
         const previousLiked = liked;
+        const previousCount = count;
         setLiked(!liked);
+        setCount(liked ? count - 1 : count + 1);
         setLoading(true);
 
         try {
@@ -54,12 +64,13 @@ function LikeButton({ projectId, initialLiked = false }) {
             }
 
             const data = await res.json();
-            // Ensure state matches server (though it should be the same as our optimistic guess)
             setLiked(data.liked);
+            // We could update count from server if it returned it, but for now rely on optimistic
         } catch (err) {
             console.error('Error toggling like:', err);
             // Revert on error
             setLiked(previousLiked);
+            setCount(previousCount);
             alert(`Failed to update like status: ${err.message}`);
         } finally {
             setLoading(false);
@@ -73,22 +84,24 @@ function LikeButton({ projectId, initialLiked = false }) {
                 background: 'none',
                 border: 'none',
                 cursor: 'pointer',
-                padding: '10px',
+                padding: '5px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                gap: '5px',
                 transition: 'transform 0.2s',
                 transform: liked ? 'scale(1.1)' : 'scale(1)'
             }}
             title={liked ? "Unlike" : "Like"}
         >
             <span style={{
-                fontSize: '24px',
+                fontSize: '20px',
                 color: liked ? '#e91e63' : '#ccc',
                 filter: liked ? 'drop-shadow(0 0 2px #e91e63)' : 'none'
             }}>
                 {liked ? '❤️' : '🤍'}
             </span>
+            <span style={{ color: '#ccc', fontSize: '0.9em' }}>{count}</span>
         </button>
     );
 }
