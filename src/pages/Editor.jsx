@@ -700,28 +700,5 @@ function Editor() {
         </div>
     );
 }
-id = {`preview-upload-${index}`}
-style = {{ display: 'none' }}
-accept = "image/*"
-onChange = {(e) => handlePreviewUpload(index, e.target.files[0])}
-            />
-        </div >
-    ))
-}
-                                    </div >
-    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '10px' }}>
-        Drag & drop images or click to upload. First slot is the cover.
-    </p>
-                                </section >
-                            </>
-                        ) : (
-    <CommentsSection projectId={id} projectOwnerId={projectOwnerId} />
-)}
-                    </div >
-                </div >
-            </div >
-        </div >
-    );
-}
 
 export default Editor;
