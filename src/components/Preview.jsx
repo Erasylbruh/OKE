@@ -133,7 +133,8 @@ function Preview({ lyrics, styles, resetTrigger, audioUrl, backgroundImageUrl })
                         alignItems: 'center',
                         justifyContent: 'center',
                         background: backgroundImageUrl ? `url(${backgroundImageUrl})` : 'transparent',
-                        backgroundSize: 'cover',
+                        backgroundSize: 'contain',
+                        backgroundRepeat: 'no-repeat',
                         backgroundPosition: 'center',
                         border: backgroundImageUrl ? 'none' : '2px solid white',
                         color: 'white',
@@ -317,7 +318,7 @@ function Preview({ lyrics, styles, resetTrigger, audioUrl, backgroundImageUrl })
             {styles.headerText && (
                 <div style={{
                     position: 'absolute',
-                    top: '150px', // Below player controls
+                    top: '120px', // Below player controls
                     left: '40px', // Aligned with lyrics padding
                     textAlign: 'left',
                     fontSize: '18px',
