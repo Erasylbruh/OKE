@@ -12,7 +12,7 @@ import '../App.css';
 function Editor() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const location = useLocation(); // Add useLocation hook
+    const location = useLocation();
     const [lyrics, setLyrics] = useState([]);
     const [styles, setStyles] = useState({
         fontSize: 24,
@@ -53,10 +53,8 @@ function Editor() {
                     // Check ownership
                     if (token) {
                         const user = JSON.parse(localStorage.getItem('user') || '{}');
-                        // Ensure strict type comparison handles string/number differences
                         const isUserOwner = Number(user.id) === Number(project.user_id);
 
-                        // If coming from 'main' (For You page), force read-only mode even for owners
                         if (location.state && location.state.from === 'main') {
                             setIsOwner(false);
                         } else {
@@ -124,7 +122,6 @@ function Editor() {
             const newLyrics = [...prev];
             newLyrics[index] = { ...newLyrics[index], [field]: value };
             if (field === 'end' && index < newLyrics.length - 1) {
-                // Immutable update for the next line
                 newLyrics[index + 1] = { ...newLyrics[index + 1], start: value };
             }
             return newLyrics;
@@ -153,7 +150,6 @@ function Editor() {
             });
 
             if (res.ok) {
-                // Optional: show a small toast instead of alert
                 const btn = document.getElementById('save-btn');
                 if (btn) {
                     const originalText = btn.innerText;
@@ -207,6 +203,62 @@ function Editor() {
         }
     };
 
+    const handleDeletePreview = async (slot) => {
+        if (!confirm('Delete this preview image?')) return;
+        const token = localStorage.getItem('token');
+        try {
+            const res = await fetch(`${API_URL}/api/projects/${id}/preview/${slot}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                const newUrls = data.preview_urls || [];
+                while (newUrls.length < 3) newUrls.push(null);
+                setPreviewUrls(newUrls);
+            } else {
+                alert('Failed to delete preview');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Error deleting preview');
+        }
+    };
+
+    const handleSetMainPreview = async (slot) => {
+        const token = localStorage.getItem('token');
+        try {
+            const res = await fetch(`${API_URL}/api/projects/${id}/preview/main`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ slot })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                const newUrls = data.preview_urls || [];
+                while (newUrls.length < 3) newUrls.push(null);
+                setPreviewUrls(newUrls);
+            } else {
+                alert('Failed to update main preview');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Error updating main preview');
+        }
+    };
+
+    const handleSlotDrop = (e, slot) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) {
+            handlePreviewUpload(slot, file);
+        }
+    };
+
     return (
         <div className="editor-container">
             <div className="editor-panel" style={{ flex: 1, overflowY: 'auto', paddingRight: '10px' }}>
@@ -250,8 +302,6 @@ function Editor() {
                     </div>
                 </div>
 
-
-
                 {isOwner ? (
                     <>
                         <section>
@@ -275,7 +325,12 @@ function Editor() {
                                     <h2>4. Preview Gallery</h2>
                                     <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '10px' }}>
                                         {previewUrls.map((url, index) => (
-                                            <div key={index} style={{ position: 'relative', width: '100px', height: '100px', flexShrink: 0 }}>
+                                            <div
+                                                key={index}
+                                                style={{ position: 'relative', width: '100px', height: '100px', flexShrink: 0 }}
+                                                onDragOver={(e) => e.preventDefault()}
+                                                onDrop={(e) => handleSlotDrop(e, index)}
+                                            >
                                                 <div
                                                     onClick={() => document.getElementById(`preview-upload-${index}`).click()}
                                                     style={{
@@ -285,13 +340,52 @@ function Editor() {
                                                         backgroundColor: '#333',
                                                         cursor: 'pointer',
                                                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                        border: '2px dashed #555'
+                                                        border: index === 0 ? '2px solid #1db954' : '2px dashed #555',
+                                                        position: 'relative'
                                                     }}
                                                 >
                                                     {url ? (
-                                                        <img src={url} alt={`Preview ${index + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                        <>
+                                                            <img src={url} alt={`Preview ${index + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                            <button
+                                                                onClick={(e) => { e.stopPropagation(); handleDeletePreview(index); }}
+                                                                style={{
+                                                                    position: 'absolute', top: '2px', right: '2px',
+                                                                    background: 'rgba(0,0,0,0.7)', color: 'white',
+                                                                    border: 'none', borderRadius: '50%',
+                                                                    width: '20px', height: '20px',
+                                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                    cursor: 'pointer', fontSize: '12px'
+                                                                }}
+                                                            >
+                                                                ✕
+                                                            </button>
+                                                            {index !== 0 && (
+                                                                <button
+                                                                    onClick={(e) => { e.stopPropagation(); handleSetMainPreview(index); }}
+                                                                    style={{
+                                                                        position: 'absolute', bottom: '2px', right: '2px',
+                                                                        background: 'rgba(0,0,0,0.7)', color: '#1db954',
+                                                                        border: 'none', borderRadius: '4px',
+                                                                        padding: '2px 4px', fontSize: '10px',
+                                                                        cursor: 'pointer'
+                                                                    }}
+                                                                >
+                                                                    ★
+                                                                </button>
+                                                            )}
+                                                        </>
                                                     ) : (
                                                         <span style={{ fontSize: '2em', color: '#555' }}>+</span>
+                                                    )}
+                                                    {index === 0 && (
+                                                        <div style={{
+                                                            position: 'absolute', bottom: '0', left: '0', right: '0',
+                                                            background: 'rgba(29, 185, 84, 0.8)', color: 'white',
+                                                            fontSize: '10px', textAlign: 'center', padding: '2px'
+                                                        }}>
+                                                            Main
+                                                        </div>
                                                     )}
                                                 </div>
                                                 <input

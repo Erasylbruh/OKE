@@ -312,6 +312,73 @@ app.post('/api/projects/:id/preview', authenticateToken, uploadPreview.single('p
     }
 });
 
+app.delete('/api/projects/:id/preview/:slot', authenticateToken, async (req, res) => {
+    const slot = parseInt(req.params.slot);
+    if (isNaN(slot) || slot < 0 || slot > 2) return res.status(400).send('Invalid slot');
+
+    try {
+        const [projects] = await db.execute(
+            'SELECT preview_urls FROM projects WHERE id = ? AND user_id = ?',
+            [req.params.id, req.user.id]
+        );
+
+        if (projects.length === 0) return res.status(404).send('Project not found or unauthorized');
+
+        let previewUrls = projects[0].preview_urls || [];
+        if (!Array.isArray(previewUrls)) previewUrls = [];
+
+        // Remove the item at the slot (set to null)
+        previewUrls[slot] = null;
+
+        // Update DB
+        // Also update preview_url (legacy) to the first non-null image or null
+        const firstImage = previewUrls.find(url => url !== null) || null;
+
+        await db.execute(
+            'UPDATE projects SET preview_urls = ?, preview_url = ? WHERE id = ? AND user_id = ?',
+            [JSON.stringify(previewUrls), firstImage, req.params.id, req.user.id]
+        );
+
+        res.json({ message: 'Preview deleted', preview_urls: previewUrls });
+    } catch (err) {
+        console.error('Preview delete error:', err);
+        res.status(500).send(err.message);
+    }
+});
+
+app.put('/api/projects/:id/preview/main', authenticateToken, async (req, res) => {
+    const slot = parseInt(req.body.slot);
+    if (isNaN(slot) || slot < 0 || slot > 2) return res.status(400).send('Invalid slot');
+
+    try {
+        const [projects] = await db.execute(
+            'SELECT preview_urls FROM projects WHERE id = ? AND user_id = ?',
+            [req.params.id, req.user.id]
+        );
+
+        if (projects.length === 0) return res.status(404).send('Project not found or unauthorized');
+
+        let previewUrls = projects[0].preview_urls || [];
+        if (!Array.isArray(previewUrls)) previewUrls = [];
+
+        // Swap slot with 0
+        const temp = previewUrls[0];
+        previewUrls[0] = previewUrls[slot];
+        previewUrls[slot] = temp;
+
+        // Update DB
+        await db.execute(
+            'UPDATE projects SET preview_urls = ?, preview_url = ? WHERE id = ? AND user_id = ?',
+            [JSON.stringify(previewUrls), previewUrls[0], req.params.id, req.user.id]
+        );
+
+        res.json({ message: 'Main preview updated', preview_urls: previewUrls });
+    } catch (err) {
+        console.error('Main preview update error:', err);
+        res.status(500).send(err.message);
+    }
+});
+
 app.get('/api/projects/:id', async (req, res) => {
     try {
         const authHeader = req.headers['authorization'];
