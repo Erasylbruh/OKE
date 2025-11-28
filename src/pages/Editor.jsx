@@ -33,6 +33,7 @@ function Editor() {
     const [isOwner, setIsOwner] = useState(true);
     const [projectOwnerId, setProjectOwnerId] = useState(null);
     const [audioUrl, setAudioUrl] = useState(null);
+    const [previewUrls, setPreviewUrls] = useState([null, null, null]);
 
     // Load project
     useEffect(() => {
