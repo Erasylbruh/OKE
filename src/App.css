@@ -132,13 +132,17 @@
     padding: 1rem !important;
   }
 
-  .dashboard-header {
+  .dashboard-header,
+  .admin-header,
+  .foryou-header {
     flex-direction: column;
     align-items: flex-start !important;
     gap: 15px;
   }
 
-  .dashboard-header>div {
+  .dashboard-header>div,
+  .admin-header>button,
+  .foryou-header>button {
     width: 100%;
     justify-content: space-between;
   }

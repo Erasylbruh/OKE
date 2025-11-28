@@ -183,7 +183,7 @@ function Dashboard() {
             )}
 
             {/* Profile Section */}
-            <div className="profile-section" style={{ backgroundColor: '#282828', padding: '20px', borderRadius: '8px', marginBottom: '30px', display: 'flex', alignItems: 'center', gap: '20px' }}>
+            <div className="profile-section" style={{ backgroundColor: '#282828', padding: '20px', borderRadius: '8px', marginBottom: '30px', display: 'flex', alignItems: 'center', gap: '20px', minHeight: '124px' }}>
                 <div
                     style={{
                         width: '80px',

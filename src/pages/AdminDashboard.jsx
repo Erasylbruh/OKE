@@ -116,8 +116,8 @@ function AdminDashboard() {
     };
 
     return (
-        <div style={{ padding: '20px', maxWidth: '1000px', margin: '0 auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <div style={{ padding: '20px', maxWidth: '1000px', margin: '0 auto', minHeight: '80vh' }}>
+            <div className="admin-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                 <h1>Admin Dashboard</h1>
                 <button onClick={() => navigate('/dashboard')}>Back to App</button>
             </div>
@@ -150,7 +150,7 @@ function AdminDashboard() {
                 placeholder={`Search ${activeTab}...`}
                 value={search}
                 onChange={handleSearch}
-                style={{ width: '100%', padding: '10px', marginBottom: '20px', borderRadius: '4px', border: '1px solid #333', backgroundColor: '#282828', color: 'white' }}
+                style={{ width: '100%', maxWidth: '1000px', height: '40px', padding: '10px', marginBottom: '20px', borderRadius: '4px', border: '1px solid #333', backgroundColor: '#282828', color: 'white', fontSize: '16px' }}
             />
 
             {activeTab === 'users' ? (

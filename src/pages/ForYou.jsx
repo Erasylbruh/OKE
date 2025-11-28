@@ -24,8 +24,8 @@ function ForYou() {
     }, []);
 
     return (
-        <div style={{ padding: '20px', maxWidth: '1000px', margin: '0 auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <div style={{ padding: '20px', maxWidth: '1000px', margin: '0 auto', minHeight: '80vh' }}>
+            <div className="foryou-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                 <h1>Main</h1>
                 {localStorage.getItem('token') ? (
                     <button onClick={() => navigate('/dashboard')}>My Dashboard</button>
