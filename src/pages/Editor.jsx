@@ -175,8 +175,48 @@ function Editor() {
         }
     };
 
+    const handleDragOver = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+    };
+
+    const handleDrop = async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (!isOwner) return;
+
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) {
+            const formData = new FormData();
+            formData.append('preview', file);
+            const token = localStorage.getItem('token');
+
+            try {
+                const res = await fetch(`${API_URL}/api/projects/${id}/preview`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData
+                });
+
+                if (res.ok) {
+                    alert('Project preview updated!');
+                } else {
+                    alert('Failed to upload preview');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Error uploading preview');
+            }
+        }
+    };
+
     return (
-        <div className="editor-container">
+        <div
+            className="editor-container"
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+        >
             <div className="editor-panel" style={{ flex: 1, overflowY: 'auto', paddingRight: '10px' }}>
                 <div className="editor-header" style={{ padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#121212', borderBottom: '1px solid #282828' }}>
                     <button onClick={handleBack} style={{ backgroundColor: 'transparent', border: '1px solid #555' }}>&larr; Back</button>
