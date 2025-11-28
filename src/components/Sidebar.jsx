@@ -15,57 +15,75 @@ function Sidebar() {
     };
 
     return (
-        <div className="sidebar">
-            <div className="sidebar-header">
-                <h2 style={{ margin: 0, color: 'var(--primary)', fontFamily: 'Quicksand, sans-serif', fontSize: '7.5rem', lineHeight: 1 }}>QO</h2>
+        <>
+            <div className="sidebar">
+                <div className="sidebar-header">
+                    <h2 style={{ margin: 0, color: 'var(--primary)', fontFamily: 'Quicksand, sans-serif', fontSize: '7.5rem', lineHeight: 1 }}>QO</h2>
+                </div>
+
+                <nav className="sidebar-nav">
+                    <NavLink to="/" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+                        {t('main') || 'Main'}
+                    </NavLink>
+
+                    <NavLink to="/dashboard" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+                        {t('my_dashboard')}
+                    </NavLink>
+
+                    <NavLink to="/following" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+                        {t('my_following') || 'My Following'}
+                    </NavLink>
+
+                    <NavLink to={`/user/${user.username}`} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+                        {t('profile') || 'Profile'}
+                    </NavLink>
+
+                    <NavLink to="/settings" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+                        {t('settings')}
+                    </NavLink>
+
+                    <NavLink to="/liked-projects" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+                        {t('liked_projects')}
+                    </NavLink>
+                </nav>
+
+                <div className="sidebar-footer">
+                    {isAdmin && (
+                        <NavLink
+                            to="/admin"
+                            className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}
+                            style={{ color: '#ff4444', marginBottom: '10px', borderTop: '1px solid #333', paddingTop: '10px' }}
+                        >
+                            {t('admin_dashboard')}
+                        </NavLink>
+                    )}
+                    <button onClick={handleLogout} className="logout-btn">
+                        {t('logout')}
+                    </button>
+                </div>
             </div>
 
-            <nav className="sidebar-nav">
-                <NavLink to="/" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-                    {t('main') || 'Main'}
+            {/* Mobile Bottom Navigation */}
+            <div className="bottom-nav">
+                <NavLink to="/" className={({ isActive }) => isActive ? 'bottom-nav-item active' : 'bottom-nav-item'}>
+                    🏠
                 </NavLink>
-
-                <NavLink to="/dashboard" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-                    {t('my_dashboard')}
+                <NavLink to="/dashboard" className={({ isActive }) => isActive ? 'bottom-nav-item active' : 'bottom-nav-item'}>
+                    📊
                 </NavLink>
-
-                <NavLink to="/following" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-                    {t('my_following') || 'My Following'}
+                <NavLink to="/following" className={({ isActive }) => isActive ? 'bottom-nav-item active' : 'bottom-nav-item'}>
+                    👥
                 </NavLink>
-
-                <NavLink to={`/user/${user.username}`} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-                    {t('profile') || 'Profile'}
+                <NavLink to={`/user/${user.username}`} className={({ isActive }) => isActive ? 'bottom-nav-item active' : 'bottom-nav-item'}>
+                    👤
                 </NavLink>
-
-                <NavLink to="/settings" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-                    {t('settings')}
-                </NavLink>
-
-                <NavLink to="/liked-projects" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-                    {t('liked_projects')}
-                </NavLink>
-            </nav>
-
-            <div className="sidebar-footer">
-                {isAdmin && (
-                    <NavLink
-                        to="/admin"
-                        className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}
-                        style={{ color: '#ff4444', marginBottom: '10px', borderTop: '1px solid #333', paddingTop: '10px' }}
-                    >
-                        {t('admin_dashboard')}
-                    </NavLink>
-                )}
-                <button onClick={handleLogout} className="logout-btn">
-                    {t('logout')}
-                </button>
             </div>
 
             <style>{`
                 .sidebar {
                     width: var(--sidebar-width);
                     height: 100vh;
-                    background-color: #181818; /* Slightly lighter than body */
+                    background-color: #181818;
                     border-right: 1px solid var(--border-color);
                     position: fixed;
                     top: 0;
@@ -167,23 +185,7 @@ function Sidebar() {
                     }
                 }
             `}</style>
-
-            {/* Mobile Bottom Navigation */}
-            <div className="bottom-nav">
-                <NavLink to="/" className={({ isActive }) => isActive ? 'bottom-nav-item active' : 'bottom-nav-item'}>
-                    🏠
-                </NavLink>
-                <NavLink to="/dashboard" className={({ isActive }) => isActive ? 'bottom-nav-item active' : 'bottom-nav-item'}>
-                    📊
-                </NavLink>
-                <NavLink to="/following" className={({ isActive }) => isActive ? 'bottom-nav-item active' : 'bottom-nav-item'}>
-                    👥
-                </NavLink>
-                <NavLink to={`/user/${user.username}`} className={({ isActive }) => isActive ? 'bottom-nav-item active' : 'bottom-nav-item'}>
-                    👤
-                </NavLink>
-            </div>
-        </div>
+        </>
     );
 }
 

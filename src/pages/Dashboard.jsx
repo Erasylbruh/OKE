@@ -229,24 +229,7 @@ function Dashboard() {
             {/* FAB */}
             <button
                 onClick={() => setShowCreateModal(true)}
-                style={{
-                    position: 'fixed',
-                    bottom: '40px',
-                    right: '40px',
-                    width: '60px',
-                    height: '60px',
-                    borderRadius: '50%',
-                    backgroundColor: 'var(--primary)',
-                    color: '#fff',
-                    border: 'none',
-                    fontSize: '30px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
-                    cursor: 'pointer',
-                    zIndex: 100
-                }}
+                className="fab"
             >
                 +
             </button>
