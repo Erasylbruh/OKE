@@ -199,7 +199,7 @@ function Preview({ lyrics, styles, resetTrigger, audioUrl, backgroundImageUrl })
                             fontSize: '14px',
                             fontWeight: 'bold',
                             color: 'white',
-                            marginBottom: '5px',
+                            marginBottom: '2px',
                             whiteSpace: 'nowrap',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis'
@@ -310,24 +310,7 @@ function Preview({ lyrics, styles, resetTrigger, audioUrl, backgroundImageUrl })
                 </div>
             </div>
 
-            {/* Static Header Text */}
-            {styles.headerText && (
-                <div style={{
-                    position: 'absolute',
-                    top: '120px', // Below player controls
-                    left: '40px', // Aligned with lyrics padding
-                    textAlign: 'left',
-                    fontSize: '18px',
-                    fontWeight: 'bold',
-                    zIndex: 5,
-                    pointerEvents: 'none',
-                    color: styles.color,
-                    opacity: 1,
-                    textShadow: '0 2px 4px rgba(0,0,0,0.8)'
-                }}>
-                    {styles.headerText}
-                </div>
-            )}
+            {/* Static Header Text Removed (Moved inside player controls) */}
 
             {/* Lyrics Display */}
             <div
