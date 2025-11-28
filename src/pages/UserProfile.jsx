@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import API_URL from '../config';
 import ProjectCard from '../components/ProjectCard';
+import { useLanguage } from '../context/LanguageContext';
 
 function UserProfile() {
     const { username } = useParams();
@@ -13,6 +14,7 @@ function UserProfile() {
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
     const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+    const { t } = useLanguage();
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -61,12 +63,12 @@ function UserProfile() {
     };
 
     if (loading) return <div style={{ color: 'white', padding: '20px' }}>Loading...</div>;
-    if (!user) return <div style={{ color: 'white', padding: '20px' }}>User not found</div>;
+    if (!user) return <div style={{ color: 'white', padding: '20px' }}>{t('user_not_found')}</div>;
 
     return (
         <div style={{ padding: '20px', maxWidth: '1000px', margin: '0 auto', color: 'white' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <button onClick={() => navigate(-1)} style={{ padding: '8px 16px', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>Back</button>
+                <button onClick={() => navigate(-1)} style={{ padding: '8px 16px', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>{t('back')}</button>
             </div>
 
             <div style={{ backgroundColor: '#282828', padding: '30px', borderRadius: '12px', marginBottom: '30px', display: 'flex', alignItems: 'center', gap: '30px', flexWrap: 'wrap' }}>
@@ -85,9 +87,9 @@ function UserProfile() {
                     <p style={{ color: '#888', margin: '0 0 20px 0', fontSize: '1.2em' }}>@{user.username}</p>
 
                     <div style={{ display: 'flex', gap: '20px', marginBottom: '20px' }}>
-                        <div><strong>{followersCount}</strong> Followers</div>
-                        <div><strong>{followingCount}</strong> Following</div>
-                        <div><strong>{projects.length}</strong> Projects</div>
+                        <div><strong>{followersCount}</strong> {t('followers')}</div>
+                        <div><strong>{followingCount}</strong> {t('following')}</div>
+                        <div><strong>{projects.length}</strong> {t('projects')}</div>
                     </div>
 
                     {currentUser.id !== user.id && (
@@ -104,13 +106,13 @@ function UserProfile() {
                                 fontSize: '1em'
                             }}
                         >
-                            {isFollowing ? 'Unfollow' : 'Follow'}
+                            {isFollowing ? t('unfollow') : t('follow')}
                         </button>
                     )}
                 </div>
             </div>
 
-            <h2>Public Projects</h2>
+            <h2>{t('public')} {t('projects')}</h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
                 {projects.map((project) => (
                     <ProjectCard
@@ -120,7 +122,7 @@ function UserProfile() {
                         isOwner={false}
                     />
                 ))}
-                {projects.length === 0 && <p style={{ color: '#888' }}>No public projects yet.</p>}
+                {projects.length === 0 && <p style={{ color: '#888' }}>{t('no_public_projects')}</p>}
             </div>
         </div>
     );

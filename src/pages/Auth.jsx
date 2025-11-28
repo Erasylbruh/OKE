@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API_URL from '../config';
+import { useLanguage } from '../context/LanguageContext';
 
 function Auth() {
     const [isLogin, setIsLogin] = useState(true);
@@ -8,6 +9,7 @@ function Auth() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
+    const { t } = useLanguage();
 
     // Validation States
     const hasLength = password.length >= 8;
@@ -133,13 +135,13 @@ function Auth() {
 
     return (
         <div style={containerStyle}>
-            <h2 style={{ textAlign: 'center', marginBottom: '20px', marginTop: 0 }}>{isLogin ? 'Login' : 'Register'}</h2>
+            <h2 style={{ textAlign: 'center', marginBottom: '20px', marginTop: 0 }}>{isLogin ? t('login') : t('register')}</h2>
             {error && <div style={{ color: '#ff4444', marginBottom: '10px', fontSize: '14px', textAlign: 'center' }}>{error}</div>}
 
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                 <input
                     type="text"
-                    placeholder="Username"
+                    placeholder={t('username')}
                     value={username}
                     onChange={(e) => setUsername(e.target.value.toLowerCase())}
                     required
@@ -149,7 +151,7 @@ function Auth() {
                 <div>
                     <input
                         type="password"
-                        placeholder="Password"
+                        placeholder={t('password')}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
@@ -165,19 +167,24 @@ function Auth() {
                 </div>
 
                 <button type="submit" style={{ ...buttonStyle, opacity: (!isLogin && !isPasswordValid) ? 0.5 : 1, cursor: (!isLogin && !isPasswordValid) ? 'not-allowed' : 'pointer' }} disabled={!isLogin && !isPasswordValid}>
-                    {isLogin ? 'Login' : 'Register'}
+                    {isLogin ? t('login') : t('register')}
                 </button>
             </form>
 
             <p style={{ marginTop: '15px', fontSize: '14px', textAlign: 'center', color: '#888' }}>
-                {isLogin ? "Don't have an account? " : "Already have an account? "}
+                {isLogin ? t('dont_have_account') : t('already_have_account')}{' '}
                 <span
                     onClick={() => { setIsLogin(!isLogin); setError(''); }}
                     style={{ color: '#1db954', cursor: 'pointer', textDecoration: 'underline' }}
                 >
-                    {isLogin ? 'Register' : 'Login'}
+                    {isLogin ? t('register') : t('login')}
                 </span>
             </p>
+            <div style={{ textAlign: 'center', marginTop: '10px' }}>
+                <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer' }}>
+                    Back to Main
+                </button>
+            </div>
         </div>
     );
 }

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API_URL from '../config';
 import ProjectCard from '../components/ProjectCard';
+import { useLanguage } from '../context/LanguageContext';
 
 function Dashboard() {
     const [projects, setProjects] = useState([]);
@@ -15,6 +16,7 @@ function Dashboard() {
     const [newProjectName, setNewProjectName] = useState('');
     const [isCreating, setIsCreating] = useState(false);
     const navigate = useNavigate();
+    const { t } = useLanguage();
 
     useEffect(() => {
         const fetchProjects = async () => {
@@ -164,19 +166,19 @@ function Dashboard() {
                     backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
                 }}>
                     <div className="modal-content" style={{ backgroundColor: '#282828', padding: '30px', borderRadius: '12px', width: '400px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                        <h2>Create New Project</h2>
+                        <h2>{t('create_new_project')}</h2>
                         <input
                             type="text"
-                            placeholder="Project Name"
+                            placeholder={t('project_name')}
                             value={newProjectName}
                             onChange={(e) => setNewProjectName(e.target.value)}
                             style={{ padding: '10px', fontSize: '1.1em', borderRadius: '4px', border: '1px solid #444', backgroundColor: '#121212', color: 'white' }}
                             autoFocus
                         />
                         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                            <button onClick={() => setShowCreateModal(false)} style={{ backgroundColor: 'transparent', border: '1px solid #555' }}>Cancel</button>
+                            <button onClick={() => setShowCreateModal(false)} style={{ backgroundColor: 'transparent', border: '1px solid #555' }}>{t('cancel')}</button>
                             <button onClick={handleCreateNew} disabled={isCreating} style={{ backgroundColor: '#1db954', color: 'black', opacity: isCreating ? 0.7 : 1 }}>
-                                {isCreating ? 'Creating...' : 'Create'}
+                                {isCreating ? 'Creating...' : t('create')}
                             </button>
                         </div>
                     </div>
@@ -208,7 +210,7 @@ function Dashboard() {
                     )}
                     {isEditing && (
                         <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(0,0,0,0.6)', fontSize: '0.6em', textAlign: 'center', padding: '2px' }}>
-                            Change
+                            {t('change')}
                         </div>
                     )}
                     <input
@@ -231,31 +233,31 @@ function Dashboard() {
                                 style={{ padding: '5px' }}
                             />
                             <div>
-                                <button onClick={handleUpdateProfile} style={{ marginRight: '10px', backgroundColor: '#1db954', color: 'black' }}>Save</button>
-                                <button onClick={() => { setIsEditing(false); setPreviewUrl(user.avatar_url); setSelectedFile(null); }}>Cancel</button>
+                                <button onClick={handleUpdateProfile} style={{ marginRight: '10px', backgroundColor: '#1db954', color: 'black' }}>{t('save')}</button>
+                                <button onClick={() => { setIsEditing(false); setPreviewUrl(user.avatar_url); setSelectedFile(null); }}>{t('cancel')}</button>
                             </div>
                         </div>
                     ) : (
                         <div>
                             <h2 style={{ margin: 0 }}>{user.nickname || user.username}</h2>
                             <p style={{ color: '#888', margin: '5px 0' }}>@{user.username}</p>
-                            <button onClick={() => setIsEditing(true)} style={{ fontSize: '0.8em', padding: '5px 10px' }}>Edit Profile</button>
+                            <button onClick={() => setIsEditing(true)} style={{ fontSize: '0.8em', padding: '5px 10px' }}>{t('edit_profile')}</button>
                         </div>
                     )}
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    <button onClick={() => navigate('/foryou')}>Main</button>
-                    <button onClick={() => navigate('/settings')}>Settings</button>
+                    <button onClick={() => navigate('/foryou')}>{t('main')}</button>
+                    <button onClick={() => navigate('/settings')}>{t('settings')}</button>
                     {!!user.is_admin && (
-                        <button onClick={() => navigate('/admin')} style={{ backgroundColor: '#ff4444' }}>Admin Dashboard</button>
+                        <button onClick={() => navigate('/admin')} style={{ backgroundColor: '#ff4444' }}>{t('admin_dashboard')}</button>
                     )}
-                    <button onClick={handleLogout}>Logout</button>
+                    <button onClick={handleLogout}>{t('logout')}</button>
                 </div>
             </div>
 
             <div className="dashboard-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h1>My Projects</h1>
+                <h1>{t('my_projects')}</h1>
                 <div style={{ display: 'flex', gap: '10px' }}>
                     <button
                         onClick={() => navigate('/liked-projects')}
@@ -269,7 +271,7 @@ function Dashboard() {
                             fontWeight: 'bold'
                         }}
                     >
-                        ❤️ Liked Projects
+                        ❤️ {t('liked_projects')}
                     </button>
                     <button
                         onClick={() => setShowCreateModal(true)}
@@ -283,7 +285,7 @@ function Dashboard() {
                             fontWeight: 'bold'
                         }}
                     >
-                        + New Project
+                        + {t('new_project')}
                     </button>
                 </div>
             </div>
@@ -298,7 +300,7 @@ function Dashboard() {
                         onToggleVisibility={handleToggleVisibility}
                         onDelete={(e) => {
                             e.stopPropagation();
-                            if (window.confirm('Delete this project?')) {
+                            if (window.confirm(t('delete_confirm'))) {
                                 const token = localStorage.getItem('token');
                                 fetch(`${API_URL}/api/projects/${project.id}`, {
                                     method: 'DELETE',
@@ -318,7 +320,7 @@ function Dashboard() {
                         }}
                     />
                 ))}
-                {projects.length === 0 && <p>No projects yet. Create one!</p>}
+                {projects.length === 0 && <p>{t('no_projects')}</p>}
             </div>
         </div>
     );

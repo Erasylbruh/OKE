@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API_URL from '../config';
+import { useLanguage } from '../context/LanguageContext';
 
 function Settings() {
     const [user, setUser] = useState(null);
     const [password, setPassword] = useState('');
-    const [language, setLanguage] = useState('en');
     const [message, setMessage] = useState('');
+    const { language, setLanguage, t } = useLanguage();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -21,7 +22,9 @@ function Settings() {
                 if (res.ok) {
                     const data = await res.json();
                     setUser(data);
-                    setLanguage(data.language || 'en');
+                    if (data.language) {
+                        setLanguage(data.language);
+                    }
                 } else {
                     navigate('/');
                 }
@@ -30,7 +33,7 @@ function Settings() {
             }
         };
         fetchSettings();
-    }, [navigate]);
+    }, [navigate, setLanguage]);
 
     const handleSave = async () => {
         const token = localStorage.getItem('token');
@@ -45,7 +48,7 @@ function Settings() {
             });
 
             if (res.ok) {
-                setMessage('Settings updated successfully');
+                setMessage(t('settings_updated') || 'Settings updated successfully');
                 setPassword('');
             } else {
                 const msg = await res.text();
@@ -62,30 +65,30 @@ function Settings() {
     return (
         <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto', color: 'white' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-                <h1>Settings</h1>
-                <button onClick={() => navigate('/dashboard')} style={{ padding: '8px 16px', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>Back to Dashboard</button>
+                <h1>{t('settings')}</h1>
+                <button onClick={() => navigate('/dashboard')} style={{ padding: '8px 16px', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>{t('my_dashboard')}</button>
             </div>
 
             <div style={{ backgroundColor: '#282828', padding: '20px', borderRadius: '8px', marginBottom: '20px' }}>
-                <h3>Account Info</h3>
-                <p><strong>Username:</strong> {user.username}</p>
+                <h3>{t('username')} / {t('edit_profile')}</h3>
+                <p><strong>{t('username')}:</strong> {user.username}</p>
                 <p><strong>Nickname:</strong> {user.nickname || '-'}</p>
             </div>
 
             <div style={{ backgroundColor: '#282828', padding: '20px', borderRadius: '8px', marginBottom: '20px' }}>
-                <h3>Change Password</h3>
+                <h3>{t('change_password')}</h3>
                 <input
                     type="password"
-                    placeholder="New Password"
+                    placeholder={t('new_password')}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     style={{ width: '100%', padding: '10px', marginBottom: '10px', borderRadius: '4px', border: '1px solid #444', backgroundColor: '#121212', color: 'white' }}
                 />
-                <p style={{ fontSize: '0.8em', color: '#888' }}>Leave blank to keep current password.</p>
+                <p style={{ fontSize: '0.8em', color: '#888' }}>{t('password_requirements')}</p>
             </div>
 
             <div style={{ backgroundColor: '#282828', padding: '20px', borderRadius: '8px', marginBottom: '20px' }}>
-                <h3>Language</h3>
+                <h3>{t('language')}</h3>
                 <select
                     value={language}
                     onChange={(e) => setLanguage(e.target.value)}
@@ -103,7 +106,7 @@ function Settings() {
                 onClick={handleSave}
                 style={{ width: '100%', padding: '12px', backgroundColor: '#1db954', color: 'black', border: 'none', borderRadius: '4px', fontSize: '1.1em', cursor: 'pointer', fontWeight: 'bold' }}
             >
-                Save Changes
+                {t('save')}
             </button>
         </div>
     );

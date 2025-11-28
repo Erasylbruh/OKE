@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import API_URL from '../config';
+import { useLanguage } from '../context/LanguageContext';
 
 function CommentsSection({ projectId, projectOwnerId }) {
     const [comments, setComments] = useState([]);
@@ -8,6 +9,7 @@ function CommentsSection({ projectId, projectOwnerId }) {
     const [replyContent, setReplyContent] = useState('');
     const [loading, setLoading] = useState(true);
     const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+    const { t } = useLanguage();
 
     const fetchComments = React.useCallback(async () => {
         try {
@@ -143,7 +145,7 @@ function CommentsSection({ projectId, projectOwnerId }) {
                     <span style={{ fontSize: '0.8em', color: '#666', fontWeight: 'normal' }}>
                         {new Date(comment.created_at).toLocaleDateString()}
                     </span>
-                    {comment.is_pinned && <span style={{ fontSize: '0.8em', color: '#1db954' }}>📌 Pinned by Author</span>}
+                    {comment.is_pinned && <span style={{ fontSize: '0.8em', color: '#1db954' }}>📌 {t('pinned_by_author')}</span>}
                 </div>
 
                 {/* Content */}
@@ -154,16 +156,16 @@ function CommentsSection({ projectId, projectOwnerId }) {
                     <span style={{ cursor: 'pointer', color: comment.is_liked ? '#e91e63' : '#888' }} onClick={() => handleLike(comment.id)}>
                         {comment.is_liked ? '❤️' : '🤍'} {comment.likes_count || 0}
                     </span>
-                    <span style={{ cursor: 'pointer' }} onClick={() => setReplyTo(replyTo === comment.id ? null : comment.id)}>Reply</span>
+                    <span style={{ cursor: 'pointer' }} onClick={() => setReplyTo(replyTo === comment.id ? null : comment.id)}>{t('reply')}</span>
 
                     {(Number(currentUser.id) === Number(comment.user_id) || !!currentUser.is_admin) && (
-                        <span style={{ cursor: 'pointer', color: '#ff4444' }} onClick={() => handleDelete(comment.id)}>Delete</span>
+                        <span style={{ cursor: 'pointer', color: '#ff4444' }} onClick={() => handleDelete(comment.id)}>{t('delete')}</span>
                     )}
 
                     {/* Pin Action (Owner Only) */}
                     {Number(currentUser.id) === Number(projectOwnerId) && (
                         <span style={{ cursor: 'pointer', color: '#1db954' }} onClick={() => handlePin(comment.id)}>
-                            {comment.is_pinned ? 'Unpin' : 'Pin'}
+                            {comment.is_pinned ? t('unpin') : t('pin')}
                         </span>
                     )}
                 </div>
@@ -175,12 +177,12 @@ function CommentsSection({ projectId, projectOwnerId }) {
                             type="text"
                             value={replyContent}
                             onChange={e => setReplyContent(e.target.value)}
-                            placeholder={`Reply to @${comment.username}...`}
+                            placeholder={`${t('reply')} @${comment.username}...`}
                             style={{ flex: 1, padding: '8px', borderRadius: '15px', border: 'none', backgroundColor: '#333', color: 'white', fontSize: '0.9em' }}
                             autoFocus
                         />
                         <button type="submit" style={{ padding: '5px 15px', borderRadius: '15px', border: 'none', backgroundColor: '#1db954', color: 'black', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.9em' }}>
-                            Reply
+                            {t('reply')}
                         </button>
                     </form>
                 )}
@@ -201,11 +203,11 @@ function CommentsSection({ projectId, projectOwnerId }) {
                     type="text"
                     value={newComment}
                     onChange={e => setNewComment(e.target.value)}
-                    placeholder="Write a comment..."
+                    placeholder={t('write_comment')}
                     style={{ flex: 1, padding: '10px', borderRadius: '20px', border: 'none', backgroundColor: '#444', color: 'white' }}
                 />
                 <button type="submit" style={{ padding: '10px 20px', borderRadius: '20px', border: 'none', backgroundColor: '#1db954', color: 'black', fontWeight: 'bold', cursor: 'pointer' }}>
-                    Post
+                    {t('post')}
                 </button>
             </form>
 

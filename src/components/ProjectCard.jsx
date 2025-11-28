@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import LikeButton from './LikeButton';
 import API_URL from '../config';
+import { useLanguage } from '../context/LanguageContext';
 
 const ProjectCard = ({ project, onClick, isOwner, onToggleVisibility, onDelete }) => {
     const [isHovered, setIsHovered] = useState(false);
     const titleRef = useRef(null);
     const [shouldScroll, setShouldScroll] = useState(false);
+    const { t } = useLanguage();
 
     useEffect(() => {
         if (titleRef.current) {
@@ -90,7 +92,7 @@ const ProjectCard = ({ project, onClick, isOwner, onToggleVisibility, onDelete }
                     </div>
                     {isOwner && (
                         <div style={{ marginTop: '5px', fontSize: '0.8em', color: project.is_public ? '#1db954' : '#888' }}>
-                            {project.is_public ? 'Public' : 'Private'}
+                            {project.is_public ? t('public') : t('private')}
                         </div>
                     )}
                 </div>

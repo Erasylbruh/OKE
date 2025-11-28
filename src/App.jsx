@@ -11,6 +11,8 @@ import Editor from './pages/Editor';
 import AdminLoginModal from './components/AdminLoginModal';
 import { useState, useEffect } from 'react';
 
+import { LanguageProvider } from './context/LanguageContext';
+
 function App() {
   const [showAdminLogin, setShowAdminLogin] = useState(false);
 
@@ -40,20 +42,22 @@ function App() {
   }, []);
 
   return (
-    <Router>
-      {showAdminLogin && <AdminLoginModal onClose={() => setShowAdminLogin(false)} />}
-      <Routes>
-        <Route path="/" element={<ForYou />} />
-        <Route path="/foryou" element={<ForYou />} />
-        <Route path="/auth" element={<Auth />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/user/:username" element={<UserProfile />} />
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/editor/:id?" element={<Editor />} />
-        <Route path="/liked-projects" element={<LikedProjects />} />
-      </Routes>
-    </Router>
+    <LanguageProvider>
+      <Router>
+        {showAdminLogin && <AdminLoginModal onClose={() => setShowAdminLogin(false)} />}
+        <Routes>
+          <Route path="/" element={<ForYou />} />
+          <Route path="/foryou" element={<ForYou />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/user/:username" element={<UserProfile />} />
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/editor/:id?" element={<Editor />} />
+          <Route path="/liked-projects" element={<LikedProjects />} />
+        </Routes>
+      </Router>
+    </LanguageProvider>
   );
 }
 
