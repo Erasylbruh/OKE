@@ -129,6 +129,23 @@ function Editor() {
         setAudioUrl(null);
     };
 
+    const resizeImage = (file) => {
+        return new Promise((resolve) => {
+            const img = document.createElement('img');
+            img.src = URL.createObjectURL(file);
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = 400;
+                canvas.height = 400;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, 400, 400);
+                canvas.toBlob((blob) => {
+                    resolve(new File([blob], file.name, { type: 'image/jpeg' }));
+                }, 'image/jpeg', 0.9);
+            };
+        });
+    };
+
     const handleLyricsParsed = (parsedLines) => {
         const initializedLyrics = parsedLines.map((text, index) => ({
             id: index,
@@ -200,12 +217,14 @@ function Editor() {
 
     const handlePreviewUpload = async (slot, file) => {
         if (!file) return;
-        const formData = new FormData();
-        formData.append('preview', file);
-        formData.append('slot', slot);
-        const token = localStorage.getItem('token');
 
         try {
+            const resizedFile = await resizeImage(file);
+            const formData = new FormData();
+            formData.append('preview', resizedFile);
+            formData.append('slot', slot);
+            const token = localStorage.getItem('token');
+
             const res = await fetch(`${API_URL}/api/projects/${id}/preview`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` },
