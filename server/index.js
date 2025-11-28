@@ -676,6 +676,18 @@ app.post('/api/projects', authenticateToken, async (req, res) => {
             'INSERT INTO projects (user_id, name, data, is_public) VALUES (?, ?, ?, ?)',
             [req.user.id, name, JSON.stringify(data), is_public || false]
         );
+
+        if (is_public) {
+            // Notify followers
+            const [followers] = await db.execute('SELECT follower_id FROM followers WHERE following_id = ?', [req.user.id]);
+            for (const follower of followers) {
+                await db.execute(
+                    'INSERT INTO notifications (user_id, type, source_id, trigger_user_id) VALUES (?, ?, ?, ?)',
+                    [follower.follower_id, 'new_post', result.insertId, req.user.id]
+                );
+            }
+        }
+
         res.status(201).json({ id: result.insertId, message: 'Project saved' });
     } catch (err) {
         res.status(500).send(err.message);
@@ -824,6 +836,16 @@ app.post('/api/comments/:id/like', authenticateToken, async (req, res) => {
                 'INSERT INTO comment_likes (user_id, comment_id) VALUES (?, ?)',
                 [req.user.id, req.params.id]
             );
+
+            // Notification
+            const [comment] = await db.execute('SELECT user_id, project_id FROM comments WHERE id = ?', [req.params.id]);
+            if (comment.length > 0 && comment[0].user_id !== req.user.id) {
+                await db.execute(
+                    'INSERT INTO notifications (user_id, type, source_id, trigger_user_id) VALUES (?, ?, ?, ?)',
+                    [comment[0].user_id, 'comment_like', comment[0].project_id, req.user.id]
+                );
+            }
+
             res.json({ liked: true });
         }
     } catch (err) {
@@ -848,6 +870,16 @@ app.post('/api/projects/:id/like', authenticateToken, async (req, res) => {
                 'INSERT INTO likes (user_id, project_id) VALUES (?, ?)',
                 [req.user.id, req.params.id]
             );
+
+            // Notification
+            const [project] = await db.execute('SELECT user_id FROM projects WHERE id = ?', [req.params.id]);
+            if (project.length > 0 && project[0].user_id !== req.user.id) {
+                await db.execute(
+                    'INSERT INTO notifications (user_id, type, source_id, trigger_user_id) VALUES (?, ?, ?, ?)',
+                    [project[0].user_id, 'like', req.params.id, req.user.id]
+                );
+            }
+
             res.json({ liked: true });
         }
     } catch (err) {
