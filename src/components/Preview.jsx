@@ -179,6 +179,22 @@ function Preview({ lyrics, styles, resetTrigger, audioUrl, backgroundImageUrl })
                         }} />
                     )}
 
+                    {/* Vinyl Grooves Effect (Subtle overlay) */}
+                    {backgroundImageUrl && (
+                        <div style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: '100%',
+                            background: 'repeating-radial-gradient(#000 0, #000 2px, transparent 3px, transparent 4px)',
+                            opacity: 0.1,
+                            borderRadius: '50%',
+                            zIndex: 1,
+                            pointerEvents: 'none'
+                        }} />
+                    )}
+
                     {isPlaying ? (
                         <div style={{ width: '12px', height: '12px', backgroundColor: 'white', borderRadius: '2px', zIndex: 2 }} />
                     ) : (
