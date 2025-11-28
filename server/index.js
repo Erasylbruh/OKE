@@ -358,6 +358,23 @@ app.put('/api/projects/:id', authenticateToken, async (req, res) => {
     }
 });
 
+app.delete('/api/projects/:id', authenticateToken, async (req, res) => {
+    try {
+        const [projects] = await db.execute('SELECT user_id FROM projects WHERE id = ?', [req.params.id]);
+        if (projects.length === 0) return res.status(404).send('Project not found');
+
+        const project = projects[0];
+        if (project.user_id !== req.user.id && !req.user.is_admin) {
+            return res.status(403).send('Unauthorized');
+        }
+
+        await db.execute('DELETE FROM projects WHERE id = ?', [req.params.id]);
+        res.json({ message: 'Project deleted' });
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
 app.patch('/api/projects/:id/visibility', authenticateToken, async (req, res) => {
     const { is_public } = req.body;
     try {

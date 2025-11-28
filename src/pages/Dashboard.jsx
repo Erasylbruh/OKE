@@ -343,12 +343,16 @@ function Dashboard() {
                                         fetch(`${API_URL}/api/projects/${project.id}`, {
                                             method: 'DELETE',
                                             headers: { 'Authorization': `Bearer ${token}` }
-                                        }).then(res => {
+                                        }).then(async res => {
                                             if (res.ok) {
                                                 setProjects(projects.filter(p => p.id !== project.id));
                                             } else {
-                                                alert('Failed to delete project');
+                                                const msg = await res.text();
+                                                alert(`Failed to delete project: ${msg}`);
                                             }
+                                        }).catch(err => {
+                                            console.error(err);
+                                            alert('Error deleting project');
                                         });
                                     }
                                 }}
