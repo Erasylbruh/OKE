@@ -69,9 +69,9 @@ function ForYou() {
                                 color: 'white',
                                 border: '2px solid #333'
                             }}>
-                                {project.preview_url ? (
+                                {project.preview_urls?.[0] || project.preview_url ? (
                                     <img
-                                        src={project.preview_url}
+                                        src={project.preview_urls?.[0] || project.preview_url}
                                         alt="preview"
                                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                     />

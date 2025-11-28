@@ -60,13 +60,21 @@ const initDb = async () => {
                 data JSON,
                 is_public BOOLEAN DEFAULT FALSE,
                 preview_url VARCHAR(255),
+                preview_urls JSON,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
             )
         `);
 
-        // Add preview_url column if it doesn't exist (for existing tables)
+        // Add preview_urls column if it doesn't exist
+        try {
+            await db.query('ALTER TABLE projects ADD COLUMN preview_urls JSON');
+        } catch (e) {
+            // Ignore error if column already exists
+        }
+
+        // Add preview_url column if it doesn't exist (legacy support)
         try {
             await db.query('ALTER TABLE projects ADD COLUMN preview_url VARCHAR(255)');
         } catch (e) {
@@ -126,14 +134,12 @@ const authenticateToken = (req, res, next) => {
             return res.sendStatus(403);
         }
         req.user = user;
-        // console.log('User authenticated:', user);
         next();
     });
 };
 
 const authenticateAdmin = (req, res, next) => {
     authenticateToken(req, res, () => {
-        // console.log('Checking admin status for:', req.user);
         if (req.user && (req.user.is_admin || req.user.is_admin === 1)) {
             next();
         } else {
@@ -142,56 +148,6 @@ const authenticateAdmin = (req, res, next) => {
         }
     });
 };
-
-// ... (skip to routes)
-
-app.delete('/api/comments/:id', authenticateToken, async (req, res) => {
-    try {
-        console.log(`Attempting to delete comment ${req.params.id} by user ${req.user.id}`);
-        const [comments] = await db.execute('SELECT user_id FROM comments WHERE id = ?', [req.params.id]);
-        if (comments.length === 0) return res.status(404).send('Comment not found');
-
-        const comment = comments[0];
-        console.log(`Comment owner: ${comment.user_id}, Request user: ${req.user.id}, Is Admin: ${req.user.is_admin}`);
-
-        // Use loose equality or Number() for ID check
-        if (Number(comment.user_id) !== Number(req.user.id) && !req.user.is_admin) {
-            console.log('Unauthorized comment delete attempt');
-            return res.status(403).send('Unauthorized');
-        }
-
-        await db.execute('DELETE FROM comments WHERE id = ?', [req.params.id]);
-        res.json({ message: 'Comment deleted' });
-    } catch (err) {
-        console.error('Delete comment error:', err);
-        res.status(500).send(err.message);
-    }
-});
-
-app.get('/api/admin/projects', authenticateAdmin, async (req, res) => {
-    const { search } = req.query;
-    try {
-        console.log('Fetching admin projects, search:', search);
-        let query = `
-            SELECT p.id, p.name, p.created_at, u.username 
-            FROM projects p 
-            JOIN users u ON p.user_id = u.id
-        `;
-        let params = [];
-        if (search) {
-            query += ' WHERE p.name LIKE ? OR u.username LIKE ?';
-            params = [`%${search}%`, `%${search}%`];
-        }
-        query += ' ORDER BY p.created_at DESC';
-
-        const [projects] = await db.execute(query, params);
-        console.log(`Found ${projects.length} projects`);
-        res.json(projects);
-    } catch (err) {
-        console.error('Admin projects error:', err);
-        res.status(500).send(err.message);
-    }
-});
 
 // Cloudinary Config
 cloudinary.config({
@@ -213,12 +169,13 @@ const avatarStorage = new CloudinaryStorage({
 });
 const uploadAvatar = multer({ storage: avatarStorage });
 
-// Preview Storage (Original or optimized)
+// Preview Storage (Resized to 400x400)
 const previewStorage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
         folder: 'previews',
-        allowed_formats: ['jpg', 'png', 'jpeg', 'gif']
+        allowed_formats: ['jpg', 'png', 'jpeg', 'gif'],
+        transformation: [{ width: 400, height: 400, crop: 'fill' }]
     }
 });
 const uploadPreview = multer({ storage: previewStorage });
@@ -279,18 +236,13 @@ app.put('/api/users/profile', authenticateToken, uploadAvatar.single('avatar'), 
     let avatar_url = req.body.avatar_url;
 
     if (req.file) {
-        console.log('File uploaded to Cloudinary:', req.file);
         avatar_url = req.file.path;
-    } else {
-        console.log('No file uploaded, using existing URL:', avatar_url);
     }
 
     try {
-        console.log('Updating profile for user:', req.user.id, 'Nickname:', nickname, 'Avatar:', avatar_url);
         await db.execute('UPDATE users SET nickname = ?, avatar_url = ? WHERE id = ?', [nickname, avatar_url, req.user.id]);
         res.json({ message: 'Profile updated', avatar_url });
     } catch (err) {
-        console.error('Profile update error:', err);
         res.status(500).send(err.message);
     }
 });
@@ -299,7 +251,7 @@ app.put('/api/users/profile', authenticateToken, uploadAvatar.single('avatar'), 
 app.get('/api/projects/public', async (req, res) => {
     try {
         const [projects] = await db.execute(
-            `SELECT p.id, p.name, p.preview_url, p.created_at, p.updated_at, u.username, u.nickname, u.avatar_url 
+            `SELECT p.id, p.name, p.preview_url, p.preview_urls, p.created_at, p.updated_at, u.username, u.nickname, u.avatar_url 
              FROM projects p 
              JOIN users u ON p.user_id = u.id 
              WHERE p.is_public = TRUE 
@@ -314,7 +266,7 @@ app.get('/api/projects/public', async (req, res) => {
 app.get('/api/projects', authenticateToken, async (req, res) => {
     try {
         const [projects] = await db.execute(
-            'SELECT id, name, preview_url, created_at, updated_at, is_public FROM projects WHERE user_id = ? ORDER BY updated_at DESC',
+            'SELECT id, name, preview_url, preview_urls, created_at, updated_at, is_public FROM projects WHERE user_id = ? ORDER BY updated_at DESC',
             [req.user.id]
         );
         res.json(projects);
@@ -325,16 +277,35 @@ app.get('/api/projects', authenticateToken, async (req, res) => {
 
 app.post('/api/projects/:id/preview', authenticateToken, uploadPreview.single('preview'), async (req, res) => {
     if (!req.file) return res.status(400).send('No file uploaded');
+    const slot = parseInt(req.body.slot) || 0;
 
     try {
         const preview_url = req.file.path;
-        const [result] = await db.execute(
-            'UPDATE projects SET preview_url = ? WHERE id = ? AND user_id = ?',
-            [preview_url, req.params.id, req.user.id]
+
+        // Get existing previews
+        const [projects] = await db.execute(
+            'SELECT preview_urls FROM projects WHERE id = ? AND user_id = ?',
+            [req.params.id, req.user.id]
         );
 
-        if (result.affectedRows === 0) return res.status(404).send('Project not found or unauthorized');
-        res.json({ message: 'Preview updated', preview_url });
+        if (projects.length === 0) return res.status(404).send('Project not found or unauthorized');
+
+        let previewUrls = projects[0].preview_urls || [];
+        // Ensure it's an array (handle legacy null or invalid JSON)
+        if (!Array.isArray(previewUrls)) previewUrls = [];
+
+        // Update specific slot
+        previewUrls[slot] = preview_url;
+
+        // Limit to 3
+        previewUrls = previewUrls.slice(0, 3);
+
+        const [result] = await db.execute(
+            'UPDATE projects SET preview_urls = ?, preview_url = ? WHERE id = ? AND user_id = ?',
+            [JSON.stringify(previewUrls), previewUrls[0], req.params.id, req.user.id]
+        );
+
+        res.json({ message: 'Preview updated', preview_urls: previewUrls });
     } catch (err) {
         console.error('Preview upload error:', err);
         res.status(500).send(err.message);
@@ -435,9 +406,9 @@ app.get('/api/projects/:id/comments', async (req, res) => {
             SELECT c.*, u.username, u.nickname, u.avatar_url 
             FROM comments c 
             JOIN users u ON c.user_id = u.id 
-            WHERE c.project_id = ? 
+            WHERE c.project_id = ?
             ORDER BY c.created_at DESC
-        `, [req.params.id]);
+            `, [req.params.id]);
         res.json(comments);
     } catch (err) {
         res.status(500).send(err.message);
@@ -477,7 +448,7 @@ app.delete('/api/comments/:id', authenticateToken, async (req, res) => {
 // Likes Routes
 app.post('/api/projects/:id/like', authenticateToken, async (req, res) => {
     try {
-        console.log(`Like request received for project ${req.params.id} from user ${req.user.id}`);
+        console.log(`Like request received for project ${req.params.id} from user ${req.user.id} `);
         const [existing] = await db.execute(
             'SELECT id FROM likes WHERE user_id = ? AND project_id = ?',
             [req.user.id, req.params.id]
@@ -517,7 +488,7 @@ app.get('/api/users/likes', authenticateToken, async (req, res) => {
             FROM projects p 
             JOIN likes l ON p.id = l.project_id 
             JOIN users u ON p.user_id = u.id 
-            WHERE l.user_id = ? 
+            WHERE l.user_id = ?
             ORDER BY l.created_at DESC
         `, [req.user.id]);
         res.json(projects);

@@ -29,6 +29,8 @@ function Editor() {
     const [resetTrigger, setResetTrigger] = useState(0);
     const [isOwner, setIsOwner] = useState(true);
 
+    const [previewUrls, setPreviewUrls] = useState([null, null, null]);
+
     // Load project
     useEffect(() => {
         if (!id) return;
@@ -44,7 +46,10 @@ function Editor() {
                     setProjectName(project.name);
                     setIsPublic(!!project.is_public);
 
-                    // Check ownership
+                    const urls = project.preview_urls || [];
+                    while (urls.length < 3) urls.push(null);
+                    setPreviewUrls(urls);
+
                     // Check ownership
                     if (token) {
                         const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -175,48 +180,35 @@ function Editor() {
         }
     };
 
-    const handleDragOver = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-    };
+    const handlePreviewUpload = async (slot, file) => {
+        if (!file) return;
+        const formData = new FormData();
+        formData.append('preview', file);
+        formData.append('slot', slot);
+        const token = localStorage.getItem('token');
 
-    const handleDrop = async (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        if (!isOwner) return;
-
-        const file = e.dataTransfer.files[0];
-        if (file && file.type.startsWith('image/')) {
-            const formData = new FormData();
-            formData.append('preview', file);
-            const token = localStorage.getItem('token');
-
-            try {
-                const res = await fetch(`${API_URL}/api/projects/${id}/preview`, {
-                    method: 'POST',
-                    headers: { 'Authorization': `Bearer ${token}` },
-                    body: formData
-                });
-
-                if (res.ok) {
-                    alert('Project preview updated!');
-                } else {
-                    alert('Failed to upload preview');
-                }
-            } catch (err) {
-                console.error(err);
-                alert('Error uploading preview');
+        try {
+            const res = await fetch(`${API_URL}/api/projects/${id}/preview`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData
+            });
+            if (res.ok) {
+                const data = await res.json();
+                const newUrls = data.preview_urls || [];
+                while (newUrls.length < 3) newUrls.push(null);
+                setPreviewUrls(newUrls);
+            } else {
+                alert('Failed to upload preview');
             }
+        } catch (err) {
+            console.error(err);
+            alert('Error uploading preview');
         }
     };
 
     return (
-        <div
-            className="editor-container"
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
-        >
+        <div className="editor-container">
             <div className="editor-panel" style={{ flex: 1, overflowY: 'auto', paddingRight: '10px' }}>
                 <div className="editor-header" style={{ padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#121212', borderBottom: '1px solid #282828' }}>
                     <button onClick={handleBack} style={{ backgroundColor: 'transparent', border: '1px solid #555' }}>&larr; Back</button>
@@ -277,6 +269,41 @@ function Editor() {
                                 <section>
                                     <h2>3. Style</h2>
                                     <StyleControls styles={styles} onUpdate={setStyles} />
+                                </section>
+
+                                <section>
+                                    <h2>4. Preview Gallery</h2>
+                                    <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '10px' }}>
+                                        {previewUrls.map((url, index) => (
+                                            <div key={index} style={{ position: 'relative', width: '100px', height: '100px', flexShrink: 0 }}>
+                                                <div
+                                                    onClick={() => document.getElementById(`preview-upload-${index}`).click()}
+                                                    style={{
+                                                        width: '100%', height: '100%',
+                                                        borderRadius: '8px',
+                                                        overflow: 'hidden',
+                                                        backgroundColor: '#333',
+                                                        cursor: 'pointer',
+                                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                        border: '2px dashed #555'
+                                                    }}
+                                                >
+                                                    {url ? (
+                                                        <img src={url} alt={`Preview ${index + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                    ) : (
+                                                        <span style={{ fontSize: '2em', color: '#555' }}>+</span>
+                                                    )}
+                                                </div>
+                                                <input
+                                                    type="file"
+                                                    id={`preview-upload-${index}`}
+                                                    style={{ display: 'none' }}
+                                                    accept="image/*"
+                                                    onChange={(e) => handlePreviewUpload(index, e.target.files[0])}
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
                                 </section>
                             </>
                         )}
