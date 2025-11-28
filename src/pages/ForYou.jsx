@@ -53,11 +53,12 @@ function ForYou() {
                         onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
                         onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
                     >
-                        {/* Left Column: Avatar & Nickname */}
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '80px' }}>
+                        {/* Left Column: Preview Image & User Info */}
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '100px', gap: '10px' }}>
+                            {/* Project Preview Image (Large Circle) */}
                             <div style={{
-                                width: '60px',
-                                height: '60px',
+                                width: '80px',
+                                height: '80px',
                                 borderRadius: '50%',
                                 overflow: 'hidden',
                                 backgroundColor: '#444',
@@ -66,21 +67,44 @@ function ForYou() {
                                 justifyContent: 'center',
                                 fontSize: '1.5em',
                                 color: 'white',
-                                marginBottom: '5px'
+                                border: '2px solid #333'
                             }}>
-                                {project.avatar_url ? (
+                                {project.preview_url ? (
                                     <img
-                                        src={project.avatar_url}
-                                        alt="avatar"
+                                        src={project.preview_url}
+                                        alt="preview"
                                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                     />
                                 ) : (
-                                    <span>{project.username?.[0]?.toUpperCase()}</span>
+                                    <div style={{ width: '100%', height: '100%', background: 'linear-gradient(45deg, #1db954, #191414)' }} />
                                 )}
                             </div>
-                            <span style={{ fontSize: '0.8em', fontWeight: 'bold', color: '#ccc' }}>
-                                {project.nickname || project.username}
-                            </span>
+
+                            {/* User Info (Small Avatar + Nickname) */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <div style={{
+                                    width: '24px',
+                                    height: '24px',
+                                    borderRadius: '50%',
+                                    overflow: 'hidden',
+                                    backgroundColor: '#555'
+                                }}>
+                                    {project.avatar_url ? (
+                                        <img
+                                            src={project.avatar_url}
+                                            alt="avatar"
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                        />
+                                    ) : (
+                                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6em' }}>
+                                            {project.username?.[0]?.toUpperCase()}
+                                        </div>
+                                    )}
+                                </div>
+                                <span style={{ fontSize: '0.8em', fontWeight: 'bold', color: '#ccc' }}>
+                                    {project.nickname || project.username}
+                                </span>
+                            </div>
                         </div>
 
                         {/* Right Column: Project Name */}

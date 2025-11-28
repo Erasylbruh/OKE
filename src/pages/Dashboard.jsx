@@ -335,38 +335,78 @@ function Dashboard() {
                                     transition: 'transform 0.3s'
                                 }} />
                             </div>
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    if (window.confirm('Delete this project?')) {
-                                        const token = localStorage.getItem('token');
-                                        fetch(`${API_URL}/api/projects/${project.id}`, {
-                                            method: 'DELETE',
-                                            headers: { 'Authorization': `Bearer ${token}` }
-                                        }).then(async res => {
-                                            if (res.ok) {
-                                                setProjects(projects.filter(p => p.id !== project.id));
-                                            } else {
-                                                const msg = await res.text();
-                                                alert(`Failed to delete project: ${msg}`);
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                <label style={{
+                                    fontSize: '0.8em',
+                                    color: '#1db954',
+                                    cursor: 'pointer',
+                                    textDecoration: 'underline'
+                                }}>
+                                    Upload Preview
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        style={{ display: 'none' }}
+                                        onChange={async (e) => {
+                                            const file = e.target.files[0];
+                                            if (!file) return;
+
+                                            const formData = new FormData();
+                                            formData.append('preview', file);
+                                            const token = localStorage.getItem('token');
+
+                                            try {
+                                                const res = await fetch(`${API_URL}/api/projects/${project.id}/preview`, {
+                                                    method: 'POST',
+                                                    headers: { 'Authorization': `Bearer ${token}` },
+                                                    body: formData
+                                                });
+                                                if (res.ok) {
+                                                    alert('Preview updated!');
+                                                    // Optionally refresh projects to show new preview if we were displaying it here
+                                                } else {
+                                                    alert('Failed to upload preview');
+                                                }
+                                            } catch (err) {
+                                                console.error(err);
+                                                alert('Error uploading preview');
                                             }
-                                        }).catch(err => {
-                                            console.error(err);
-                                            alert('Error deleting project');
-                                        });
-                                    }
-                                }}
-                                style={{
-                                    backgroundColor: '#ff4444',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '4px',
-                                    padding: '5px 10px',
-                                    cursor: 'pointer'
-                                }}
-                            >
-                                Delete
-                            </button>
+                                        }}
+                                    />
+                                </label>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (window.confirm('Delete this project?')) {
+                                            const token = localStorage.getItem('token');
+                                            fetch(`${API_URL}/api/projects/${project.id}`, {
+                                                method: 'DELETE',
+                                                headers: { 'Authorization': `Bearer ${token}` }
+                                            }).then(async res => {
+                                                if (res.ok) {
+                                                    setProjects(projects.filter(p => p.id !== project.id));
+                                                } else {
+                                                    const msg = await res.text();
+                                                    alert(`Failed to delete project: ${msg}`);
+                                                }
+                                            }).catch(err => {
+                                                console.error(err);
+                                                alert('Error deleting project');
+                                            });
+                                        }
+                                    }}
+                                    style={{
+                                        backgroundColor: '#ff4444',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '4px',
+                                        padding: '5px 10px',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    Delete
+                                </button>
+                            </div>
                         </div>
                     </div>
                 ))}

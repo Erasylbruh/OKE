@@ -59,11 +59,20 @@ const initDb = async () => {
                 name VARCHAR(255) NOT NULL,
                 data JSON,
                 is_public BOOLEAN DEFAULT FALSE,
+                preview_url VARCHAR(255),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
             )
         `);
+
+        // Add preview_url column if it doesn't exist (for existing tables)
+        try {
+            await db.query('ALTER TABLE projects ADD COLUMN preview_url VARCHAR(255)');
+        } catch (e) {
+            // Ignore error if column already exists
+        }
+
         await db.query(`
             CREATE TABLE IF NOT EXISTS comments (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -193,14 +202,26 @@ cloudinary.config({
 });
 
 // Multer Setup (Cloudinary)
-const storage = new CloudinaryStorage({
+// Avatar Storage (Resized)
+const avatarStorage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
         folder: 'avatars',
+        allowed_formats: ['jpg', 'png', 'jpeg', 'gif'],
+        transformation: [{ width: 200, height: 200, crop: 'fill' }]
+    }
+});
+const uploadAvatar = multer({ storage: avatarStorage });
+
+// Preview Storage (Original or optimized)
+const previewStorage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'previews',
         allowed_formats: ['jpg', 'png', 'jpeg', 'gif']
     }
 });
-const upload = multer({ storage });
+const uploadPreview = multer({ storage: previewStorage });
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -253,7 +274,7 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 // User Profile
-app.put('/api/users/profile', authenticateToken, upload.single('avatar'), async (req, res) => {
+app.put('/api/users/profile', authenticateToken, uploadAvatar.single('avatar'), async (req, res) => {
     const { nickname } = req.body;
     let avatar_url = req.body.avatar_url;
 
@@ -278,7 +299,7 @@ app.put('/api/users/profile', authenticateToken, upload.single('avatar'), async 
 app.get('/api/projects/public', async (req, res) => {
     try {
         const [projects] = await db.execute(
-            `SELECT p.id, p.name, p.created_at, p.updated_at, u.username, u.nickname, u.avatar_url 
+            `SELECT p.id, p.name, p.preview_url, p.created_at, p.updated_at, u.username, u.nickname, u.avatar_url 
              FROM projects p 
              JOIN users u ON p.user_id = u.id 
              WHERE p.is_public = TRUE 
@@ -293,11 +314,29 @@ app.get('/api/projects/public', async (req, res) => {
 app.get('/api/projects', authenticateToken, async (req, res) => {
     try {
         const [projects] = await db.execute(
-            'SELECT id, name, created_at, updated_at, is_public FROM projects WHERE user_id = ? ORDER BY updated_at DESC',
+            'SELECT id, name, preview_url, created_at, updated_at, is_public FROM projects WHERE user_id = ? ORDER BY updated_at DESC',
             [req.user.id]
         );
         res.json(projects);
     } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
+app.post('/api/projects/:id/preview', authenticateToken, uploadPreview.single('preview'), async (req, res) => {
+    if (!req.file) return res.status(400).send('No file uploaded');
+
+    try {
+        const preview_url = req.file.path;
+        const [result] = await db.execute(
+            'UPDATE projects SET preview_url = ? WHERE id = ? AND user_id = ?',
+            [preview_url, req.params.id, req.user.id]
+        );
+
+        if (result.affectedRows === 0) return res.status(404).send('Project not found or unauthorized');
+        res.json({ message: 'Preview updated', preview_url });
+    } catch (err) {
+        console.error('Preview upload error:', err);
         res.status(500).send(err.message);
     }
 });
