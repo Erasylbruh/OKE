@@ -80,7 +80,7 @@ function LikedProjects() {
                         <ProjectCard
                             key={project.id}
                             project={project}
-                            onClick={() => navigate(`/editor/${project.id}`)}
+                            onClick={() => navigate(`/editor/${project.id}`, { state: { from: 'main' } })}
                             isOwner={false}
                         />
                     ))}

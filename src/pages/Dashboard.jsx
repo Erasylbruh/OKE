@@ -159,17 +159,32 @@ function Dashboard() {
                     </div>
                 </div>
 
-                <button
-                    onClick={() => navigate(`/user/${user.username}`)}
-                    style={{
-                        background: 'transparent',
-                        border: '1px solid var(--border-color)',
-                        color: 'var(--text-main)',
-                        padding: '8px 16px'
-                    }}
-                >
-                    {t('edit_profile')}
-                </button>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                    <button
+                        onClick={() => navigate('/following')}
+                        style={{
+                            background: 'transparent',
+                            border: '1px solid var(--border-color)',
+                            color: 'var(--text-main)',
+                            padding: '8px 16px',
+                            borderRadius: '20px'
+                        }}
+                    >
+                        {t('following') || 'Following'}
+                    </button>
+                    <button
+                        onClick={() => navigate(`/user/${user.username}`)}
+                        style={{
+                            background: 'transparent',
+                            border: '1px solid var(--border-color)',
+                            color: 'var(--text-main)',
+                            padding: '8px 16px',
+                            borderRadius: '20px'
+                        }}
+                    >
+                        {t('profile') || 'Profile'}
+                    </button>
+                </div>
             </div>
 
             {/* Projects Grid */}

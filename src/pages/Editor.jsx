@@ -80,9 +80,7 @@ function Editor() {
                     }
                     setLyrics(data.lyrics || []);
                     setStyles(prev => data.styles || prev);
-                    // Load audio if exists (assuming it's saved in data for now, or separate field)
-                    // For this implementation, we'll assume it's transient or user uploads it each time
-                    // unless we add backend support. The prompt says "Let user upload audio", implying session-based or local for now.
+                    setAudioUrl(project.audio_url);
                 } else {
                     alert('Project not found or unauthorized');
                     navigate('/dashboard');
@@ -115,18 +113,53 @@ function Editor() {
         }
     }, [styles.fontUrl]);
 
-    const handleAudioUpload = (e) => {
+    const handleAudioUpload = async (e) => {
         const file = e.target.files[0];
-        if (file) {
-            const url = URL.createObjectURL(file);
-            setAudioUrl(url);
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('audio', file);
+        const token = localStorage.getItem('token');
+
+        try {
+            const res = await fetch(`${API_URL}/api/projects/${id}/audio`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                setAudioUrl(data.audio_url);
+            } else {
+                alert('Failed to upload audio');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Error uploading audio');
         }
+
         // Reset file input
         e.target.value = null;
     };
 
-    const handleDeleteAudio = () => {
-        setAudioUrl(null);
+    const handleDeleteAudio = async () => {
+        if (!confirm('Remove audio?')) return;
+        const token = localStorage.getItem('token');
+        try {
+            const res = await fetch(`${API_URL}/api/projects/${id}/audio`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                setAudioUrl(null);
+            } else {
+                alert('Failed to delete audio');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Error deleting audio');
+        }
     };
 
     const resizeImage = (file) => {

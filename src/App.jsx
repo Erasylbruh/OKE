@@ -8,6 +8,7 @@ import Settings from './pages/Settings';
 import UserProfile from './pages/UserProfile';
 import LikedProjects from './pages/LikedProjects';
 import Editor from './pages/Editor';
+import Following from './pages/Following';
 import AdminLoginModal from './components/AdminLoginModal';
 import Sidebar from './components/Sidebar';
 import { LanguageProvider } from './context/LanguageContext';
@@ -79,6 +80,7 @@ function App() {
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/editor/:id?" element={<Editor />} />
             <Route path="/liked-projects" element={<LikedProjects />} />
+            <Route path="/following" element={<Following />} />
           </Routes>
         </Layout>
       </Router>

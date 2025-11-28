@@ -81,6 +81,13 @@ const initDb = async () => {
             // Ignore error if column already exists
         }
 
+        // Add audio_url column if it doesn't exist
+        try {
+            await db.query('ALTER TABLE projects ADD COLUMN audio_url VARCHAR(255)');
+        } catch (e) {
+            // Ignore error if column already exists
+        }
+
         // Add language column to users if not exists
         try {
             await db.query("ALTER TABLE users ADD COLUMN language VARCHAR(10) DEFAULT 'en'");
@@ -232,6 +239,17 @@ const previewStorage = new CloudinaryStorage({
 });
 const uploadPreview = multer({ storage: previewStorage });
 
+// Audio Storage
+const audioStorage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'audio',
+        resource_type: 'auto', // Important for audio
+        allowed_formats: ['mp3', 'wav', 'ogg']
+    }
+});
+const uploadAudio = multer({ storage: audioStorage });
+
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes
@@ -356,7 +374,7 @@ app.get('/api/users/:username', async (req, res) => {
         const user = users[0];
 
         const [projects] = await db.execute(`
-            SELECT p.id, p.name, p.preview_url, p.preview_urls, p.created_at, p.updated_at,
+            SELECT p.id, p.name, p.preview_url, p.preview_urls, p.audio_url, p.created_at, p.updated_at,
             (SELECT COUNT(*) FROM likes l WHERE l.project_id = p.id) as likes_count,
             (SELECT COUNT(*) FROM comments c WHERE c.project_id = p.id) as comments_count
             FROM projects p 
@@ -386,6 +404,54 @@ app.get('/api/users/:username', async (req, res) => {
             followingCount: following[0].count,
             isFollowing
         });
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
+// Follow Endpoints
+app.post('/api/users/:id/follow', authenticateToken, async (req, res) => {
+    try {
+        if (parseInt(req.params.id) === req.user.id) return res.status(400).send('Cannot follow yourself');
+
+        await db.execute(
+            'INSERT IGNORE INTO followers (follower_id, following_id) VALUES (?, ?)',
+            [req.user.id, req.params.id]
+        );
+
+        // Notification
+        await db.execute(
+            'INSERT INTO notifications (user_id, type, source_id, trigger_user_id) VALUES (?, ?, ?, ?)',
+            [req.params.id, 'follow', req.user.id, req.user.id]
+        );
+
+        res.json({ message: 'Followed' });
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
+app.delete('/api/users/:id/follow', authenticateToken, async (req, res) => {
+    try {
+        await db.execute(
+            'DELETE FROM followers WHERE follower_id = ? AND following_id = ?',
+            [req.user.id, req.params.id]
+        );
+        res.json({ message: 'Unfollowed' });
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
+app.get('/api/users/me/following', authenticateToken, async (req, res) => {
+    try {
+        const [users] = await db.execute(`
+            SELECT u.id, u.username, u.nickname, u.avatar_url 
+            FROM users u
+            JOIN followers f ON u.id = f.following_id
+            WHERE f.follower_id = ?
+        `, [req.user.id]);
+        res.json(users);
     } catch (err) {
         res.status(500).send(err.message);
     }
@@ -424,6 +490,52 @@ app.post('/api/projects/:id/preview', authenticateToken, uploadPreview.single('p
         res.json({ message: 'Preview updated', preview_urls: previewUrls });
     } catch (err) {
         console.error('Preview upload error:', err);
+        res.status(500).send(err.message);
+    }
+});
+
+app.post('/api/projects/:id/audio', authenticateToken, uploadAudio.single('audio'), async (req, res) => {
+    if (!req.file) return res.status(400).send('No file uploaded');
+
+    try {
+        const audio_url = req.file.path;
+
+        const [projects] = await db.execute(
+            'SELECT id FROM projects WHERE id = ? AND user_id = ?',
+            [req.params.id, req.user.id]
+        );
+
+        if (projects.length === 0) return res.status(404).send('Project not found or unauthorized');
+
+        await db.execute(
+            'UPDATE projects SET audio_url = ? WHERE id = ?',
+            [audio_url, req.params.id]
+        );
+
+        res.json({ message: 'Audio uploaded', audio_url });
+    } catch (err) {
+        console.error('Audio upload error:', err);
+        res.status(500).send(err.message);
+    }
+});
+
+app.delete('/api/projects/:id/audio', authenticateToken, async (req, res) => {
+    try {
+        const [projects] = await db.execute(
+            'SELECT id FROM projects WHERE id = ? AND user_id = ?',
+            [req.params.id, req.user.id]
+        );
+
+        if (projects.length === 0) return res.status(404).send('Project not found or unauthorized');
+
+        await db.execute(
+            'UPDATE projects SET audio_url = NULL WHERE id = ?',
+            [req.params.id]
+        );
+
+        res.json({ message: 'Audio deleted' });
+    } catch (err) {
+        console.error('Audio delete error:', err);
         res.status(500).send(err.message);
     }
 });
@@ -498,7 +610,7 @@ app.put('/api/projects/:id/preview/main', authenticateToken, async (req, res) =>
 app.get('/api/projects/public', async (req, res) => {
     try {
         const [projects] = await db.execute(`
-            SELECT p.id, p.name, p.preview_url, p.preview_urls, p.created_at, p.updated_at, u.username, u.nickname, u.avatar_url,
+            SELECT p.id, p.name, p.preview_url, p.preview_urls, p.audio_url, p.created_at, p.updated_at, u.username, u.nickname, u.avatar_url,
             (SELECT COUNT(*) FROM likes l WHERE l.project_id = p.id) as likes_count,
             (SELECT COUNT(*) FROM comments c WHERE c.project_id = p.id) as comments_count
             FROM projects p 
@@ -544,7 +656,7 @@ app.get('/api/projects/:id', async (req, res) => {
 app.get('/api/projects', authenticateToken, async (req, res) => {
     try {
         const [projects] = await db.execute(`
-            SELECT p.id, p.name, p.preview_url, p.preview_urls, p.is_public, p.created_at, p.updated_at,
+            SELECT p.id, p.name, p.preview_url, p.preview_urls, p.audio_url, p.is_public, p.created_at, p.updated_at,
             (SELECT COUNT(*) FROM likes l WHERE l.project_id = p.id) as likes_count,
             (SELECT COUNT(*) FROM comments c WHERE c.project_id = p.id) as comments_count
             FROM projects p 

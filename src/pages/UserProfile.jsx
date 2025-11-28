@@ -120,7 +120,7 @@ function UserProfile() {
                     <ProjectCard
                         key={project.id}
                         project={{ ...project, username: user.username, nickname: user.nickname, avatar_url: user.avatar_url }}
-                        onClick={() => navigate(`/editor/${project.id}`)}
+                        onClick={() => navigate(`/editor/${project.id}`, { state: { from: 'main' } })}
                         isOwner={false}
                     />
                 ))}

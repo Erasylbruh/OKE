@@ -1,25 +1,44 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import LikeButton from './LikeButton';
 import { useLanguage } from '../context/LanguageContext';
 
 const ProjectCard = ({ project, onClick, isOwner, onToggleVisibility, onDelete }) => {
-    const [isHovered, setIsHovered] = useState(false);
-    const titleRef = useRef(null);
-    const [shouldScroll, setShouldScroll] = useState(false);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const audioRef = useRef(null);
+    const navigate = useNavigate();
     const { t } = useLanguage();
 
     useEffect(() => {
-        if (titleRef.current) {
-            setShouldScroll(titleRef.current.scrollWidth > titleRef.current.clientWidth);
-        }
-    }, [project.name]);
+        return () => {
+            if (audioRef.current) {
+                audioRef.current.pause();
+                audioRef.current = null;
+            }
+        };
+    }, []);
 
-    const handleShare = (e) => {
+    const handlePlayClick = (e) => {
         e.stopPropagation();
-        const url = `${window.location.origin}/editor/${project.id}`;
-        navigator.clipboard.writeText(url).then(() => {
-            alert('Link copied to clipboard!');
-        });
+        if (project.audio_url) {
+            if (isPlaying) {
+                if (audioRef.current) {
+                    audioRef.current.pause();
+                }
+                setIsPlaying(false);
+            } else {
+                if (!audioRef.current) {
+                    audioRef.current = new Audio(project.audio_url);
+                    audioRef.current.onended = () => setIsPlaying(false);
+                }
+                // Reset all other audios? For now, just play this one.
+                // Ideally we'd use a context to stop others, but let's keep it simple.
+                audioRef.current.play().catch(e => console.error("Play error:", e));
+                setIsPlaying(true);
+            }
+        } else {
+            onClick();
+        }
     };
 
     const previewUrl = project.preview_urls?.[0] || project.preview_url;
@@ -28,105 +47,127 @@ const ProjectCard = ({ project, onClick, isOwner, onToggleVisibility, onDelete }
         <div
             className="card"
             onClick={onClick}
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
             style={{
-                padding: 0,
+                padding: '15px',
                 cursor: 'pointer',
                 display: 'flex',
-                flexDirection: 'column',
-                height: '280px',
-                position: 'relative',
-                overflow: 'hidden',
+                alignItems: 'center',
+                gap: '20px',
+                height: 'auto',
+                minHeight: '140px',
                 transition: 'transform 0.2s, box-shadow 0.2s',
-                transform: isHovered ? 'translateY(-4px)' : 'none',
-                boxShadow: isHovered ? '0 8px 20px rgba(0,0,0,0.4)' : 'none'
+                backgroundColor: '#181818', // Darker background for contrast
+                borderRadius: '12px',
+                overflow: 'visible' // Allow vinyl to pop out if needed, but here we keep it inside
             }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#282828'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#181818'}
         >
-            {/* Cover Image Section (Top Half) */}
-            <div style={{
-                height: '160px',
-                backgroundColor: '#333',
-                position: 'relative',
-                overflow: 'hidden'
-            }}>
-                {previewUrl ? (
-                    <img
-                        src={previewUrl}
-                        alt={project.name}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
-                ) : (
-                    <div style={{
-                        width: '100%',
-                        height: '100%',
-                        background: 'linear-gradient(135deg, #1db954 0%, #191414 100%)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                    }}>
-                        <span style={{ fontSize: '3rem', opacity: 0.2 }}>🎵</span>
-                    </div>
-                )}
+            {/* Vinyl Section */}
+            <div style={{ position: 'relative', width: '100px', height: '100px', flexShrink: 0 }}>
+                {/* Vinyl Disc */}
+                <div style={{
+                    width: '100%',
+                    height: '100%',
+                    borderRadius: '50%',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    animation: isPlaying ? 'rotate 4s linear infinite' : 'none',
+                    boxShadow: '0 4px 10px rgba(0,0,0,0.5)'
+                }}>
+                    <style>
+                        {`
+                            @keyframes rotate {
+                                from { transform: rotate(0deg); }
+                                to { transform: rotate(360deg); }
+                            }
+                        `}
+                    </style>
+                    {previewUrl ? (
+                        <img
+                            src={previewUrl}
+                            alt={project.name}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                    ) : (
+                        <div style={{ width: '100%', height: '100%', background: '#333' }} />
+                    )}
 
-                {/* Play Overlay on Hover */}
-                {isHovered && (
+                    {/* Center Hole */}
                     <div style={{
                         position: 'absolute',
-                        top: 0, left: 0, right: 0, bottom: 0,
-                        backgroundColor: 'rgba(0,0,0,0.3)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                    }}>
-                        <div style={{
-                            width: '50px',
-                            height: '50px',
-                            borderRadius: '50%',
-                            backgroundColor: '#1db954',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
-                        }}>
-                            <span style={{ color: 'black', fontSize: '24px', marginLeft: '4px' }}>▶</span>
-                        </div>
-                    </div>
-                )}
-            </div>
+                        top: '50%', left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        width: '20%', height: '20%',
+                        backgroundColor: '#181818',
+                        borderRadius: '50%',
+                        zIndex: 2
+                    }} />
 
-            {/* Content Section (Bottom Half) */}
-            <div style={{ padding: '15px', display: 'flex', flexDirection: 'column', flex: 1 }}>
-                {/* Title */}
-                <div style={{ overflow: 'hidden', marginBottom: '5px' }}>
-                    <div className={isHovered && shouldScroll ? "marquee-container" : ""} style={{ width: '100%' }}>
-                        <h3
-                            ref={titleRef}
-                            className={isHovered && shouldScroll ? "marquee-content" : ""}
-                            style={{
-                                margin: 0,
-                                fontSize: '1.1rem',
-                                fontWeight: 'bold',
-                                whiteSpace: 'nowrap',
-                                overflow: isHovered && shouldScroll ? 'visible' : 'hidden',
-                                textOverflow: isHovered && shouldScroll ? 'clip' : 'ellipsis',
-                                color: 'white'
-                            }}
-                        >
-                            {project.name}
-                        </h3>
-                    </div>
+                    {/* Grooves Overlay */}
+                    <div style={{
+                        position: 'absolute',
+                        top: 0, left: 0, width: '100%', height: '100%',
+                        background: 'repeating-radial-gradient(#000 0, #000 2px, transparent 3px, transparent 4px)',
+                        opacity: 0.1,
+                        pointerEvents: 'none',
+                        zIndex: 1
+                    }} />
                 </div>
 
-                {/* Author */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: 'auto' }}>
-                    <div style={{
-                        width: '20px',
-                        height: '20px',
+                {/* Play Button Overlay */}
+                <button
+                    onClick={handlePlayClick}
+                    style={{
+                        position: 'absolute',
+                        top: '50%', left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        width: '40px', height: '40px', // Smaller than preview player
                         borderRadius: '50%',
-                        overflow: 'hidden',
-                        backgroundColor: '#555'
-                    }}>
+                        backgroundColor: 'rgba(0,0,0,0.6)',
+                        border: '2px solid white',
+                        color: 'white',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        cursor: 'pointer',
+                        zIndex: 10,
+                        padding: 0
+                    }}
+                >
+                    {isPlaying ? (
+                        <div style={{ width: '10px', height: '10px', backgroundColor: 'white', borderRadius: '2px' }} />
+                    ) : (
+                        <div style={{
+                            width: 0, height: 0,
+                            borderTop: '6px solid transparent',
+                            borderBottom: '6px solid transparent',
+                            borderLeft: '10px solid white',
+                            marginLeft: '2px'
+                        }} />
+                    )}
+                </button>
+            </div>
+
+            {/* Info Section */}
+            <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                <h3 style={{
+                    margin: '0 0 5px 0',
+                    fontSize: '1.1rem',
+                    fontWeight: 'bold',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    color: 'white'
+                }}>
+                    {project.name}
+                </h3>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                    <div
+                        onClick={(e) => { e.stopPropagation(); navigate(`/user/${project.username}`); }}
+                        style={{
+                            width: '20px', height: '20px', borderRadius: '50%', overflow: 'hidden', backgroundColor: '#555', cursor: 'pointer'
+                        }}
+                    >
                         {project.avatar_url ? (
                             <img src={project.avatar_url} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         ) : (
@@ -135,54 +176,28 @@ const ProjectCard = ({ project, onClick, isOwner, onToggleVisibility, onDelete }
                             </div>
                         )}
                     </div>
-                    <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                    <span
+                        onClick={(e) => { e.stopPropagation(); navigate(`/user/${project.username}`); }}
+                        style={{ fontSize: '0.9rem', color: '#b3b3b3', cursor: 'pointer' }}
+                    >
                         {project.nickname || project.username}
                     </span>
                 </div>
 
-                {/* Footer Actions */}
-                <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginTop: '10px',
-                    paddingTop: '10px',
-                    borderTop: '1px solid var(--border-color)'
-                }}>
-                    {/* Left: Status (Owner only) or Date/Info */}
-                    <div style={{ fontSize: '0.8rem' }}>
-                        {isOwner ? (
-                            <span style={{ color: project.is_public ? '#1db954' : '#888' }}>
-                                {project.is_public ? t('public') : t('private')}
-                            </span>
-                        ) : (
-                            <span style={{ color: '#888' }}>{new Date(project.created_at).toLocaleDateString()}</span>
-                        )}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ fontSize: '0.8rem', color: project.is_public ? '#1db954' : '#888' }}>
+                        {project.is_public ? t('public') : t('private')}
                     </div>
 
-                    {/* Right: Actions */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                         <div onClick={(e) => e.stopPropagation()}>
                             <LikeButton projectId={project.id} initialCount={project.likes_count || 0} />
                         </div>
-
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#888', fontSize: '0.9rem' }}>
-                            <span>💬</span>
-                            <span>{project.comments_count || 0}</span>
-                        </div>
-
-                        {isOwner && (
-                            <div className="dropdown" style={{ position: 'relative' }} onClick={e => e.stopPropagation()}>
-                                <button style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', padding: 0 }}>⋮</button>
-                                {/* Simple dropdown logic could go here, but for now just buttons if space permits or keep it simple */}
-                            </div>
-                        )}
-
                         {isOwner && (
                             <button
                                 onClick={(e) => onDelete(e, project)}
-                                title="Delete"
                                 style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', padding: 0, opacity: 0.7 }}
+                                title="Delete"
                             >
                                 🗑️
                             </button>
