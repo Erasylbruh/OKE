@@ -331,6 +331,23 @@ app.put('/api/users/profile', authenticateToken, uploadAvatar.single('avatar'), 
     }
 });
 
+// Likes Route (Must be before /api/users/:username)
+app.get('/api/users/likes', authenticateToken, async (req, res) => {
+    try {
+        const [projects] = await db.execute(`
+            SELECT p.id, p.name, p.created_at, p.updated_at, u.username, u.nickname, u.avatar_url 
+            FROM projects p 
+            JOIN likes l ON p.id = l.project_id 
+            JOIN users u ON p.user_id = u.id 
+            WHERE l.user_id = ?
+            ORDER BY l.created_at DESC
+        `, [req.user.id]);
+        res.json(projects);
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
 // Public Profile & Following
 app.get('/api/users/:username', async (req, res) => {
     try {
@@ -738,22 +755,7 @@ app.get('/api/projects/:id/like', authenticateToken, async (req, res) => {
     }
 });
 
-app.get('/api/users/likes', authenticateToken, async (req, res) => {
-    try {
-        const [projects] = await db.execute(`
-            SELECT p.id, p.name, p.created_at, p.updated_at, u.username, u.nickname, u.avatar_url 
-            FROM projects p 
-            JOIN likes l ON p.id = l.project_id 
-            JOIN users u ON p.user_id = u.id 
-            WHERE l.user_id = ?
-            ORDER BY l.created_at DESC
-        `, [req.user.id]);
-        console.log(`Fetching likes for user ${req.user.id}. Found ${projects.length} projects.`);
-        res.json(projects);
-    } catch (err) {
-        res.status(500).send(err.message);
-    }
-});
+
 
 // Google Fonts
 let fontsCache = null;
@@ -810,49 +812,4 @@ app.get('/api/admin/projects', authenticateAdmin, async (req, res) => {
         if (search) {
             query += ' WHERE p.name LIKE ? OR u.username LIKE ?';
             params = [`%${search}%`, `%${search}%`];
-        }
-        query += ' ORDER BY p.created_at DESC';
-
-        const [projects] = await db.execute(query, params);
-        res.json(projects);
-    } catch (err) {
-        res.status(500).send(err.message);
-    }
-});
-
-// Debug Endpoint
-app.get('/api/debug/likes', async (req, res) => {
-    const userId = req.query.userId;
-    if (!userId) return res.status(400).send('Missing userId');
-    try {
-        const [projects] = await db.execute(`
-            SELECT p.id, p.name, p.created_at, p.updated_at, u.username, u.nickname, u.avatar_url 
-            FROM projects p 
-            JOIN likes l ON p.id = l.project_id 
-            JOIN users u ON p.user_id = u.id 
-            WHERE l.user_id = ?
-            ORDER BY l.created_at DESC
-        `, [userId]);
-        res.json({ count: projects.length, projects });
-    } catch (err) {
-        res.status(500).send(err.message);
-    }
-});
-
-app.delete('/api/admin/users/:id', authenticateAdmin, async (req, res) => {
-    try {
-        await db.execute('DELETE FROM projects WHERE user_id = ?', [req.params.id]);
-        const [result] = await db.execute('DELETE FROM users WHERE id = ?', [req.params.id]);
-        if (result.affectedRows === 0) return res.status(404).send('User not found');
-        res.json({ message: 'User deleted' });
-    } catch (err) {
-        res.status(500).send(err.message);
-    }
-});
-
-
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+        });
