@@ -264,7 +264,18 @@ function Editor() {
     };
 
     return (
-        <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#121212', color: 'white' }}>
+        <div style={{
+            height: '100vh',
+            width: '85%',
+            maxWidth: '1920px',
+            margin: '0 auto',
+            display: 'flex',
+            flexDirection: 'column',
+            backgroundColor: '#121212',
+            color: 'white',
+            borderLeft: '1px solid #333',
+            borderRight: '1px solid #333'
+        }}>
             {/* Toolbar */}
             <div style={{
                 height: '60px',
