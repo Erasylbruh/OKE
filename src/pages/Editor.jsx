@@ -314,38 +314,40 @@ function Editor() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                     {/* Audio Upload Button in Toolbar */}
                     {isOwner && (
-                        <label style={{
-                            cursor: 'pointer',
-                            backgroundColor: '#333',
-                            padding: '6px 12px',
-                            borderRadius: '20px',
-                            fontSize: '0.9rem',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '5px'
-                        }}>
-                            <span>🎵 {audioUrl ? 'Change Audio' : 'Upload Audio'}</span>
-                            <input type="file" accept="audio/*" onChange={handleAudioUpload} style={{ display: 'none' }} />
-                        </label>
-                        {audioUrl && (
-                        <button
-                            onClick={handleDeleteAudio}
-                            style={{
-                                background: '#333',
-                                border: 'none',
-                                color: '#ff5555',
+                        <>
+                            <label style={{
                                 cursor: 'pointer',
+                                backgroundColor: '#333',
                                 padding: '6px 12px',
                                 borderRadius: '20px',
                                 fontSize: '0.9rem',
                                 display: 'flex',
-                                alignItems: 'center'
-                            }}
-                            title="Remove Audio"
-                        >
-                            ✕
-                        </button>
-                    )}
+                                alignItems: 'center',
+                                gap: '5px'
+                            }}>
+                                <span>🎵 {audioUrl ? 'Change Audio' : 'Upload Audio'}</span>
+                                <input type="file" accept="audio/*" onChange={handleAudioUpload} style={{ display: 'none' }} />
+                            </label>
+                            {audioUrl && (
+                                <button
+                                    onClick={handleDeleteAudio}
+                                    style={{
+                                        background: '#333',
+                                        border: 'none',
+                                        color: '#ff5555',
+                                        cursor: 'pointer',
+                                        padding: '6px 12px',
+                                        borderRadius: '20px',
+                                        fontSize: '0.9rem',
+                                        display: 'flex',
+                                        alignItems: 'center'
+                                    }}
+                                    title="Remove Audio"
+                                >
+                                    ✕
+                                </button>
+                            )}
+                        </>
                     )}
 
                     {!isOwner && <LikeButton projectId={id} />}
