@@ -507,6 +507,22 @@ app.get('/api/projects/:id', async (req, res) => {
     }
 });
 
+app.get('/api/projects', authenticateToken, async (req, res) => {
+    try {
+        const [projects] = await db.execute(`
+            SELECT p.id, p.name, p.preview_url, p.preview_urls, p.is_public, p.created_at, p.updated_at,
+            (SELECT COUNT(*) FROM likes l WHERE l.project_id = p.id) as likes_count,
+            (SELECT COUNT(*) FROM comments c WHERE c.project_id = p.id) as comments_count
+            FROM projects p 
+            WHERE p.user_id = ? 
+            ORDER BY p.updated_at DESC
+        `, [req.user.id]);
+        res.json(projects);
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
 app.post('/api/projects', authenticateToken, async (req, res) => {
     const { name, data, is_public } = req.body;
     try {

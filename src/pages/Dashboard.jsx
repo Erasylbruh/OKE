@@ -19,10 +19,7 @@ function Dashboard() {
     useEffect(() => {
         const fetchProjects = async () => {
             const token = localStorage.getItem('token');
-            if (!token) {
-                alert('Please login to access dashboard');
-                return navigate('/');
-            }
+            if (!token) return navigate('/');
 
             try {
                 const response = await fetch(`${API_URL}/api/projects`, {
@@ -32,8 +29,6 @@ function Dashboard() {
                     const data = await response.json();
                     setProjects(data);
                 } else {
-                    console.error('Failed to fetch projects:', response.status);
-                    alert('Session expired. Please login again.');
                     localStorage.removeItem('token');
                     navigate('/');
                 }
