@@ -248,7 +248,10 @@ const audioStorage = new CloudinaryStorage({
         allowed_formats: ['mp3', 'wav', 'ogg']
     }
 });
-const uploadAudio = multer({ storage: audioStorage });
+const uploadAudio = multer({
+    storage: audioStorage,
+    limits: { fileSize: 50 * 1024 * 1024 } // 50MB limit
+});
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 

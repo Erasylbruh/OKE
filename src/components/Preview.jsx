@@ -317,7 +317,7 @@ function Preview({ lyrics, styles, resetTrigger, audioUrl, backgroundImageUrl })
             {styles.headerText && (
                 <div style={{
                     position: 'absolute',
-                    top: '100px', // Below player controls
+                    top: '150px', // Below player controls
                     left: '40px', // Aligned with lyrics padding
                     textAlign: 'left',
                     fontSize: '18px',

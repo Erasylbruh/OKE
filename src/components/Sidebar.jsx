@@ -17,7 +17,7 @@ function Sidebar() {
     return (
         <div className="sidebar">
             <div className="sidebar-header">
-                <h2 style={{ margin: 0, color: 'var(--primary)', fontFamily: 'Quicksand, sans-serif', fontSize: '2rem' }}>QO</h2>
+                <h2 style={{ margin: 0, color: 'var(--primary)', fontFamily: 'Quicksand, sans-serif', fontSize: '7.5rem', lineHeight: 1 }}>QO</h2>
             </div>
 
             <nav className="sidebar-nav">
@@ -78,7 +78,7 @@ function Sidebar() {
                 }
 
                 .sidebar-header {
-                    margin-bottom: 40px;
+                    margin-bottom: 0px;
                     padding-left: 10px;
                 }
 

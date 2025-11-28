@@ -132,7 +132,9 @@ function Editor() {
                 const data = await res.json();
                 setAudioUrl(data.audio_url);
             } else {
-                alert('Failed to upload audio');
+                const errorText = await res.text();
+                console.error('Audio upload failed:', errorText);
+                alert(`Failed to upload audio: ${errorText}`);
             }
         } catch (err) {
             console.error(err);
@@ -566,13 +568,15 @@ function Editor() {
                                                             color: 'white',
                                                             border: 'none',
                                                             borderRadius: '50%',
-                                                            width: '20px',
-                                                            height: '20px',
+                                                            width: '24px',
+                                                            height: '24px',
+                                                            padding: 0,
                                                             display: 'flex',
                                                             alignItems: 'center',
                                                             justifyContent: 'center',
                                                             cursor: 'pointer',
-                                                            fontSize: '15px',
+                                                            fontSize: '14px',
+                                                            lineHeight: 1,
                                                             zIndex: 10
                                                         }}
                                                     >
