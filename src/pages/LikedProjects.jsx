@@ -6,6 +6,7 @@ import API_URL from '../config';
 function LikedProjects() {
     const [projects, setProjects] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -23,9 +24,13 @@ function LikedProjects() {
                 if (res.ok) {
                     const data = await res.json();
                     setProjects(data);
+                } else {
+                    const msg = await res.text();
+                    setError(`Failed to load likes: ${res.status} ${msg}`);
                 }
             } catch (err) {
                 console.error('Error fetching liked projects:', err);
+                setError(`Error: ${err.message}`);
             } finally {
                 setLoading(false);
             }
@@ -35,6 +40,7 @@ function LikedProjects() {
     }, [navigate]);
 
     if (loading) return <div style={{ padding: '20px', color: '#fff' }}>Loading...</div>;
+    if (error) return <div style={{ padding: '20px', color: 'red' }}>{error}</div>;
 
     return (
         <div className="liked-projects-container" style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>

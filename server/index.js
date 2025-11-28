@@ -748,6 +748,7 @@ app.get('/api/users/likes', authenticateToken, async (req, res) => {
             WHERE l.user_id = ?
             ORDER BY l.created_at DESC
         `, [req.user.id]);
+        console.log(`Fetching likes for user ${req.user.id}. Found ${projects.length} projects.`);
         res.json(projects);
     } catch (err) {
         res.status(500).send(err.message);
@@ -814,6 +815,25 @@ app.get('/api/admin/projects', authenticateAdmin, async (req, res) => {
 
         const [projects] = await db.execute(query, params);
         res.json(projects);
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
+// Debug Endpoint
+app.get('/api/debug/likes', async (req, res) => {
+    const userId = req.query.userId;
+    if (!userId) return res.status(400).send('Missing userId');
+    try {
+        const [projects] = await db.execute(`
+            SELECT p.id, p.name, p.created_at, p.updated_at, u.username, u.nickname, u.avatar_url 
+            FROM projects p 
+            JOIN likes l ON p.id = l.project_id 
+            JOIN users u ON p.user_id = u.id 
+            WHERE l.user_id = ?
+            ORDER BY l.created_at DESC
+        `, [userId]);
+        res.json({ count: projects.length, projects });
     } catch (err) {
         res.status(500).send(err.message);
     }
