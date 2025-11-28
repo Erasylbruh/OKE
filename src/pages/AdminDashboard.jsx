@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API_URL from '../config';
 
+import ProjectCard from '../components/ProjectCard';
+
 function AdminDashboard() {
     const [users, setUsers] = useState([]);
     const [projects, setProjects] = useState([]);
@@ -85,6 +87,34 @@ function AdminDashboard() {
         }
     };
 
+    const handleToggleVisibility = async (e, project) => {
+        e.stopPropagation();
+        const token = localStorage.getItem('token');
+        const newStatus = !project.is_public;
+
+        try {
+            const res = await fetch(`${API_URL}/api/projects/${project.id}/visibility`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ is_public: newStatus })
+            });
+
+            if (res.ok) {
+                setProjects(projects.map(p =>
+                    p.id === project.id ? { ...p, is_public: newStatus } : p
+                ));
+            } else {
+                alert('Failed to update visibility');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Error updating visibility');
+        }
+    };
+
     return (
         <div style={{ padding: '20px', maxWidth: '1000px', margin: '0 auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
@@ -123,62 +153,56 @@ function AdminDashboard() {
                 style={{ width: '100%', padding: '10px', marginBottom: '20px', borderRadius: '4px', border: '1px solid #333', backgroundColor: '#282828', color: 'white' }}
             />
 
-            <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: '#282828', borderRadius: '8px' }}>
-                <thead>
-                    <tr style={{ borderBottom: '1px solid #444', textAlign: 'left' }}>
-                        <th style={{ padding: '15px' }}>ID</th>
-                        {activeTab === 'users' ? (
-                            <>
-                                <th style={{ padding: '15px' }}>Username</th>
-                                <th style={{ padding: '15px' }}>Nickname</th>
-                                <th style={{ padding: '15px' }}>Admin</th>
-                            </>
-                        ) : (
-                            <>
-                                <th style={{ padding: '15px' }}>Project Name</th>
-                                <th style={{ padding: '15px' }}>Owner</th>
-                                <th style={{ padding: '15px' }}>Created At</th>
-                            </>
-                        )}
-                        <th style={{ padding: '15px' }}>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {activeTab === 'users' ? users.map(user => (
-                        <tr key={user.id} style={{ borderBottom: '1px solid #333' }}>
-                            <td style={{ padding: '15px' }}>{user.id}</td>
-                            <td style={{ padding: '15px' }}>{user.username}</td>
-                            <td style={{ padding: '15px' }}>{user.nickname || '-'}</td>
-                            <td style={{ padding: '15px' }}>{user.is_admin ? 'Yes' : 'No'}</td>
-                            <td style={{ padding: '15px' }}>
-                                {!user.is_admin && (
-                                    <button
-                                        onClick={() => handleDeleteUser(user.id)}
-                                        style={{ backgroundColor: '#ff4444', color: 'white', padding: '5px 10px', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-                                    >
-                                        Delete
-                                    </button>
-                                )}
-                            </td>
+            {activeTab === 'users' ? (
+                <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: '#282828', borderRadius: '8px' }}>
+                    <thead>
+                        <tr style={{ borderBottom: '1px solid #444', textAlign: 'left' }}>
+                            <th style={{ padding: '15px' }}>ID</th>
+                            <th style={{ padding: '15px' }}>Username</th>
+                            <th style={{ padding: '15px' }}>Nickname</th>
+                            <th style={{ padding: '15px' }}>Admin</th>
+                            <th style={{ padding: '15px' }}>Actions</th>
                         </tr>
-                    )) : projects.map(project => (
-                        <tr key={project.id} style={{ borderBottom: '1px solid #333' }}>
-                            <td style={{ padding: '15px' }}>{project.id}</td>
-                            <td style={{ padding: '15px' }}>{project.name}</td>
-                            <td style={{ padding: '15px' }}>{project.username}</td>
-                            <td style={{ padding: '15px' }}>{new Date(project.created_at).toLocaleDateString()}</td>
-                            <td style={{ padding: '15px' }}>
-                                <button
-                                    onClick={() => handleDeleteProject(project.id)}
-                                    style={{ backgroundColor: '#ff4444', color: 'white', padding: '5px 10px', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-                                >
-                                    Delete
-                                </button>
-                            </td>
-                        </tr>
+                    </thead>
+                    <tbody>
+                        {users.map(user => (
+                            <tr key={user.id} style={{ borderBottom: '1px solid #333' }}>
+                                <td style={{ padding: '15px' }}>{user.id}</td>
+                                <td style={{ padding: '15px' }}>{user.username}</td>
+                                <td style={{ padding: '15px' }}>{user.nickname || '-'}</td>
+                                <td style={{ padding: '15px' }}>{user.is_admin ? 'Yes' : 'No'}</td>
+                                <td style={{ padding: '15px' }}>
+                                    {!user.is_admin && (
+                                        <button
+                                            onClick={() => handleDeleteUser(user.id)}
+                                            style={{ backgroundColor: '#ff4444', color: 'white', padding: '5px 10px', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                                        >
+                                            Delete
+                                        </button>
+                                    )}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+                    {projects.map((project) => (
+                        <ProjectCard
+                            key={project.id}
+                            project={project}
+                            onClick={() => navigate(`/editor/${project.id}`)}
+                            isOwner={true}
+                            onToggleVisibility={handleToggleVisibility}
+                            onDelete={(e) => {
+                                e.stopPropagation();
+                                handleDeleteProject(project.id);
+                            }}
+                        />
                     ))}
-                </tbody>
-            </table>
+                    {projects.length === 0 && <p>No projects found.</p>}
+                </div>
+            )}
         </div>
     );
 }

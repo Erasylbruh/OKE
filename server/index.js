@@ -607,6 +607,28 @@ app.get('/api/admin/users', authenticateAdmin, async (req, res) => {
     }
 });
 
+app.get('/api/admin/projects', authenticateAdmin, async (req, res) => {
+    const { search } = req.query;
+    try {
+        let query = `
+            SELECT p.id, p.name, p.preview_url, p.preview_urls, p.created_at, p.updated_at, p.is_public, u.username, u.nickname, u.avatar_url 
+            FROM projects p 
+            JOIN users u ON p.user_id = u.id
+        `;
+        let params = [];
+        if (search) {
+            query += ' WHERE p.name LIKE ? OR u.username LIKE ?';
+            params = [`%${search}%`, `%${search}%`];
+        }
+        query += ' ORDER BY p.created_at DESC';
+
+        const [projects] = await db.execute(query, params);
+        res.json(projects);
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
 app.delete('/api/admin/users/:id', authenticateAdmin, async (req, res) => {
     try {
         await db.execute('DELETE FROM projects WHERE user_id = ?', [req.params.id]);
