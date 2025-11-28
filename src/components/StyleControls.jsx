@@ -120,6 +120,13 @@ function StyleControls({ styles, onUpdate }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <label>
                     Select Font ({filteredFonts.length} available)
+                    <input
+                        type="text"
+                        placeholder="Search fonts..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        style={{ ...inputStyle, marginBottom: '5px' }}
+                    />
                     <select
                         value={styles.fontFamily}
                         onChange={handleFontSelect}

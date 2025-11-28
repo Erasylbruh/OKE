@@ -1,35 +1,60 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-function Preview({ lyrics, styles, resetTrigger }) {
+function Preview({ lyrics, styles, resetTrigger, audioUrl }) {
     const [currentTime, setCurrentTime] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
     const activeLineRef = useRef(null);
     const scrollContainerRef = useRef(null);
+    const audioRef = useRef(null);
 
     // Reset when trigger changes
     useEffect(() => {
         setIsPlaying(false);
         setCurrentTime(0);
-    }, [resetTrigger]);
+        if (audioRef.current) {
+            audioRef.current.pause();
+            audioRef.current.currentTime = 0;
+        }
+    }, [resetTrigger, audioUrl]);
 
     // Player logic
     useEffect(() => {
         let interval;
         if (isPlaying) {
-            const start = Date.now() - currentTime * 1000;
-            interval = setInterval(() => {
-                const time = (Date.now() - start) / 1000;
-                setCurrentTime(time);
+            if (audioRef.current && audioUrl) {
+                audioRef.current.play().catch(e => console.error("Audio play error:", e));
+            }
 
-                const lastEnd = lyrics.length > 0 ? Math.max(...lyrics.map(l => l.end)) : 0;
-                if (time > lastEnd + 2) { // Stop 2s after last end
-                    setIsPlaying(false);
-                    setCurrentTime(0);
-                }
-            }, 16); // ~60fps
+            // If audio is present, use audio time. Otherwise use timer.
+            if (audioUrl) {
+                interval = setInterval(() => {
+                    if (audioRef.current) {
+                        setCurrentTime(audioRef.current.currentTime);
+                        if (audioRef.current.ended) {
+                            setIsPlaying(false);
+                        }
+                    }
+                }, 16);
+            } else {
+                const start = Date.now() - currentTime * 1000;
+                interval = setInterval(() => {
+                    const time = (Date.now() - start) / 1000;
+                    setCurrentTime(time);
+
+                    const lastEnd = lyrics.length > 0 ? Math.max(...lyrics.map(l => l.end)) : 0;
+                    if (time > lastEnd + 2) { // Stop 2s after last end
+                        setIsPlaying(false);
+                        setCurrentTime(0);
+                    }
+                }, 16); // ~60fps
+            }
+        } else {
+            if (audioRef.current) {
+                audioRef.current.pause();
+            }
         }
         return () => clearInterval(interval);
-    }, [isPlaying, lyrics]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [isPlaying, lyrics, audioUrl]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Auto-scroll logic
     useEffect(() => {
@@ -45,20 +70,27 @@ function Preview({ lyrics, styles, resetTrigger }) {
     const handleSeek = (e) => {
         const newTime = parseFloat(e.target.value);
         setCurrentTime(newTime);
-        // If playing, we need to adjust the start time in the interval, but since interval depends on state, 
-        // we can just toggle play to reset it or let the effect handle it if we structured it differently.
-        // For this simple implementation, pausing briefly is easiest to sync.
+        if (audioRef.current) {
+            audioRef.current.currentTime = newTime;
+        }
+
         if (isPlaying) {
-            setIsPlaying(false);
-            setTimeout(() => setIsPlaying(true), 10);
+            // If using timer (no audio), we need to reset start time in effect, 
+            // but since effect depends on isPlaying, toggling it is easiest way to reset if not using audio.
+            // With audio, setting currentTime is enough.
+            if (!audioUrl) {
+                setIsPlaying(false);
+                setTimeout(() => setIsPlaying(true), 10);
+            }
         }
     };
 
     const lastEnd = lyrics.length > 0 ? Math.max(...lyrics.map(l => l.end)) : 0;
-    const maxTime = lastEnd + 2;
+    const maxTime = audioRef.current?.duration || lastEnd + 2;
 
     // Format time for display
     const formatTimeSimple = (t) => {
+        if (!t && t !== 0) return "0.0s";
         return t.toFixed(1) + 's';
     };
 
@@ -74,6 +106,8 @@ function Preview({ lyrics, styles, resetTrigger }) {
             overflow: 'hidden',
             position: 'relative'
         }}>
+            {audioUrl && <audio ref={audioRef} src={audioUrl} />}
+
             {/* Player Controls - Top */}
             <div style={{
                 padding: '15px 20px',
