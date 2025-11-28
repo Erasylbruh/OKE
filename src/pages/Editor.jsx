@@ -514,13 +514,13 @@ function Editor() {
                                                             color: 'white',
                                                             border: 'none',
                                                             borderRadius: '50%',
-                                                            width: '30px',
-                                                            height: '30px',
+                                                            width: '20px',
+                                                            height: '20px',
                                                             display: 'flex',
                                                             alignItems: 'center',
                                                             justifyContent: 'center',
                                                             cursor: 'pointer',
-                                                            fontSize: '16px',
+                                                            fontSize: '15px',
                                                             zIndex: 10
                                                         }}
                                                     >

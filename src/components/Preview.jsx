@@ -125,8 +125,8 @@ function Preview({ lyrics, styles, resetTrigger, audioUrl, backgroundImageUrl })
                 <button
                     onClick={togglePlay}
                     style={{
-                        width: '60px', // Increased size for vinyl look
-                        height: '60px',
+                        width: '90px', // Increased size for vinyl look
+                        height: '90px',
                         borderRadius: '50%',
                         padding: 0,
                         display: 'flex',
