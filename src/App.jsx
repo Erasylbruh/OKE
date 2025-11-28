@@ -7,6 +7,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import Settings from './pages/Settings';
 import UserProfile from './pages/UserProfile';
 import LikedProjects from './pages/LikedProjects';
+import Editor from './pages/Editor';
 import AdminLoginModal from './components/AdminLoginModal';
 import { useState, useEffect } from 'react';
 
