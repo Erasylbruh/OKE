@@ -84,7 +84,7 @@ function Following() {
                     )}
 
                     {/* Projects Feed */}
-                    <div className="grid-3">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                         {projects.map((project) => (
                             <ProjectCard
                                 key={project.id}
