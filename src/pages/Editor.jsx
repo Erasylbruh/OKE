@@ -472,25 +472,50 @@ function Editor() {
                     .right-panel {
                         display: none; /* Default hidden on mobile */
                     }
+
+                    /* Adaptable Header Styles */
+                    .editor-toolbar {
+                        height: 60px;
+                        border-bottom: 1px solid #333;
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        padding: 0 20px;
+                        background-color: #181818;
+                        flex-shrink: 0;
+                    }
+
+                    .project-title {
+                        margin: 0;
+                        font-size: 1.2rem;
+                        font-weight: bold;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        max-width: 300px;
+                    }
+
+                    @media (max-width: 768px) {
+                        .editor-toolbar {
+                            height: 50px;
+                            padding: 0 10px;
+                        }
+
+                        .project-title {
+                            font-size: 1rem;
+                            max-width: 40vw; /* Truncate on small screens */
+                        }
+                    }
                 }
             `}</style>
 
             {/* Toolbar */}
-            <div style={{
-                height: '60px',
-                borderBottom: '1px solid #333',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '0 20px',
-                backgroundColor: '#181818',
-                flexShrink: 0
-            }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+            <div className="editor-toolbar">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <button onClick={handleBack} style={{ background: 'none', border: 'none', color: '#ccc', cursor: 'pointer', fontSize: '1.2rem' }}>
                         &larr;
                     </button>
-                    <h1 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 'bold' }}>
+                    <h1 className="project-title">
                         {projectName || 'Untitled Project'}
                     </h1>
                 </div>
@@ -885,7 +910,7 @@ function Editor() {
                 </div>
             )}
         </div>
-        </div >
+    </div >
     );
 }
 
