@@ -104,13 +104,21 @@ function UserProfile() {
                     </div>
                 </div>
 
-                {currentUser.id !== user.id && (
+                {currentUser.id !== user.id ? (
                     <button
                         onClick={handleFollow}
                         className={isFollowing ? 'danger' : 'primary'}
                         style={{ borderRadius: '20px', padding: '8px 24px' }}
                     >
                         {isFollowing ? t('unfollow') : t('follow')}
+                    </button>
+                ) : (
+                    <button
+                        onClick={() => navigate('/dashboard')}
+                        className="primary"
+                        style={{ borderRadius: '20px', padding: '8px 24px' }}
+                    >
+                        {t('my_dashboard')}
                     </button>
                 )}
             </div>

@@ -11,6 +11,7 @@ import Editor from './pages/Editor';
 import Following from './pages/Following';
 import AdminLoginModal from './components/AdminLoginModal';
 import Sidebar from './components/Sidebar';
+import BottomNav from './components/BottomNav';
 import { LanguageProvider } from './context/LanguageContext';
 
 const Layout = ({ children }) => {
@@ -33,6 +34,7 @@ const Layout = ({ children }) => {
       <div className="main-content">
         {children}
       </div>
+      <BottomNav />
     </>
   );
 };
