@@ -114,7 +114,10 @@ function Editor() {
         }
     }, [styles.fontUrl]);
 
-    const handleAudioUpload = async (e) => {
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [isUploading, setIsUploading] = useState(false);
+
+    const handleAudioUpload = (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
@@ -122,25 +125,38 @@ function Editor() {
         formData.append('audio', file);
         const token = localStorage.getItem('token');
 
-        try {
-            const res = await fetch(`${API_URL}/api/projects/${id}/audio`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` },
-                body: formData
-            });
+        setIsUploading(true);
+        setUploadProgress(0);
 
-            if (res.ok) {
-                const data = await res.json();
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', `${API_URL}/api/projects/${id}/audio`);
+        xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+
+        xhr.upload.onprogress = (event) => {
+            if (event.lengthComputable) {
+                const percentComplete = Math.round((event.loaded / event.total) * 100);
+                setUploadProgress(percentComplete);
+            }
+        };
+
+        xhr.onload = async () => {
+            setIsUploading(false);
+            if (xhr.status >= 200 && xhr.status < 300) {
+                const data = JSON.parse(xhr.responseText);
                 setAudioUrl(data.audio_url);
             } else {
-                const errorText = await res.text();
-                console.error('Audio upload failed:', errorText);
-                alert(`Failed to upload audio: ${errorText}`);
+                console.error('Audio upload failed:', xhr.responseText);
+                alert(`Failed to upload audio: ${xhr.responseText}`);
             }
-        } catch (err) {
-            console.error(err);
+        };
+
+        xhr.onerror = () => {
+            setIsUploading(false);
+            console.error('Network Error');
             alert('Error uploading audio');
-        }
+        };
+
+        xhr.send(formData);
 
         // Reset file input
         e.target.value = null;
@@ -463,32 +479,92 @@ function Editor() {
                     {/* Audio Upload Button in Toolbar */}
                     {isOwner && (
                         <>
-                            <label style={{
-                                cursor: 'pointer',
-                                backgroundColor: '#333',
-                                padding: '6px 12px',
-                                borderRadius: '20px',
-                                fontSize: '0.9rem',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '5px'
-                            }}>
-                                <span>🎵 {audioUrl ? 'Change Audio' : 'Upload Audio'}</span>
-                                <input type="file" accept="audio/*" onChange={handleAudioUpload} style={{ display: 'none' }} />
-                            </label>
-                            {audioUrl && (
+                            {!isUploading ? (
+                                <label style={{
+                                    cursor: 'pointer',
+                                    backgroundColor: '#1db954',
+                                    color: 'black',
+                                    padding: '8px 16px',
+                                    borderRadius: '20px',
+                                    fontSize: '0.9rem',
+                                    fontWeight: 'bold',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    transition: 'transform 0.2s, background-color 0.2s',
+                                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                                }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.transform = 'scale(1.05)';
+                                        e.currentTarget.style.backgroundColor = '#1ed760';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.transform = 'scale(1)';
+                                        e.currentTarget.style.backgroundColor = '#1db954';
+                                    }}
+                                >
+                                    <span>{audioUrl ? '🎵 Change Track' : '☁️ Upload Audio'}</span>
+                                    <input type="file" accept="audio/*" onChange={handleAudioUpload} style={{ display: 'none' }} />
+                                </label>
+                            ) : (
+                                <div style={{
+                                    width: '150px',
+                                    height: '36px',
+                                    backgroundColor: '#333',
+                                    borderRadius: '18px',
+                                    position: 'relative',
+                                    overflow: 'hidden',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}>
+                                    <div style={{
+                                        position: 'absolute',
+                                        left: 0,
+                                        top: 0,
+                                        height: '100%',
+                                        width: `${uploadProgress}%`,
+                                        backgroundColor: '#1db954',
+                                        transition: 'width 0.2s ease-out'
+                                    }} />
+                                    <span style={{
+                                        position: 'relative',
+                                        zIndex: 1,
+                                        fontSize: '0.8rem',
+                                        fontWeight: 'bold',
+                                        color: 'white',
+                                        textShadow: '0 1px 2px rgba(0,0,0,0.5)'
+                                    }}>
+                                        {uploadProgress}%
+                                    </span>
+                                </div>
+                            )}
+
+                            {audioUrl && !isUploading && (
                                 <button
                                     onClick={handleDeleteAudio}
                                     style={{
-                                        background: '#333',
-                                        border: 'none',
+                                        background: 'rgba(255, 85, 85, 0.1)',
+                                        border: '1px solid #ff5555',
                                         color: '#ff5555',
                                         cursor: 'pointer',
-                                        padding: '6px 12px',
-                                        borderRadius: '20px',
+                                        padding: '8px',
+                                        borderRadius: '50%',
                                         fontSize: '0.9rem',
                                         display: 'flex',
-                                        alignItems: 'center'
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        width: '36px',
+                                        height: '36px',
+                                        transition: 'all 0.2s'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.background = '#ff5555';
+                                        e.currentTarget.style.color = 'white';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.background = 'rgba(255, 85, 85, 0.1)';
+                                        e.currentTarget.style.color = '#ff5555';
                                     }}
                                     title="Remove Audio"
                                 >
