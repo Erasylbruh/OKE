@@ -34,6 +34,13 @@ const BottomNav = () => {
             >
                 <span>{t('profile') || 'profile'}</span>
             </button>
+
+            <button
+                className={`nav-item ${isActive('/settings') ? 'active' : ''}`}
+                onClick={() => navigate('/settings')}
+            >
+                <span>{t('settings') || 'settings'}</span>
+            </button>
         </div>
     );
 };

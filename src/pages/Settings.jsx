@@ -217,6 +217,30 @@ function Settings() {
                     {t('delete_account')}
                 </button>
             </div>
+
+            {/* Logout Button (Mobile) */}
+            <div style={{ marginTop: '20px', marginBottom: '40px', padding: '0 20px' }}>
+                <button
+                    onClick={() => {
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user');
+                        navigate('/auth');
+                    }}
+                    style={{
+                        width: '100%',
+                        backgroundColor: 'transparent',
+                        color: 'var(--text-muted)',
+                        border: '1px solid var(--border-color)',
+                        padding: '12px',
+                        borderRadius: '30px',
+                        cursor: 'pointer',
+                        fontSize: '1rem',
+                        fontWeight: 'bold'
+                    }}
+                >
+                    {t('logout') || 'Logout'}
+                </button>
+            </div>
         </div>
     );
 }

@@ -64,21 +64,7 @@ function Sidebar() {
                 </div>
             </div>
 
-            {/* Mobile Bottom Navigation */}
-            <div className="bottom-nav">
-                <NavLink to="/" className={({ isActive }) => isActive ? 'bottom-nav-item active' : 'bottom-nav-item'}>
-                    🏠
-                </NavLink>
-                <NavLink to="/dashboard" className={({ isActive }) => isActive ? 'bottom-nav-item active' : 'bottom-nav-item'}>
-                    📊
-                </NavLink>
-                <NavLink to="/following" className={({ isActive }) => isActive ? 'bottom-nav-item active' : 'bottom-nav-item'}>
-                    👥
-                </NavLink>
-                <NavLink to={`/user/${user.username}`} className={({ isActive }) => isActive ? 'bottom-nav-item active' : 'bottom-nav-item'}>
-                    👤
-                </NavLink>
-            </div>
+
 
             <style>{`
                 .sidebar {
@@ -159,39 +145,9 @@ function Sidebar() {
                     color: var(--danger);
                 }
 
-                .bottom-nav {
-                    display: none;
-                    position: fixed;
-                    bottom: 0;
-                    left: 0;
-                    width: 100%;
-                    background-color: #181818;
-                    border-top: 1px solid var(--border-color);
-                    padding: 10px 0;
-                    justify-content: space-around;
-                    align-items: center;
-                    z-index: 1000;
-                }
-
-                .bottom-nav-item {
-                    color: var(--text-muted);
-                    text-decoration: none;
-                    font-size: 24px;
-                    padding: 10px;
-                    border-radius: 50%;
-                }
-
-                .bottom-nav-item.active {
-                    color: var(--primary);
-                    background-color: rgba(29, 185, 84, 0.1);
-                }
-
                 @media (max-width: 768px) {
                     .sidebar {
                         display: none;
-                    }
-                    .bottom-nav {
-                        display: flex;
                     }
                 }
             `}</style>

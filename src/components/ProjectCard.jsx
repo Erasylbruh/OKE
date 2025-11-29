@@ -73,7 +73,8 @@ const ProjectCard = ({ project, onClick, isOwner, onToggleVisibility, onDelete }
                     borderRadius: '50%',
                     position: 'relative',
                     overflow: 'hidden',
-                    animation: isPlaying ? 'rotate 4s linear infinite' : 'none',
+                    animation: 'rotate 4s linear infinite',
+                    animationPlayState: isPlaying ? 'running' : 'paused',
                     boxShadow: '0 4px 10px rgba(0,0,0,0.5)'
                 }}>
                     <style>
