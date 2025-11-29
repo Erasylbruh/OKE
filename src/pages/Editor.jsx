@@ -910,7 +910,6 @@ function Editor() {
                 </div>
             )}
         </div>
-    </div >
     );
 }
 
