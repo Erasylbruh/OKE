@@ -192,6 +192,9 @@ function Preview({ lyrics, styles, resetTrigger, audioUrl, backgroundImageUrl, p
                                     position: 'absolute',
                                     left: 0,
                                     top: 0,
+                                    WebkitTextStroke: '0px',
+                                    textStroke: '0px',
+                                    textShadow: 'none'
                                 }}>
                                     {line.text}
                                 </div>

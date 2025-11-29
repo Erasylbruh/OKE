@@ -159,6 +159,16 @@ button.danger:hover {
   }
 }
 
+/* Desktop Main Content Adjustment */
+@media (min-width: 769px) {
+  .main-content {
+    margin-left: 320px;
+    /* 280px width + 20px left + 20px gap */
+    padding: 20px;
+    max-width: calc(100% - 320px);
+  }
+}
+
 /* Mobile Bottom Navigation */
 .bottom-nav {
   display: none;
