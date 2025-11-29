@@ -238,3 +238,5 @@ function ForYou() {
         </div>
     );
 }
+
+export default ForYou;
