@@ -245,7 +245,7 @@ function Editor() {
 
     const handleBack = () => {
         if (location.state && location.state.from === 'main') {
-            navigate('/foryou');
+            navigate('/');
         } else {
             navigate('/dashboard');
         }
