@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { FaTimes } from 'react-icons/fa';
 import LyricInput from '../components/LyricInput';
 import TimingEditor from '../components/TimingEditor';
 import StyleControls from '../components/StyleControls';
@@ -625,17 +626,21 @@ function Editor() {
                                                             color: 'white',
                                                             border: 'none',
                                                             borderRadius: '50%',
-                                                            width: '30px',
-                                                            height: '30px',
+                                                            width: '32px',
+                                                            height: '32px',
                                                             cursor: 'pointer',
                                                             display: 'flex',
                                                             alignItems: 'center',
                                                             justifyContent: 'center',
                                                             fontSize: '16px',
                                                             padding: 0,
-                                                            lineHeight: 1
+                                                            lineHeight: 1,
+                                                            boxSizing: 'border-box',
+                                                            aspectRatio: '1 / 1'
                                                         }}
-                                                    >✕</button>
+                                                    >
+                                                        <FaTimes size={14} />
+                                                    </button>
                                                 )}
                                                 {url && index !== 0 && (
                                                     <button
