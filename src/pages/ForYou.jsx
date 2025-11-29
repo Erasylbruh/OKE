@@ -105,7 +105,7 @@ function ForYou() {
                 )}
             </div>
 
-            <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
+            <div style={{ maxWidth: '1537px', margin: '0 auto' }}>
 
                 {/* Tab Switcher */}
                 <div className="tab-switcher">
