@@ -1,17 +1,20 @@
 import { useState, useRef } from 'react';
+import { useLanguage } from '../context/LanguageContext';
 
 function LyricInput({ onParse }) {
     const [text, setText] = useState('');
+    const [isDragging, setIsDragging] = useState(false);
     const textareaRef = useRef(null);
+    const { t } = useLanguage();
 
-    const handleParse = () => {
-        if (!text.trim()) return;
+    const parseText = (inputText) => {
+        if (!inputText.trim()) return;
 
         // Check if text looks like LRC format (contains timestamps like [00:00.00])
-        const hasTimestamps = /\[\d{2}:\d{2}\.\d{2}\]/.test(text);
+        const hasTimestamps = /\[\d{2}:\d{2}\.\d{2}\]/.test(inputText);
 
         if (hasTimestamps) {
-            const lines = text.split('\n').filter(line => line.trim() !== '');
+            const lines = inputText.split('\n').filter(line => line.trim() !== '');
             const parsedLyrics = lines.map(line => {
                 const match = line.match(/\[(\d{2}):(\d{2}\.\d{2})\](.*)/);
                 if (match) {
@@ -26,9 +29,13 @@ function LyricInput({ onParse }) {
             onParse(parsedLyrics);
         } else {
             // Legacy comma-separated parsing
-            const lines = text.split(',').filter(line => line.trim() !== '');
+            const lines = inputText.split(',').filter(line => line.trim() !== '');
             onParse(lines);
         }
+    };
+
+    const handleParse = () => {
+        parseText(text);
     };
 
     const handleInput = (e) => {
@@ -39,10 +46,38 @@ function LyricInput({ onParse }) {
         }
     };
 
+    const handleDragOver = (e) => {
+        e.preventDefault();
+        setIsDragging(true);
+    };
+
+    const handleDragLeave = () => {
+        setIsDragging(false);
+    };
+
+    const handleDrop = async (e) => {
+        e.preventDefault();
+        setIsDragging(false);
+        const file = e.dataTransfer.files[0];
+        if (file && (file.name.endsWith('.lrc') || file.type === 'text/plain')) {
+            const text = await file.text();
+            setText(text);
+            parseText(text);
+        } else {
+            alert('Please drop a valid .lrc or .txt file');
+        }
+    };
+
     return (
-        <div className="lyric-input" style={{ width: '100%', maxWidth: '600px' }}>
+        <div
+            className={`lyric-input ${isDragging ? 'dragging' : ''}`}
+            style={{ width: '100%', maxWidth: '600px' }}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+        >
             <p style={{ fontSize: '0.9em', color: '#b3b3b3', marginBottom: '8px' }}>
-                Enter lyrics separated by commas OR paste LRC format with timestamps (e.g. [00:12.50] Hello world)
+                {t('lyrics_instructions') || 'Enter lyrics separated by commas OR paste/drop LRC file'}
             </p>
             <textarea
                 ref={textareaRef}
@@ -50,31 +85,36 @@ function LyricInput({ onParse }) {
                 onChange={handleInput}
                 style={{
                     width: '100%',
-                    minHeight: '80px',
-                    height: '80px',
-                    resize: 'none',
-                    backgroundColor: '#282828',
-                    color: 'white',
-                    border: '1px solid #333',
-                    borderRadius: '4px',
-                    padding: '10px',
-                    overflow: 'hidden',
-                    boxSizing: 'border-box' // Ensure padding doesn't overflow width
+                    minHeight: '150px',
+                    height: 'auto',
+                    resize: 'vertical',
+                    backgroundColor: isDragging ? '#333' : '#1e1e1e',
+                    color: '#e0e0e0',
+                    border: isDragging ? '2px dashed #1db954' : '1px solid #333',
+                    borderRadius: '8px',
+                    padding: '15px',
+                    fontFamily: 'monospace',
+                    fontSize: '14px',
+                    lineHeight: '1.5',
+                    outline: 'none',
+                    transition: 'all 0.2s ease'
                 }}
-                placeholder="Paste lyrics here..."
+                placeholder="Paste lyrics here or drop .lrc file..."
             />
             <button onClick={handleParse} style={{
                 marginTop: '10px',
                 width: '100%',
-                height: '40px',
+                padding: '12px',
                 backgroundColor: '#1db954',
                 color: 'black',
                 border: 'none',
-                borderRadius: '4px',
+                borderRadius: '25px',
                 cursor: 'pointer',
-                fontWeight: 'bold'
+                fontWeight: 'bold',
+                fontSize: '1rem',
+                transition: 'transform 0.1s'
             }}>
-                Parse Lyrics
+                {t('parse_lyrics') || 'Parse Lyrics'}
             </button>
         </div>
     );

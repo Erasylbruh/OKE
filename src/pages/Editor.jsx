@@ -43,6 +43,7 @@ function Editor() {
     const [description, setDescription] = useState('');
     const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
     const [projectOwner, setProjectOwner] = useState(null);
+    const [likesCount, setLikesCount] = useState(0);
 
     // Load project
     useEffect(() => {
@@ -97,7 +98,9 @@ function Editor() {
                     setLyrics(data.lyrics || []);
                     setStyles(prev => data.styles || prev);
                     setDescription(data.description || '');
+                    setDescription(data.description || '');
                     setAudioUrl(project.audio_url);
+                    setLikesCount(project.likes_count || 0);
                 } else {
                     alert('Project not found or unauthorized');
                     navigate('/dashboard');
@@ -413,69 +416,25 @@ function Editor() {
             color: 'white',
             overflow: 'hidden'
         }}>
-            {/* Toolbar */}
-            <div className="editor-toolbar">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <button onClick={handleBack} style={{ background: 'none', border: 'none', color: '#ccc', cursor: 'pointer', fontSize: '1.2rem' }}>
-                        &larr;
-                    </button>
-                    <h1 className="project-title">
-                        {projectName || 'Untitled Project'}
-                    </h1>
-                </div>
-
-                {/* Phase Navigation (Owner Only) - Desktop Only now */}
-                {isOwner && (
-                    <div className="phase-nav mobile-hidden" style={{ margin: 0, border: 'none', background: 'none' }}>
-                        <div className={`phase-step ${activePhase === 1 ? 'active' : ''}`} onClick={() => setActivePhase(1)}>
-                            1. {t('lyrics_and_audio')}
-                        </div>
-                        <div className={`phase-step ${activePhase === 2 ? 'active' : ''}`} onClick={() => setActivePhase(2)}>
-                            2. {t('style')}
-                        </div>
-                        <div className={`phase-step ${activePhase === 3 ? 'active' : ''}`} onClick={() => setActivePhase(3)}>
-                            3. {t('publishing')}
-                        </div>
+            {/* Phase Navigation (Owner Only) - Desktop Only */}
+            {isOwner && (
+                <div className="phase-nav mobile-hidden" style={{
+                    margin: 0,
+                    borderBottom: '1px solid #333',
+                    background: '#181818',
+                    padding: '15px 0'
+                }}>
+                    <div className={`phase-step ${activePhase === 1 ? 'active' : ''}`} onClick={() => setActivePhase(1)}>
+                        1. {t('lyrics_and_audio')}
                     </div>
-                )}
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    {!isOwner && <LikeButton projectId={id} />}
-                    {isOwner && (
-                        <div
-                            onClick={() => setIsPublic(!isPublic)}
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '8px',
-                                cursor: 'pointer',
-                                backgroundColor: '#333',
-                                padding: '6px 12px',
-                                borderRadius: '20px'
-                            }}
-                        >
-                            <div style={{
-                                width: '10px',
-                                height: '10px',
-                                borderRadius: '50%',
-                                backgroundColor: isPublic ? '#1db954' : '#888'
-                            }} />
-                            <span className="public-toggle-text" style={{ fontSize: '0.9rem' }}>{isPublic ? t('public') : t('private')}</span>
-                        </div>
-                    )}
-                    {isOwner && (
-                        <button
-                            id="save-btn"
-                            onClick={handleSave}
-                            disabled={isSaving}
-                            className="primary save-btn"
-                            style={{ padding: '8px 24px', borderRadius: '20px' }}
-                        >
-                            {isSaving ? 'Saving...' : t('save')}
-                        </button>
-                    )}
+                    <div className={`phase-step ${activePhase === 2 ? 'active' : ''}`} onClick={() => setActivePhase(2)}>
+                        2. {t('style')}
+                    </div>
+                    <div className={`phase-step ${activePhase === 3 ? 'active' : ''}`} onClick={() => setActivePhase(3)}>
+                        3. {t('publishing')}
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* Main Content */}
             <div style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
@@ -486,27 +445,79 @@ function Editor() {
                         {/* Phase 1: Lyrics & Audio (Left Panel) */}
                         <div className={`editor-panel left-panel ${activePhase === 1 ? 'mobile-visible' : 'mobile-hidden'}`} style={{
                             borderRight: '1px solid #333',
-                            display: activePhase === 1 ? 'flex' : 'none', // Desktop: controlled by CSS if needed, but here logic handles it
+                            display: activePhase === 1 ? 'flex' : 'none',
                             flexDirection: 'column',
                             backgroundColor: '#181818',
                             overflowY: 'auto'
                         }}>
                             <div style={{ padding: '20px', flex: 1 }}>
-                                {/* Audio Upload Section */}
-                                <section className="audio-upload-section">
-                                    <h3 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>Audio</h3>
-                                    {!isUploading ? (
-                                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                                            <label className="primary" style={{ cursor: 'pointer', padding: '8px 16px', borderRadius: '20px', display: 'inline-block' }}>
-                                                {audioUrl ? t('change_track') : t('upload_audio')}
-                                                <input type="file" accept=".mp3,audio/mpeg" onChange={handleAudioUpload} style={{ display: 'none' }} />
-                                            </label>
-                                            {audioUrl && (
-                                                <button className="circular-btn" onClick={handleDeleteAudio} title="Remove Audio">✕</button>
-                                            )}
+                                {/* Audio Upload Section (Vinyl Style) */}
+                                <section className="audio-upload-section" style={{ textAlign: 'center', background: 'transparent', border: 'none', boxShadow: 'none' }}>
+                                    <div
+                                        onClick={() => document.getElementById('audio-upload').click()}
+                                        style={{
+                                            width: '120px',
+                                            height: '120px',
+                                            borderRadius: '50%',
+                                            backgroundColor: '#111',
+                                            border: '2px solid #333',
+                                            margin: '0 auto 15px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            cursor: 'pointer',
+                                            position: 'relative',
+                                            overflow: 'hidden',
+                                            boxShadow: '0 4px 15px rgba(0,0,0,0.5)'
+                                        }}
+                                    >
+                                        {/* Vinyl Grooves */}
+                                        <div style={{
+                                            position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+                                            background: 'repeating-radial-gradient(#111 0, #111 2px, #222 3px, #222 4px)',
+                                            borderRadius: '50%'
+                                        }} />
+
+                                        {/* Center Label */}
+                                        <div style={{
+                                            width: '40px',
+                                            height: '40px',
+                                            borderRadius: '50%',
+                                            backgroundColor: audioUrl ? '#1db954' : '#333',
+                                            zIndex: 2,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            color: 'white',
+                                            fontWeight: 'bold'
+                                        }}>
+                                            {isUploading ? '...' : (audioUrl ? '♫' : '+')}
                                         </div>
-                                    ) : (
-                                        <div style={{ color: '#1db954' }}>Uploading... {uploadProgress}%</div>
+                                    </div>
+
+                                    <div style={{ marginBottom: '10px' }}>
+                                        <span style={{ color: '#ccc', fontSize: '0.9rem' }}>
+                                            {audioUrl ? t('change_track') : t('upload_audio')}
+                                        </span>
+                                    </div>
+
+                                    <input id="audio-upload" type="file" accept=".mp3,audio/mpeg" onChange={handleAudioUpload} style={{ display: 'none' }} />
+
+                                    {audioUrl && (
+                                        <button
+                                            onClick={handleDeleteAudio}
+                                            style={{
+                                                background: 'none',
+                                                border: '1px solid #ff5555',
+                                                color: '#ff5555',
+                                                borderRadius: '20px',
+                                                padding: '4px 12px',
+                                                fontSize: '0.8rem',
+                                                cursor: 'pointer'
+                                            }}
+                                        >
+                                            {t('remove_audio') || 'Remove Audio'}
+                                        </button>
                                     )}
                                 </section>
 
@@ -547,7 +558,12 @@ function Editor() {
                             overflowY: 'auto'
                         }}>
                             <div style={{ padding: '20px', flex: 1 }}>
-                                <h3 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>{t('publishing')}</h3>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                                    <button onClick={handleBack} style={{ background: 'none', border: 'none', color: '#ccc', cursor: 'pointer', fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                        &larr; {t('back') || 'Back'}
+                                    </button>
+                                    <h3 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase', margin: 0 }}>{t('publishing')}</h3>
+                                </div>
 
                                 {/* Title Input */}
                                 <div style={{ marginBottom: '20px' }}>
@@ -616,29 +632,43 @@ function Editor() {
                                     <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '10px' }}>{t('drag_drop_images')}</p>
                                 </section>
 
-                                {/* Visibility Toggle */}
-                                <div
-                                    onClick={() => setIsPublic(!isPublic)}
-                                    style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '10px',
-                                        cursor: 'pointer',
-                                        backgroundColor: '#333',
-                                        padding: '10px',
-                                        borderRadius: '8px',
-                                        marginBottom: '20px'
-                                    }}
-                                >
-                                    <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: isPublic ? '#1db954' : '#888' }} />
-                                    <span>{isPublic ? t('public') : t('private')}</span>
+                                {/* Visibility & Save */}
+                                <div style={{ display: 'flex', gap: '10px', marginTop: '30px' }}>
+                                    <div
+                                        onClick={() => setIsPublic(!isPublic)}
+                                        style={{
+                                            flex: 1,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: '10px',
+                                            cursor: 'pointer',
+                                            backgroundColor: '#333',
+                                            padding: '12px',
+                                            borderRadius: '25px'
+                                        }}
+                                    >
+                                        <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: isPublic ? '#1db954' : '#888' }} />
+                                        <span>{isPublic ? t('public') : t('private')}</span>
+                                    </div>
+
+                                    <button
+                                        id="save-btn"
+                                        onClick={handleSave}
+                                        disabled={isSaving}
+                                        className="primary save-btn"
+                                        style={{ flex: 1, padding: '12px', borderRadius: '25px', border: 'none', cursor: 'pointer', fontWeight: 'bold', backgroundColor: '#1db954', color: 'black' }}
+                                    >
+                                        {isSaving ? 'Saving...' : t('save')}
+                                    </button>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Center Panel: Preview (Always visible) */}
-                        <div className="editor-panel center-panel" style={{
-                            display: 'flex',
+                        {/* Center Panel: Preview */}
+                        {/* Always visible on desktop. On mobile, only visible in Phase 4 */}
+                        <div className={`editor-panel center-panel ${activePhase === 4 ? 'mobile-visible' : 'mobile-hidden'}`} style={{
+                            display: 'flex', // Overridden by mobile-hidden class on mobile
                             alignItems: 'center',
                             justifyContent: 'center',
                             backgroundColor: '#121212',
@@ -653,7 +683,7 @@ function Editor() {
                     <div className="viewer-desktop-container">
                         {/* Tab 1: Lyrics (Animation) */}
                         <div className={`editor-panel center-panel ${viewTab === 'lyrics' ? 'mobile-visible' : 'mobile-hidden'}`} style={{
-                            display: 'flex', // Always flex in desktop grid
+                            display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             backgroundColor: '#121212',
@@ -665,16 +695,25 @@ function Editor() {
 
                         {/* Tab 2: Information */}
                         <div className={`editor-panel right-panel ${viewTab === 'info' ? 'mobile-visible' : 'mobile-hidden'}`} style={{
-                            display: 'flex', // Always flex in desktop grid
+                            display: 'flex',
                             flexDirection: 'column',
                             backgroundColor: '#181818',
                             height: '100%',
                             overflowY: 'auto'
                         }}>
                             <div style={{ padding: '20px', flex: 1 }}>
-                                <h1 style={{ fontSize: '2rem', marginBottom: '10px' }}>{projectName}</h1>
+                                <button onClick={handleBack} style={{ background: 'none', border: 'none', color: '#ccc', cursor: 'pointer', fontSize: '1.2rem', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                    &larr; {t('back') || 'Back'}
+                                </button>
 
-                                {/* User Profile */}
+                                {/* Project Name Marquee */}
+                                <div className="marquee-container" style={{ marginBottom: '20px', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                                    <h1 className="project-title-marquee" style={{ fontSize: '2rem', margin: 0, display: 'inline-block' }}>
+                                        {projectName}
+                                    </h1>
+                                </div>
+
+                                {/* User Profile (Author) */}
                                 {projectOwner && (
                                     <div
                                         style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', cursor: 'pointer' }}
@@ -709,7 +748,7 @@ function Editor() {
 
                                 {/* Likes */}
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '30px' }}>
-                                    <LikeButton projectId={id} />
+                                    <LikeButton projectId={id} initialCount={likesCount} />
                                 </div>
 
                                 <CommentsSection projectId={id} projectOwnerId={projectOwnerId} />
@@ -743,6 +782,7 @@ function Editor() {
                     <button className={`nav-item ${activePhase === 1 ? 'active' : ''}`} onClick={() => setActivePhase(1)}><span>{t('lyrics')}</span></button>
                     <button className={`nav-item ${activePhase === 2 ? 'active' : ''}`} onClick={() => setActivePhase(2)}><span>{t('style')}</span></button>
                     <button className={`nav-item ${activePhase === 3 ? 'active' : ''}`} onClick={() => setActivePhase(3)}><span>{t('publishing')}</span></button>
+                    <button className={`nav-item ${activePhase === 4 ? 'active' : ''}`} onClick={() => setActivePhase(4)}><span>Preview</span></button>
                 </div>
             )}
 

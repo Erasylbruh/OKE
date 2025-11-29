@@ -425,3 +425,53 @@ button.danger:hover {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
   margin-bottom: 30px;
 }
+
+/* Marquee for Project Title */
+.project-title-marquee {
+  display: inline-block;
+  padding-left: 100%;
+  animation: marquee 15s linear infinite;
+}
+
+.marquee-container:hover .project-title-marquee {
+  animation-play-state: paused;
+}
+
+/* Vinyl Record Animation */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.vinyl-record {
+  animation: spin 5s linear infinite;
+  animation-play-state: paused;
+}
+
+.vinyl-record.has-audio {
+  animation-play-state: running;
+}
+
+/* Responsive Utilities */
+.mobile-hidden {
+  display: flex;
+}
+
+.mobile-visible {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-hidden {
+    display: none !important;
+  }
+
+  .mobile-visible {
+    display: flex !important;
+  }
+}

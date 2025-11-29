@@ -659,10 +659,11 @@ app.get('/api/projects/:id', async (req, res) => {
             } catch (e) { }
         }
 
-        const [projects] = await db.execute(
-            'SELECT * FROM projects WHERE id = ?',
-            [req.params.id]
-        );
+        const [projects] = await db.execute(`
+            SELECT p.*, 
+            (SELECT COUNT(*) FROM likes l WHERE l.project_id = p.id) as likes_count
+            FROM projects p WHERE p.id = ?
+        `, [req.params.id]);
         if (projects.length === 0) return res.status(404).send('Project not found');
 
         const project = projects[0];
