@@ -264,3 +264,70 @@ textarea:focus {
   color: #888;
   margin-top: 50px;
 }
+
+/* Main Page Redesign */
+.hero-section {
+  background: linear-gradient(135deg, #1db954 0%, #191414 100%);
+  border-radius: 16px;
+  padding: 40px;
+  margin-bottom: 40px;
+  text-align: left;
+  color: white;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-section h1 {
+  font-size: 3rem;
+  margin: 0 0 10px 0;
+  font-weight: 800;
+}
+
+.hero-section p {
+  font-size: 1.2rem;
+  opacity: 0.9;
+  max-width: 600px;
+  margin: 0;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-main);
+}
+
+.trending-scroll-container {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  padding-bottom: 20px;
+  margin-bottom: 40px;
+  scrollbar-width: thin;
+}
+
+.trending-card {
+  min-width: 250px;
+  width: 250px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 20px;
+    margin-bottom: 30px;
+  }
+
+  .hero-section h1 {
+    font-size: 2rem;
+  }
+
+  .trending-card {
+    min-width: 200px;
+    width: 200px;
+  }
+}
