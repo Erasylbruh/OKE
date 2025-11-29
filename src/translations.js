@@ -74,7 +74,16 @@ export const translations = {
         latest_from_following: "Latest from Following",
         no_following: "You are not following anyone yet.",
         no_posts_yet: "No posts from followed users yet.",
-        login_to_see_following: "Please login to see posts from people you follow."
+        login_to_see_following: "Please login to see posts from people you follow.",
+        help: "Help",
+        how_it_works: "How it works",
+        upload_step: "1. Upload Audio (.mp3 only)",
+        lyrics_step: "2. Add Lyrics (Manual entry)",
+        timing_step: "3. Sync Timing",
+        style_step: "4. Customize Style",
+        important_notes: "Important Notes",
+        mp3_only_warning: "Only .mp3 files are supported.",
+        no_transcription_warning: "Auto-transcription is currently disabled. Please add lyrics manually."
     },
     ru: {
         login: "Войти",
@@ -151,7 +160,16 @@ export const translations = {
         latest_from_following: "Новое от подписок",
         no_following: "Вы пока ни на кого не подписаны.",
         no_posts_yet: "Постов от подписок пока нет.",
-        login_to_see_following: "Пожалуйста, войдите, чтобы видеть посты."
+        login_to_see_following: "Пожалуйста, войдите, чтобы видеть посты.",
+        help: "Помощь",
+        how_it_works: "Как это работает",
+        upload_step: "1. Загрузите Аудио (только .mp3)",
+        lyrics_step: "2. Добавьте Текст (Вручную)",
+        timing_step: "3. Настройте Тайминг",
+        style_step: "4. Настройте Стиль",
+        important_notes: "Важные примечания",
+        mp3_only_warning: "Поддерживаются только файлы .mp3.",
+        no_transcription_warning: "Авто-транскрипция отключена. Пожалуйста, добавьте текст вручную."
     },
     kk: {
         login: "Кіру",
@@ -228,6 +246,15 @@ export const translations = {
         latest_from_following: "Жазылымдардан жаңа",
         no_following: "Сіз әзірге ешкімге жазылмағансыз.",
         no_posts_yet: "Жазылымдардан әзірге посттар жоқ.",
-        login_to_see_following: "Посттарды көру үшін кіріңіз."
+        login_to_see_following: "Посттарды көру үшін кіріңіз.",
+        help: "Көмек",
+        how_it_works: "Қалай жұмыс істейді",
+        upload_step: "1. Аудио жүктеу (тек .mp3)",
+        lyrics_step: "2. Мәтін қосу (Қолмен)",
+        timing_step: "3. Уақытты реттеу",
+        style_step: "4. Стильді баптау",
+        important_notes: "Маңызды ескертпелер",
+        mp3_only_warning: "Тек .mp3 файлдары қолдау көрсетіледі.",
+        no_transcription_warning: "Авто-транскрипция өшірілген. Мәтінді қолмен қосыңыз."
     }
 };

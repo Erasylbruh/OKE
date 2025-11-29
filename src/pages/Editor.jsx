@@ -35,6 +35,7 @@ function Editor() {
     const [audioUrl, setAudioUrl] = useState(null);
     const [previewUrls, setPreviewUrls] = useState([null, null, null]);
     const [activeTab, setActiveTab] = useState('preview'); // 'preview' or 'controls'
+    const [showHelp, setShowHelp] = useState(false);
 
     // Load project
     useEffect(() => {
@@ -120,6 +121,12 @@ function Editor() {
     const handleAudioUpload = (e) => {
         const file = e.target.files[0];
         if (!file) return;
+
+        // Enforce MP3
+        if (!file.name.toLowerCase().endsWith('.mp3')) {
+            alert(t('mp3_only_warning'));
+            return;
+        }
 
         const formData = new FormData();
         formData.append('audio', file);
@@ -402,6 +409,12 @@ function Editor() {
                 >
                     {t('controls')}
                 </button>
+                <button
+                    className={`tab-btn ${activeTab === 'style' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('style')}
+                >
+                    {t('style')}
+                </button>
             </div>
 
             <style>{`
@@ -455,9 +468,9 @@ function Editor() {
                         display: flex !important;
                     }
                     
-                    /* Hide right panel on mobile for now */
+                    /* Hide right panel on mobile unless active */
                     .right-panel {
-                        display: none !important;
+                        display: none; /* Default hidden on mobile */
                     }
                 }
             `}</style>
@@ -511,7 +524,7 @@ function Editor() {
                                     }}
                                 >
                                     <span>{audioUrl ? `🎵 ${t('change_track')}` : `☁️ ${t('upload_audio')}`}</span>
-                                    <input type="file" accept="audio/*" onChange={handleAudioUpload} style={{ display: 'none' }} />
+                                    <input type="file" accept=".mp3,audio/mpeg" onChange={handleAudioUpload} style={{ display: 'none' }} />
                                 </label>
                             ) : (
                                 <div style={{
@@ -661,7 +674,7 @@ function Editor() {
                 </div>
 
                 {/* Right Panel: Settings (Owner) or Comments (Viewer) */}
-                <div className="editor-panel right-panel mobile-hidden" style={{
+                <div className={`editor-panel right-panel ${activeTab === 'style' ? 'mobile-visible' : 'mobile-hidden'}`} style={{
                     width: '450px', // Fixed width 450px
                     borderLeft: '1px solid #333',
                     display: 'flex',
@@ -799,7 +812,80 @@ function Editor() {
                     </div>
                 </div>
             </div>
+
+            {/* Help Modal */}
+            {showHelp && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1000
+                }}>
+                    <div style={{
+                        backgroundColor: '#181818',
+                        padding: '30px',
+                        borderRadius: '12px',
+                        maxWidth: '500px',
+                        width: '90%',
+                        border: '1px solid #333',
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.5)'
+                    }}>
+                        <h2 style={{ marginTop: 0, color: '#1db954', marginBottom: '20px' }}>{t('how_it_works')}</h2>
+
+                        <div style={{ marginBottom: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <span style={{ background: '#333', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}>1</span>
+                                <span>{t('upload_step')}</span>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <span style={{ background: '#333', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}>2</span>
+                                <span>{t('lyrics_step')}</span>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <span style={{ background: '#333', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}>3</span>
+                                <span>{t('timing_step')}</span>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <span style={{ background: '#333', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}>4</span>
+                                <span>{t('style_step')}</span>
+                            </div>
+                        </div>
+
+                        <div style={{ backgroundColor: 'rgba(255, 165, 0, 0.1)', padding: '15px', borderRadius: '8px', border: '1px solid rgba(255, 165, 0, 0.3)' }}>
+                            <h4 style={{ marginTop: 0, color: 'orange', marginBottom: '10px' }}>{t('important_notes')}</h4>
+                            <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '0.9rem', color: '#ddd' }}>
+                                <li>{t('mp3_only_warning')}</li>
+                                <li>{t('no_transcription_warning')}</li>
+                            </ul>
+                        </div>
+
+                        <button
+                            onClick={() => setShowHelp(false)}
+                            style={{
+                                marginTop: '20px',
+                                width: '100%',
+                                padding: '12px',
+                                backgroundColor: '#1db954',
+                                border: 'none',
+                                borderRadius: '25px',
+                                color: 'black',
+                                fontWeight: 'bold',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            OK
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
+        </div >
     );
 }
 
