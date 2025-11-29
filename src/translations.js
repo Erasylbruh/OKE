@@ -226,7 +226,7 @@ export const translations = {
         delete_account: "Аккаунтты өшіру",
         save_changes: "Өзгерістерді сақтау",
         settings_updated: "Баптаулар сәтті жаңартылды",
-        preview: "Алдын ала көру",
+        preview: "Көру",
         controls: "Басқару",
         lyrics: "Мәтін",
         timing: "Уақыт",

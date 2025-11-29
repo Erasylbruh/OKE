@@ -503,7 +503,12 @@ function Editor() {
 
                         .project-title {
                             font-size: 1rem;
-                            max-width: 40vw; /* Truncate on small screens */
+                            max-width: 30vw; /* More space for buttons */
+                        }
+                        
+                        /* Hide public toggle text on mobile */
+                        .public-toggle-text {
+                            display: none;
                         }
                     }
                 }
@@ -601,7 +606,8 @@ function Editor() {
                                         justifyContent: 'center',
                                         width: '36px',
                                         height: '36px',
-                                        transition: 'all 0.2s'
+                                        transition: 'all 0.2s',
+                                        lineHeight: 0 // Fix vertical alignment
                                     }}
                                     onMouseEnter={(e) => {
                                         e.currentTarget.style.background = '#ff5555';
@@ -640,7 +646,7 @@ function Editor() {
                                     borderRadius: '50%',
                                     backgroundColor: isPublic ? '#1db954' : '#888'
                                 }} />
-                                <span style={{ fontSize: '0.9rem' }}>{isPublic ? t('public') : t('private')}</span>
+                                <span className="public-toggle-text" style={{ fontSize: '0.9rem' }}>{isPublic ? t('public') : t('private')}</span>
                             </div>
                             <button
                                 id="save-btn"
@@ -768,7 +774,7 @@ function Editor() {
                                                 {url ? (
                                                     <img src={url} alt={`Slot ${index}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                                 ) : (
-                                                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#555', fontSize: '1.5rem' }}>+</div>
+                                                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#555', fontSize: '2rem', paddingBottom: '4px' }}>+</div>
                                                 )}
 
                                                 {url && (

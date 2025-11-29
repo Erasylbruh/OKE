@@ -528,6 +528,15 @@ app.post('/api/projects/:id/audio', authenticateToken, uploadAudio.single('audio
 
         if (projects.length === 0) return res.status(404).send('Project not found or unauthorized');
 
+        await db.execute(
+            'UPDATE projects SET audio_url = ? WHERE id = ?',
+            [audio_url, req.params.id]
+        );
+
+        res.json({ message: 'Audio uploaded', audio_url });
+    } catch (err) {
+        console.error('Audio upload error:', err);
+        res.status(500).send(err.message);
     }
 });
 
