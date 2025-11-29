@@ -41,7 +41,6 @@ function Following() {
     }, [navigate]);
 
     return (
-    return (
         <div className="following-container">
             <div className="following-header">
                 <button
