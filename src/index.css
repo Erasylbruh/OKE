@@ -36,6 +36,8 @@
   cursor: pointer;
   z-index: 100;
   transition: transform 0.2s, background-color 0.2s;
+  padding: 0;
+  aspect-ratio: 1;
 }
 
 .fab:hover {

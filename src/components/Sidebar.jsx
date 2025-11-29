@@ -26,13 +26,7 @@ function Sidebar() {
                         {t('main') || 'Main'}
                     </NavLink>
 
-                    <NavLink to="/dashboard" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-                        {t('my_dashboard')}
-                    </NavLink>
 
-                    <NavLink to="/following" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-                        {t('my_following') || 'My Following'}
-                    </NavLink>
 
                     <NavLink to={`/user/${user.username}`} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
                         {t('profile') || 'Profile'}

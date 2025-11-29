@@ -19,12 +19,7 @@ const BottomNav = () => {
                 <span>{t('home') || 'home'}</span>
             </button>
 
-            <button
-                className={`nav-item ${isActive('/') && location.state?.tab === 'following' ? 'active' : ''}`}
-                onClick={() => navigate('/', { state: { tab: 'following' } })}
-            >
-                <span>{t('following') || 'Following'}</span>
-            </button>
+
 
             <button
                 className={`nav-item ${isActive('/liked-projects') ? 'active' : ''}`}

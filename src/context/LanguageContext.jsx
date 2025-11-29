@@ -11,7 +11,8 @@ export const LanguageProvider = ({ children }) => {
     }, [language]);
 
     const t = (key) => {
-        return translations[language][key] || key;
+        const text = translations[language][key] || key;
+        return text.replace(/_/g, ' ');
     };
 
     return (
