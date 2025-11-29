@@ -182,13 +182,32 @@ function Editor() {
         });
     };
 
-    const handleLyricsParsed = (parsedLines) => {
-        const initializedLyrics = parsedLines.map((text, index) => ({
-            id: index,
-            text: text.trim(),
-            start: 0,
-            end: 0,
-        }));
+    const handleLyricsParsed = (parsedInput) => {
+        let initializedLyrics;
+
+        if (parsedInput.length > 0 && typeof parsedInput[0] === 'object') {
+            // Handle structured input (from LRC)
+            initializedLyrics = parsedInput.map((item, index) => {
+                const nextItem = parsedInput[index + 1];
+                // Default duration 2s if no next line, otherwise up to next line
+                const endTime = nextItem ? nextItem.start : (item.start + 2);
+
+                return {
+                    id: index,
+                    text: item.text,
+                    start: item.start,
+                    end: endTime
+                };
+            });
+        } else {
+            // Handle legacy string array
+            initializedLyrics = parsedInput.map((text, index) => ({
+                id: index,
+                text: text.trim(),
+                start: 0,
+                end: 0,
+            }));
+        }
         setLyrics(initializedLyrics);
     };
 

@@ -6,8 +6,29 @@ function LyricInput({ onParse }) {
 
     const handleParse = () => {
         if (!text.trim()) return;
-        const lines = text.split(',').filter(line => line.trim() !== '');
-        onParse(lines);
+
+        // Check if text looks like LRC format (contains timestamps like [00:00.00])
+        const hasTimestamps = /\[\d{2}:\d{2}\.\d{2}\]/.test(text);
+
+        if (hasTimestamps) {
+            const lines = text.split('\n').filter(line => line.trim() !== '');
+            const parsedLyrics = lines.map(line => {
+                const match = line.match(/\[(\d{2}):(\d{2}\.\d{2})\](.*)/);
+                if (match) {
+                    const minutes = parseInt(match[1]);
+                    const seconds = parseFloat(match[2]);
+                    const startTime = minutes * 60 + seconds;
+                    const content = match[3].trim();
+                    return { text: content, start: startTime };
+                }
+                return { text: line.trim(), start: 0 }; // Fallback
+            });
+            onParse(parsedLyrics);
+        } else {
+            // Legacy comma-separated parsing
+            const lines = text.split(',').filter(line => line.trim() !== '');
+            onParse(lines);
+        }
     };
 
     const handleInput = (e) => {
@@ -21,7 +42,7 @@ function LyricInput({ onParse }) {
     return (
         <div className="lyric-input" style={{ width: '100%', maxWidth: '600px' }}>
             <p style={{ fontSize: '0.9em', color: '#b3b3b3', marginBottom: '8px' }}>
-                Enter lyrics separated by commas (e.g. "Hello world, this is a test, karaoke time")
+                Enter lyrics separated by commas OR paste LRC format with timestamps (e.g. [00:12.50] Hello world)
             </p>
             <textarea
                 ref={textareaRef}
