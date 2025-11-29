@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 import LikeButton from '../components/LikeButton';
 import ProjectCard from '../components/ProjectCard';
@@ -14,8 +14,16 @@ function ForYou() {
     const [loading, setLoading] = useState(false);
 
     const navigate = useNavigate();
+    const location = useLocation();
     const { t } = useLanguage();
     const token = localStorage.getItem('token');
+
+    // Handle tab switching from navigation state
+    useEffect(() => {
+        if (location.state?.tab) {
+            setActiveTab(location.state.tab);
+        }
+    }, [location.state]);
 
     // Fetch Public Projects (For You)
     useEffect(() => {

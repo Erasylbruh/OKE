@@ -13,35 +13,31 @@ const BottomNav = () => {
     return (
         <div className="bottom-nav">
             <button
-                className={`nav-item ${isActive('/foryou') || isActive('/') ? 'active' : ''}`}
-                onClick={() => navigate('/')}
+                className={`nav-item ${isActive('/') && (!location.state?.tab || location.state?.tab === 'foryou') ? 'active' : ''}`}
+                onClick={() => navigate('/', { state: { tab: 'foryou' } })}
             >
-                <i className="fas fa-home"></i>
-                <span>{t('home')}</span>
+                <span>{t('home') || 'home'}</span>
             </button>
 
             <button
-                className={`nav-item ${isActive('/following') ? 'active' : ''}`}
-                onClick={() => navigate('/following')}
+                className={`nav-item ${isActive('/') && location.state?.tab === 'following' ? 'active' : ''}`}
+                onClick={() => navigate('/', { state: { tab: 'following' } })}
             >
-                <i className="fas fa-user-friends"></i>
-                <span>{t('following')}</span>
+                <span>{t('following') || 'Following'}</span>
             </button>
 
             <button
                 className={`nav-item ${isActive('/liked-projects') ? 'active' : ''}`}
                 onClick={() => navigate('/liked-projects')}
             >
-                <i className="fas fa-heart"></i>
-                <span>{t('liked')}</span>
+                <span>{t('liked') || 'liked'}</span>
             </button>
 
             <button
                 className={`nav-item ${isActive(`/user/${currentUser.username}`) ? 'active' : ''}`}
                 onClick={() => navigate(currentUser.username ? `/user/${currentUser.username}` : '/auth')}
             >
-                <i className="fas fa-user"></i>
-                <span>{t('profile')}</span>
+                <span>{t('profile') || 'profile'}</span>
             </button>
         </div>
     );
