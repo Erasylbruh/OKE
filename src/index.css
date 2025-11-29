@@ -180,4 +180,8 @@ textarea:focus {
     margin-left: 0 !important;
     width: 100%;
   }
+
+  .with-bottom-nav {
+    padding-bottom: 70px;
+  }
 }

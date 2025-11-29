@@ -22,9 +22,19 @@ const Layout = ({ children }) => {
     return <div className="auth-layout">{children}</div>;
   }
 
-  // Editor and Landing page (ForYou) take full width without sidebar
-  if (path.startsWith('/editor') || path === '/' || path === '/foryou') {
+  // Editor takes full width without sidebar or bottom nav
+  if (path.startsWith('/editor')) {
     return <>{children}</>;
+  }
+
+  // Landing page (ForYou) takes full width without sidebar, but needs BottomNav
+  if (path === '/' || path === '/foryou') {
+    return (
+      <div className="with-bottom-nav">
+        {children}
+        <BottomNav />
+      </div>
+    );
   }
 
   // Default: Sidebar + Main Content
