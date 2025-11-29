@@ -144,6 +144,13 @@ function Editor() {
             if (xhr.status >= 200 && xhr.status < 300) {
                 const data = JSON.parse(xhr.responseText);
                 setAudioUrl(data.audio_url);
+
+                // Auto-set lyrics if returned
+                if (data.lyrics && data.lyrics.length > 0) {
+                    setLyrics(data.lyrics);
+                    // Also update timing editor if needed (it uses the same lyrics state)
+                    alert('Audio uploaded and lyrics automatically transcribed!');
+                }
             } else {
                 console.error('Audio upload failed:', xhr.responseText);
                 alert(`Failed to upload audio: ${xhr.responseText}`);

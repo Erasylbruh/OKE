@@ -161,33 +161,42 @@ function StyleControls({ styles, onUpdate }) {
             </div>
 
             {/* Colors Section - Bar Layout */}
-            <div style={{ display: 'flex', gap: '0', marginTop: '10px', borderRadius: '4px', overflow: 'hidden', height: '40px' }}>
-                <div style={{ flex: 1, position: 'relative' }}>
-                    <span style={{ position: 'absolute', top: '-20px', left: '0', fontSize: '0.8em' }}>Text</span>
-                    <input
-                        type="color"
-                        value={styles.color}
-                        onChange={(e) => handleChange('color', e.target.value)}
-                        style={{ width: '100%', height: '100%', padding: 0, border: 'none', cursor: 'pointer' }}
-                    />
+            <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                    <span style={{ fontSize: '0.8rem', color: '#b3b3b3' }}>Text</span>
+                    <div style={{ height: '40px', borderRadius: '4px', overflow: 'hidden', border: '1px solid #333' }}>
+                        <input
+                            type="color"
+                            value={styles.color}
+                            onChange={(e) => handleChange('color', e.target.value)}
+                            style={{ width: '100%', height: '100%', padding: 0, border: 'none', cursor: 'pointer' }}
+                            title="Text Color"
+                        />
+                    </div>
                 </div>
-                <div style={{ flex: 1, position: 'relative' }}>
-                    <span style={{ position: 'absolute', top: '-20px', left: '0', fontSize: '0.8em' }}>Fill</span>
-                    <input
-                        type="color"
-                        value={styles.fillColor}
-                        onChange={(e) => handleChange('fillColor', e.target.value)}
-                        style={{ width: '100%', height: '100%', padding: 0, border: 'none', cursor: 'pointer' }}
-                    />
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                    <span style={{ fontSize: '0.8rem', color: '#b3b3b3' }}>Fill</span>
+                    <div style={{ height: '40px', borderRadius: '4px', overflow: 'hidden', border: '1px solid #333' }}>
+                        <input
+                            type="color"
+                            value={styles.fillColor}
+                            onChange={(e) => handleChange('fillColor', e.target.value)}
+                            style={{ width: '100%', height: '100%', padding: 0, border: 'none', cursor: 'pointer' }}
+                            title="Text Fill Color"
+                        />
+                    </div>
                 </div>
-                <div style={{ flex: 1, position: 'relative' }}>
-                    <span style={{ position: 'absolute', top: '-20px', left: '0', fontSize: '0.8em' }}>Bg</span>
-                    <input
-                        type="color"
-                        value={styles.backgroundColor}
-                        onChange={(e) => handleChange('backgroundColor', e.target.value)}
-                        style={{ width: '100%', height: '100%', padding: 0, border: 'none', cursor: 'pointer' }}
-                    />
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                    <span style={{ fontSize: '0.8rem', color: '#b3b3b3' }}>Background</span>
+                    <div style={{ height: '40px', borderRadius: '4px', overflow: 'hidden', border: '1px solid #333' }}>
+                        <input
+                            type="color"
+                            value={styles.backgroundColor}
+                            onChange={(e) => handleChange('backgroundColor', e.target.value)}
+                            style={{ width: '100%', height: '100%', padding: 0, border: 'none', cursor: 'pointer' }}
+                            title="Background Color"
+                        />
+                    </div>
                 </div>
             </div>
         </div>

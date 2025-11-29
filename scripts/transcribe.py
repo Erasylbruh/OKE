@@ -51,20 +51,41 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     
-    if not os.path.exists(args.audio_file):
+    if args.audio_file.startswith('http'):
+        import urllib.request
+        import tempfile
+        
+        print(f"Downloading audio from {args.audio_file}...", file=sys.stderr)
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as temp_audio:
+            urllib.request.urlretrieve(args.audio_file, temp_audio.name)
+            audio_path = temp_audio.name
+            
+        try:
+            lrc_content = transcribe_audio(audio_path, args.model)
+            
+            if args.output:
+                with open(args.output, "w", encoding="utf-8") as f:
+                    f.write(lrc_content)
+                print(f"Transcription saved to {args.output}", file=sys.stderr)
+            else:
+                print(lrc_content)
+        finally:
+            os.unlink(audio_path)
+            
+    elif not os.path.exists(args.audio_file):
         print(f"Error: File '{args.audio_file}' not found.")
         sys.exit(1)
-        
-    try:
-        lrc_content = transcribe_audio(args.audio_file, args.model)
-        
-        if args.output:
-            with open(args.output, "w", encoding="utf-8") as f:
-                f.write(lrc_content)
-            print(f"Transcription saved to {args.output}", file=sys.stderr)
-        else:
-            print(lrc_content)
+    else:
+        try:
+            lrc_content = transcribe_audio(args.audio_file, args.model)
             
-    except Exception as e:
-        print(f"An error occurred: {e}", file=sys.stderr)
-        sys.exit(1)
+            if args.output:
+                with open(args.output, "w", encoding="utf-8") as f:
+                    f.write(lrc_content)
+                print(f"Transcription saved to {args.output}", file=sys.stderr)
+            else:
+                print(lrc_content)
+                
+        except Exception as e:
+            print(f"An error occurred: {e}", file=sys.stderr)
+            sys.exit(1)
