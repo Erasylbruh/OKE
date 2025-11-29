@@ -257,7 +257,263 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes
 
-// ... (Auth routes omitted for brevity) ...
+// Auth
+app.post('/api/auth/register', async (req, res) => {
+    let { username, password } = req.body;
+    username = username.toLowerCase();
+
+    // Validation
+    const usernameRegex = /^(?=.*[a-z])(?=.*\d)[a-z0-9]{6,}$/;
+    if (!usernameRegex.test(username)) {
+        return res.status(400).send('Username must be at least 6 characters and contain both letters and digits.');
+    }
+
+    const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@#$%&])[a-zA-Z\d@#$%&]{8,}$/;
+    if (!passwordRegex.test(password)) {
+        return res.status(400).send('Password must be at least 8 characters and contain letters, digits, and a special character (@, #, $, %, &).');
+    }
+
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const [result] = await db.execute(
+            'INSERT INTO users (username, password_hash) VALUES (?, ?)',
+            [username, hashedPassword]
+        );
+        res.status(201).json({ message: 'User registered' });
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
+app.post('/api/auth/login', async (req, res) => {
+    const { username, password } = req.body;
+    try {
+        const [users] = await db.execute('SELECT * FROM users WHERE username = ?', [username]);
+        const user = users[0];
+        if (!user) return res.status(400).send('User not found');
+
+        if (await bcrypt.compare(password, user.password_hash)) {
+            const token = jwt.sign({ id: user.id, username: user.username, is_admin: user.is_admin }, SECRET_KEY);
+            res.json({ token, user: { id: user.id, username: user.username, is_admin: user.is_admin, nickname: user.nickname, avatar_url: user.avatar_url } });
+        } else {
+            res.status(403).send('Invalid credentials');
+        }
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
+// User Profile & Settings
+app.get('/api/users/settings', authenticateToken, async (req, res) => {
+    try {
+        const [users] = await db.execute('SELECT username, nickname, avatar_url, language, is_admin FROM users WHERE id = ?', [req.user.id]);
+        if (users.length === 0) return res.status(404).send('User not found');
+        res.json(users[0]);
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
+app.put('/api/users/settings', authenticateToken, async (req, res) => {
+    const { password, language } = req.body;
+    try {
+        if (password) {
+            const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@#$%&])[a-zA-Z\d@#$%&]{8,}$/;
+            if (!passwordRegex.test(password)) {
+                return res.status(400).send('Password must be at least 8 characters and contain letters, digits, and a special character (@, #, $, %, &).');
+            }
+            const hashedPassword = await bcrypt.hash(password, 10);
+            await db.execute('UPDATE users SET password_hash = ? WHERE id = ?', [hashedPassword, req.user.id]);
+        }
+
+        if (language) {
+            await db.execute('UPDATE users SET language = ? WHERE id = ?', [language, req.user.id]);
+        }
+
+        res.json({ message: 'Settings updated' });
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
+app.put('/api/users/profile', authenticateToken, uploadAvatar.single('avatar'), async (req, res) => {
+    const { nickname } = req.body;
+    let avatar_url = req.body.avatar_url;
+
+    if (req.file) {
+        avatar_url = req.file.path;
+    }
+
+    try {
+        await db.execute('UPDATE users SET nickname = ?, avatar_url = ? WHERE id = ?', [nickname, avatar_url, req.user.id]);
+        res.json({ message: 'Profile updated', avatar_url });
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
+// Likes Route (Must be before /api/users/:username)
+app.get('/api/users/likes', authenticateToken, async (req, res) => {
+    try {
+        const [projects] = await db.execute(`
+            SELECT p.id, p.name, p.created_at, p.updated_at, u.username, u.nickname, u.avatar_url 
+            FROM projects p 
+            JOIN likes l ON p.id = l.project_id 
+            JOIN users u ON p.user_id = u.id 
+            WHERE l.user_id = ?
+            ORDER BY l.created_at DESC
+        `, [req.user.id]);
+        res.json(projects);
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
+// Public Profile & Following
+app.get('/api/users/:username', async (req, res) => {
+    try {
+        const [users] = await db.execute('SELECT id, username, nickname, avatar_url, created_at FROM users WHERE username = ?', [req.params.username]);
+        if (users.length === 0) return res.status(404).send('User not found');
+        const user = users[0];
+
+        const [projects] = await db.execute(`
+            SELECT p.id, p.name, p.preview_url, p.preview_urls, p.audio_url, p.created_at, p.updated_at,
+            (SELECT COUNT(*) FROM likes l WHERE l.project_id = p.id) as likes_count,
+            (SELECT COUNT(*) FROM comments c WHERE c.project_id = p.id) as comments_count
+            FROM projects p 
+            WHERE p.user_id = ? AND p.is_public = TRUE 
+            ORDER BY p.updated_at DESC
+        `, [user.id]);
+
+        const [followers] = await db.execute('SELECT COUNT(*) as count FROM followers WHERE following_id = ?', [user.id]);
+        const [following] = await db.execute('SELECT COUNT(*) as count FROM followers WHERE follower_id = ?', [user.id]);
+
+        // Check if current user is following (if authenticated)
+        let isFollowing = false;
+        const authHeader = req.headers['authorization'];
+        const token = authHeader && authHeader.split(' ')[1];
+        if (token) {
+            try {
+                const decoded = jwt.verify(token, SECRET_KEY);
+                const [check] = await db.execute('SELECT id FROM followers WHERE follower_id = ? AND following_id = ?', [decoded.id, user.id]);
+                isFollowing = check.length > 0;
+            } catch (e) { }
+        }
+
+        res.json({
+            ...user,
+            projects,
+            followersCount: followers[0].count,
+            followingCount: following[0].count,
+            isFollowing
+        });
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
+// Follow Endpoints
+app.post('/api/users/:id/follow', authenticateToken, async (req, res) => {
+    try {
+        if (parseInt(req.params.id) === req.user.id) return res.status(400).send('Cannot follow yourself');
+
+        await db.execute(
+            'INSERT IGNORE INTO followers (follower_id, following_id) VALUES (?, ?)',
+            [req.user.id, req.params.id]
+        );
+
+        // Notification
+        await db.execute(
+            'INSERT INTO notifications (user_id, type, source_id, trigger_user_id) VALUES (?, ?, ?, ?)',
+            [req.params.id, 'follow', req.user.id, req.user.id]
+        );
+
+        res.json({ message: 'Followed' });
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
+app.delete('/api/users/:id/follow', authenticateToken, async (req, res) => {
+    try {
+        await db.execute(
+            'DELETE FROM followers WHERE follower_id = ? AND following_id = ?',
+            [req.user.id, req.params.id]
+        );
+        res.json({ message: 'Unfollowed' });
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
+app.get('/api/users/me/following', authenticateToken, async (req, res) => {
+    try {
+        const [users] = await db.execute(`
+            SELECT u.id, u.username, u.nickname, u.avatar_url 
+            FROM users u
+            JOIN followers f ON u.id = f.following_id
+            WHERE f.follower_id = ?
+        `, [req.user.id]);
+        res.json(users);
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
+app.get('/api/projects/following', authenticateToken, async (req, res) => {
+    try {
+        const [projects] = await db.execute(`
+            SELECT p.id, p.name, p.preview_url, p.preview_urls, p.audio_url, p.created_at, p.updated_at, u.username, u.nickname, u.avatar_url,
+            (SELECT COUNT(*) FROM likes l WHERE l.project_id = p.id) as likes_count,
+            (SELECT COUNT(*) FROM comments c WHERE c.project_id = p.id) as comments_count
+            FROM projects p 
+            JOIN users u ON p.user_id = u.id 
+            JOIN followers f ON u.id = f.following_id
+            WHERE f.follower_id = ? AND p.is_public = TRUE
+            ORDER BY p.updated_at DESC
+        `, [req.user.id]);
+        res.json(projects);
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
+app.post('/api/projects/:id/preview', authenticateToken, uploadPreview.single('preview'), async (req, res) => {
+    if (!req.file) return res.status(400).send('No file uploaded');
+    const slot = parseInt(req.body.slot) || 0;
+
+    try {
+        const preview_url = req.file.path;
+
+        // Get existing previews
+        const [projects] = await db.execute(
+            'SELECT preview_urls FROM projects WHERE id = ? AND user_id = ?',
+            [req.params.id, req.user.id]
+        );
+
+        if (projects.length === 0) return res.status(404).send('Project not found or unauthorized');
+
+        let previewUrls = projects[0].preview_urls || [];
+        // Ensure it's an array (handle legacy null or invalid JSON)
+        if (!Array.isArray(previewUrls)) previewUrls = [];
+
+        // Update specific slot
+        previewUrls[slot] = preview_url;
+
+        // Limit to 3
+        previewUrls = previewUrls.slice(0, 3);
+
+        const [result] = await db.execute(
+            'UPDATE projects SET preview_urls = ?, preview_url = ? WHERE id = ? AND user_id = ?',
+            [JSON.stringify(previewUrls), previewUrls[0], req.params.id, req.user.id]
+        );
+
+        res.json({ message: 'Preview updated', preview_urls: previewUrls });
+    } catch (err) {
+        console.error('Preview upload error:', err);
+        res.status(500).send(err.message);
+    }
+});
 
 app.post('/api/projects/:id/audio', authenticateToken, uploadAudio.single('audio'), async (req, res) => {
     if (!req.file) return res.status(400).send('No file uploaded');
