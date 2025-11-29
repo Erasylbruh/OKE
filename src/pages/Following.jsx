@@ -83,7 +83,7 @@ function Following() {
                         </div>
                     )}
 
-                    {/* Projects Feed */}
+                    {/* Projects Feed - Vertical Layout */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                         {projects.map((project) => (
                             <ProjectCard
