@@ -10,23 +10,31 @@ function LyricInput({ onParse }) {
     const parseText = (inputText) => {
         if (!inputText.trim()) return;
 
-        // Check if text looks like LRC format (contains timestamps like [00:00.00])
-        const hasTimestamps = /\[\d{2}:\d{2}\.\d{2}\]/.test(inputText);
+        // Check if text looks like LRC format (contains timestamps like [00:00.00] or [00:00.000])
+        const hasTimestamps = /\[\d{2}:\d{2}\.\d{2,3}\]/.test(inputText);
 
         if (hasTimestamps) {
-            const lines = inputText.split('\n').filter(line => line.trim() !== '');
+            const lines = inputText.split('\n');
             const parsedLyrics = lines.map(line => {
-                const match = line.match(/\[(\d{2}):(\d{2}\.\d{2})\](.*)/);
+                const match = line.match(/\[(\d{2}):(\d{2}\.\d{2,3})\](.*)/);
                 if (match) {
                     const minutes = parseInt(match[1]);
                     const seconds = parseFloat(match[2]);
                     const startTime = minutes * 60 + seconds;
                     const content = match[3].trim();
+                    // Skip empty content if desired, but sometimes instrumental breaks are marked
                     return { text: content, start: startTime };
                 }
-                return { text: line.trim(), start: 0 }; // Fallback
-            });
-            onParse(parsedLyrics);
+                return null; // Skip metadata or invalid lines
+            }).filter(item => item !== null); // Filter out nulls
+
+            if (parsedLyrics.length > 0) {
+                onParse(parsedLyrics);
+            } else {
+                // Fallback if no valid lyrics found despite hasTimestamps (unlikely but safe)
+                const lines = inputText.split(',').filter(line => line.trim() !== '');
+                onParse(lines);
+            }
         } else {
             // Legacy comma-separated parsing
             const lines = inputText.split(',').filter(line => line.trim() !== '');
