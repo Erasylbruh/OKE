@@ -167,8 +167,8 @@ function Preview({ lyrics, styles, resetTrigger, audioUrl, backgroundImageUrl, p
                                 transform: isActive ? 'scale(1.05)' : 'scale(1)',
                                 transformOrigin: 'left center',
                                 cursor: 'default',
-                                WebkitTextStroke: '0px', // Fix thin white stroke
-                                textStroke: '0px'
+                                textShadow: 'none', // Ensure no shadow looks like a border
+                                WebkitTextStroke: '0', // Ensure no stroke
                             }}
                         >
                             {/* Inactive Layer (Background) */}
