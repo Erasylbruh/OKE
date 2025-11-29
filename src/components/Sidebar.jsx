@@ -48,7 +48,14 @@ function Sidebar() {
                         <NavLink
                             to="/admin"
                             className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}
-                            style={{ color: '#1db954', marginBottom: '10px', borderTop: '1px solid #333', paddingTop: '10px', fontWeight: 'bold' }}
+                            style={{
+                                backgroundColor: '#1db954',
+                                color: 'white',
+                                marginBottom: '10px',
+                                fontWeight: 'bold',
+                                justifyContent: 'center',
+                                border: 'none'
+                            }}
                         >
                             {t('admin_dashboard')}
                         </NavLink>
@@ -136,8 +143,8 @@ function Sidebar() {
                     width: 200px;
                     height: 50px;
                     background: none;
-                    border: 1px solid var(--border-color);
-                    color: var(--text-muted);
+                    border: 1px solid white;
+                    color: white;
                     padding: 0 16px;
                     text-align: center;
                     display: flex;
@@ -145,6 +152,7 @@ function Sidebar() {
                     justify-content: center;
                     border-radius: 8px;
                     cursor: pointer;
+                    font-weight: bold;
                 }
 
                 .logout-btn:hover {

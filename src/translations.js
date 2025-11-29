@@ -65,7 +65,16 @@ export const translations = {
         remove_audio: "Remove Audio",
         drag_drop_images: "Drag & drop images or click to upload. First slot is the cover.",
         welcome_message: "Welcome to QaraOke",
-        hero_subtitle: "This website helps you to make your karaoke fast and beauty"
+        hero_subtitle: "This website helps you to make your karaoke fast and beauty",
+        profile: "Profile",
+        for_you: "For You",
+        recent_projects: "Recent Projects",
+        trending: "Trending",
+        creators_you_follow: "Creators You Follow",
+        latest_from_following: "Latest from Following",
+        no_following: "You are not following anyone yet.",
+        no_posts_yet: "No posts from followed users yet.",
+        login_to_see_following: "Please login to see posts from people you follow."
     },
     ru: {
         login: "Войти",
@@ -133,7 +142,16 @@ export const translations = {
         remove_audio: "Удалить Аудио",
         drag_drop_images: "Перетащите изображения или нажмите для загрузки. Первый слот - обложка.",
         welcome_message: "Добро пожаловать в QaraOke",
-        hero_subtitle: "Этот сайт поможет вам сделать караоке быстро и красиво"
+        hero_subtitle: "Этот сайт поможет вам сделать караоке быстро и красиво",
+        profile: "Профиль",
+        for_you: "Для Вас",
+        recent_projects: "Недавние Проекты",
+        trending: "В Тренде",
+        creators_you_follow: "Авторы, на которых вы подписаны",
+        latest_from_following: "Новое от подписок",
+        no_following: "Вы пока ни на кого не подписаны.",
+        no_posts_yet: "Постов от подписок пока нет.",
+        login_to_see_following: "Пожалуйста, войдите, чтобы видеть посты."
     },
     kk: {
         login: "Кіру",
@@ -201,6 +219,15 @@ export const translations = {
         remove_audio: "Аудионы өшіру",
         drag_drop_images: "Суреттерді сүйреп әкеліңіз немесе жүктеу үшін басыңыз. Бірінші слот - мұқаба.",
         welcome_message: "QaraOke-ге қош келдіңіз",
-        hero_subtitle: "Бұл сайт сізге караокені тез әрі әдемі жасауға көмектеседі"
+        hero_subtitle: "Бұл сайт сізге караокені тез әрі әдемі жасауға көмектеседі",
+        profile: "Профиль",
+        for_you: "Сіз үшін",
+        recent_projects: "Соңғы жобалар",
+        trending: "Трендте",
+        creators_you_follow: "Сіз жазылған авторлар",
+        latest_from_following: "Жазылымдардан жаңа",
+        no_following: "Сіз әзірге ешкімге жазылмағансыз.",
+        no_posts_yet: "Жазылымдардан әзірге посттар жоқ.",
+        login_to_see_following: "Посттарды көру үшін кіріңіз."
     }
 };

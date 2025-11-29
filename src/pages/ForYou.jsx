@@ -71,7 +71,14 @@ function ForYou() {
     }, [activeTab, token]);
 
     // Mock trending logic for Public tab
-    const trendingProjects = publicProjects.slice(0, 5);
+    // Trending logic: Sort by likes + comments
+    const trendingProjects = [...publicProjects]
+        .sort((a, b) => {
+            const scoreA = (a.likes_count || 0) + (a.comments_count || 0);
+            const scoreB = (b.likes_count || 0) + (b.comments_count || 0);
+            return scoreB - scoreA;
+        })
+        .slice(0, 5);
     const recentProjects = publicProjects;
 
     return (
@@ -124,9 +131,21 @@ function ForYou() {
                             <section>
                                 <div className="section-title">
                                     <i className="fas fa-fire" style={{ color: '#ff5500' }}></i>
-                                    {t('trending') || 'Trending Now'}
+                                    {t('trending')}
                                 </div>
-                                <div className="trending-scroll-container">
+                                <div className="trending-scroll-container" style={{
+                                    display: 'flex',
+                                    gap: '20px',
+                                    overflowX: 'auto',
+                                    paddingBottom: '20px',
+                                    scrollbarWidth: 'none', /* Firefox */
+                                    msOverflowStyle: 'none'  /* IE 10+ */
+                                }}>
+                                    <style>{`
+                                        .trending-scroll-container::-webkit-scrollbar {
+                                            display: none; /* Chrome/Safari/Webkit */
+                                        }
+                                    `}</style>
                                     {trendingProjects.map((project) => (
                                         <div key={project.id} className="trending-card">
                                             <ProjectCard
@@ -144,7 +163,7 @@ function ForYou() {
                         <section>
                             <div className="section-title">
                                 <i className="fas fa-clock" style={{ color: '#1db954' }}></i>
-                                {t('recent_projects') || 'Recent Projects'}
+                                {t('recent_projects')}
                             </div>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                                 {recentProjects.map((project) => (
@@ -164,7 +183,7 @@ function ForYou() {
                     <>
                         {!token ? (
                             <div className="no-content-message">
-                                <p>{t('login_to_see_following') || 'Please login to see posts from people you follow.'}</p>
+                                <p>{t('login_to_see_following')}</p>
                                 <button
                                     onClick={() => navigate('/auth')}
                                     style={{ marginTop: '10px', padding: '10px 20px' }}
@@ -181,7 +200,7 @@ function ForYou() {
                                     <section>
                                         <div className="section-title">
                                             <i className="fas fa-user-friends" style={{ color: '#1db954' }}></i>
-                                            {t('creators_you_follow') || 'Creators You Follow'}
+                                            {t('creators_you_follow')}
                                         </div>
                                         <div className="profiles-scroll-container">
                                             {followedUsers.map(user => (
@@ -213,7 +232,7 @@ function ForYou() {
                                 <section>
                                     <div className="section-title">
                                         <i className="fas fa-rss" style={{ color: '#1db954' }}></i>
-                                        {t('latest_from_following') || 'Latest from Following'}
+                                        {t('latest_from_following')}
                                     </div>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                                         {followedProjects.map((project) => (
@@ -228,13 +247,13 @@ function ForYou() {
 
                                     {followedUsers.length === 0 && (
                                         <div className="no-content-message">
-                                            {t('no_following') || 'You are not following anyone yet.'}
+                                            {t('no_following')}
                                         </div>
                                     )}
 
                                     {followedUsers.length > 0 && followedProjects.length === 0 && (
                                         <div className="no-content-message">
-                                            {t('no_posts_yet') || 'No posts from followed users yet.'}
+                                            {t('no_posts_yet')}
                                         </div>
                                     )}
                                 </section>
