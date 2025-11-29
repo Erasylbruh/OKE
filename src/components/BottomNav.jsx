@@ -14,7 +14,7 @@ const BottomNav = () => {
         <div className="bottom-nav">
             <button
                 className={`nav-item ${isActive('/foryou') || isActive('/') ? 'active' : ''}`}
-                onClick={() => navigate('/foryou')}
+                onClick={() => navigate('/')}
             >
                 <i className="fas fa-home"></i>
                 <span>{t('home')}</span>
