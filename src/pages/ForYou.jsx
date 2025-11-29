@@ -78,8 +78,8 @@ function ForYou() {
         <div className="foryou-container" style={{ paddingBottom: '80px' }}>
             {/* Hero Section */}
             <div className="hero-section">
-                <h1>{t('welcome_message') || 'Welcome to Gravity'}</h1>
-                <p>{t('hero_subtitle') || 'Discover, create, and share amazing music projects.'}</p>
+                <h1>{t('welcome_message')}</h1>
+                <p>{t('hero_subtitle')}</p>
                 {!token && (
                     <button
                         onClick={() => navigate('/auth')}

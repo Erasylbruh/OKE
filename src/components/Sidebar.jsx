@@ -18,7 +18,9 @@ function Sidebar() {
         <>
             <div className="sidebar">
                 <div className="sidebar-header">
-                    <h2 style={{ margin: 0, color: 'var(--primary)', fontFamily: 'Quicksand, sans-serif', fontSize: '7.5rem', lineHeight: 1 }}>QO</h2>
+                    <h2 style={{ margin: 0, fontFamily: 'Quicksand, sans-serif', fontSize: '2.5rem', lineHeight: 1, color: 'white' }}>
+                        <span style={{ color: '#1db954' }}>Q</span>ara<span style={{ color: '#1db954' }}>O</span>ke
+                    </h2>
                 </div>
 
                 <nav className="sidebar-nav">
@@ -46,7 +48,7 @@ function Sidebar() {
                         <NavLink
                             to="/admin"
                             className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}
-                            style={{ color: '#ff4444', marginBottom: '10px', borderTop: '1px solid #333', paddingTop: '10px' }}
+                            style={{ color: '#1db954', marginBottom: '10px', borderTop: '1px solid #333', paddingTop: '10px', fontWeight: 'bold' }}
                         >
                             {t('admin_dashboard')}
                         </NavLink>
@@ -101,10 +103,11 @@ function Sidebar() {
                     flex: 1;
                 }
 
-                .nav-item {
+                    width: 200px;
+                    height: 50px;
                     color: var(--text-muted);
                     text-decoration: none;
-                    padding: 12px 16px;
+                    padding: 0 16px;
                     border-radius: 8px;
                     transition: all 0.2s;
                     font-weight: 500;
@@ -130,12 +133,18 @@ function Sidebar() {
                 }
 
                 .logout-btn {
-                    width: 100%;
+                    width: 200px;
+                    height: 50px;
                     background: none;
                     border: 1px solid var(--border-color);
                     color: var(--text-muted);
-                    padding: 10px;
+                    padding: 0 16px;
                     text-align: center;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border-radius: 8px;
+                    cursor: pointer;
                 }
 
                 .logout-btn:hover {

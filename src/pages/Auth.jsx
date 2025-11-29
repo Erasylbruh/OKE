@@ -120,7 +120,9 @@ function Auth() {
             </button>
 
             <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-                <h1 style={{ margin: 0, color: 'var(--primary)', fontSize: '2rem' }}>Gravity</h1>
+                <h1 style={{ margin: 0, fontFamily: 'Quicksand, sans-serif', fontSize: '2rem', color: 'white' }}>
+                    <span style={{ color: '#1db954' }}>Q</span>ara<span style={{ color: '#1db954' }}>O</span>ke
+                </h1>
                 <p style={{ color: '#888', marginTop: '5px' }}>
                     {isLogin ? 'Welcome back' : 'Create your account'}
                 </p>

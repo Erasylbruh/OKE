@@ -394,13 +394,13 @@ function Editor() {
                     className={`tab-btn ${activeTab === 'preview' ? 'active' : ''}`}
                     onClick={() => setActiveTab('preview')}
                 >
-                    Preview
+                    {t('preview')}
                 </button>
                 <button
                     className={`tab-btn ${activeTab === 'controls' ? 'active' : ''}`}
                     onClick={() => setActiveTab('controls')}
                 >
-                    Controls
+                    {t('controls')}
                 </button>
             </div>
 
@@ -510,7 +510,7 @@ function Editor() {
                                         e.currentTarget.style.backgroundColor = '#1db954';
                                     }}
                                 >
-                                    <span>{audioUrl ? '🎵 Change Track' : '☁️ Upload Audio'}</span>
+                                    <span>{audioUrl ? `🎵 ${t('change_track')}` : `☁️ ${t('upload_audio')}`}</span>
                                     <input type="file" accept="audio/*" onChange={handleAudioUpload} style={{ display: 'none' }} />
                                 </label>
                             ) : (
@@ -573,7 +573,7 @@ function Editor() {
                                         e.currentTarget.style.background = 'rgba(255, 85, 85, 0.1)';
                                         e.currentTarget.style.color = '#ff5555';
                                     }}
-                                    title="Remove Audio"
+                                    title={t('remove_audio')}
                                 >
                                     ✕
                                 </button>
@@ -633,13 +633,13 @@ function Editor() {
                     }}>
                         <div style={{ padding: '20px', overflowY: 'auto', flex: 1 }}>
                             <section style={{ marginBottom: '30px' }}>
-                                <h3 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>Lyrics</h3>
+                                <h3 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>{t('lyrics')}</h3>
                                 <LyricInput onParse={handleLyricsParsed} />
                             </section>
 
                             {lyrics.length > 0 && (
                                 <section>
-                                    <h3 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>Timing</h3>
+                                    <h3 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>{t('timing')}</h3>
                                     <TimingEditor lyrics={lyrics} onUpdate={updateLyric} />
                                 </section>
                             )}
@@ -673,12 +673,12 @@ function Editor() {
                         {isOwner ? (
                             <>
                                 <section style={{ marginBottom: '30px' }}>
-                                    <h3 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>Style</h3>
+                                    <h3 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>{t('style')}</h3>
                                     <StyleControls styles={styles} onUpdate={setStyles} />
                                 </section>
 
                                 <section>
-                                    <h3 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>Backgrounds</h3>
+                                    <h3 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>{t('backgrounds')}</h3>
                                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
                                         {previewUrls.map((url, index) => (
                                             <div
@@ -789,7 +789,7 @@ function Editor() {
                                         ))}
                                     </div>
                                     <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '10px' }}>
-                                        Drag & drop images or click to upload. First slot is the cover.
+                                        {t('drag_drop_images')}
                                     </p>
                                 </section>
                             </>

@@ -192,15 +192,15 @@ function Settings() {
                     className="primary"
                     style={{ width: '100%', padding: '14px', fontSize: '1.1rem', borderRadius: '30px' }}
                 >
-                    {t('save_changes') || 'Save Changes'}
+                    {t('save_changes')}
                 </button>
             </div>
 
             {/* Danger Zone */}
             <div style={{ marginTop: '40px', padding: '20px', border: '1px solid #ff4444', borderRadius: '12px', opacity: 0.7 }}>
-                <h3 style={{ marginTop: 0, color: '#ff4444', fontSize: '1rem' }}>Danger Zone</h3>
+                <h3 style={{ marginTop: 0, color: '#ff4444', fontSize: '1rem' }}>{t('danger_zone')}</h3>
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                    Once you delete your account, there is no going back. Please be certain.
+                    {t('delete_account_warning')}
                 </p>
                 <button
                     onClick={handleDeleteAccount}
@@ -214,7 +214,7 @@ function Settings() {
                         marginTop: '10px'
                     }}
                 >
-                    Delete Account
+                    {t('delete_account')}
                 </button>
             </div>
         </div>
