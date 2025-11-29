@@ -27,15 +27,7 @@ const Layout = ({ children }) => {
     return <>{children}</>;
   }
 
-  // Landing page (ForYou) takes full width without sidebar, but needs BottomNav
-  if (path === '/' || path === '/foryou') {
-    return (
-      <div className="with-bottom-nav">
-        {children}
-        <BottomNav />
-      </div>
-    );
-  }
+
 
   // Default: Sidebar + Main Content
   return (

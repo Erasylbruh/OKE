@@ -460,6 +460,24 @@ app.get('/api/users/me/following', authenticateToken, async (req, res) => {
     }
 });
 
+app.get('/api/projects/following', authenticateToken, async (req, res) => {
+    try {
+        const [projects] = await db.execute(`
+            SELECT p.id, p.name, p.preview_url, p.preview_urls, p.audio_url, p.created_at, p.updated_at, u.username, u.nickname, u.avatar_url,
+            (SELECT COUNT(*) FROM likes l WHERE l.project_id = p.id) as likes_count,
+            (SELECT COUNT(*) FROM comments c WHERE c.project_id = p.id) as comments_count
+            FROM projects p 
+            JOIN users u ON p.user_id = u.id 
+            JOIN followers f ON u.id = f.following_id
+            WHERE f.follower_id = ? AND p.is_public = TRUE
+            ORDER BY p.updated_at DESC
+        `, [req.user.id]);
+        res.json(projects);
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
 app.post('/api/projects/:id/preview', authenticateToken, uploadPreview.single('preview'), async (req, res) => {
     if (!req.file) return res.status(400).send('No file uploaded');
     const slot = parseInt(req.body.slot) || 0;
