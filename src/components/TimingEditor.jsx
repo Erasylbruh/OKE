@@ -52,37 +52,38 @@ function TimingEditor({ lyrics, onUpdate }) {
             {lyrics.map((line, index) => (
                 <div key={line.id} className="timing-row" style={{
                     display: 'flex',
-                    alignItems: 'center',
+                    alignItems: 'flex-start', // Align to top
                     gap: '10px',
                     marginBottom: '10px',
-                    padding: '0 15px',
+                    padding: '10px 15px',
                     backgroundColor: '#282828',
                     borderRadius: '4px',
                     minHeight: '80px',
                     width: '100%',
                     maxWidth: '600px',
-                    boxSizing: 'border-box'
+                    boxSizing: 'border-box',
+                    flexWrap: 'wrap' // Allow wrapping
                 }}>
-                    <span style={{ width: '20px', color: '#b3b3b3' }}>{index + 1}</span>
-                    <div style={{ flex: 1, textAlign: 'left', width: '100%' }}>
-                        <div style={{ fontWeight: 'bold', marginBottom: '4px', color: 'white' }}>{line.text}</div>
-                        <div className="timing-inputs" style={{ display: 'flex', gap: '10px' }}>
-                            <label style={{ fontSize: '0.8em', color: '#b3b3b3' }}>
+                    <span style={{ width: '20px', color: '#b3b3b3', marginTop: '4px' }}>{index + 1}</span>
+                    <div style={{ flex: 1, minWidth: '200px' }}>
+                        <div style={{ fontWeight: 'bold', marginBottom: '8px', color: 'white', wordBreak: 'break-word' }}>{line.text}</div>
+                        <div className="timing-inputs" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                            <label style={{ fontSize: '0.8em', color: '#b3b3b3', display: 'flex', alignItems: 'center' }}>
                                 Start:
                                 <TimeInput
                                     value={line.start}
                                     onChange={(val) => onUpdate(index, 'start', val)}
                                     placeholder="mm.ss.ms"
-                                    style={{ width: '80px', marginLeft: '5px', backgroundColor: '#333', border: '1px solid #444', color: 'white', padding: '2px 5px', borderRadius: '3px' }}
+                                    style={{ width: '80px', marginLeft: '5px', backgroundColor: '#333', border: '1px solid #444', color: 'white', padding: '4px', borderRadius: '3px' }}
                                 />
                             </label>
-                            <label style={{ fontSize: '0.8em', color: '#b3b3b3' }}>
+                            <label style={{ fontSize: '0.8em', color: '#b3b3b3', display: 'flex', alignItems: 'center' }}>
                                 End:
                                 <TimeInput
                                     value={line.end}
                                     onChange={(val) => onUpdate(index, 'end', val)}
                                     placeholder="mm.ss.ms"
-                                    style={{ width: '80px', marginLeft: '5px', backgroundColor: '#333', border: '1px solid #444', color: 'white', padding: '2px 5px', borderRadius: '3px' }}
+                                    style={{ width: '80px', marginLeft: '5px', backgroundColor: '#333', border: '1px solid #444', color: 'white', padding: '4px', borderRadius: '3px' }}
                                 />
                             </label>
                         </div>
@@ -91,6 +92,7 @@ function TimingEditor({ lyrics, onUpdate }) {
                         className="circular-btn"
                         onClick={() => onUpdate(index, 'remove')}
                         title="Remove line"
+                        style={{ marginTop: '4px' }}
                     >
                         ✕
                     </button>

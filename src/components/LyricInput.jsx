@@ -15,23 +15,29 @@ function LyricInput({ onParse }) {
 
         if (hasTimestamps) {
             const lines = inputText.split('\n');
-            const parsedLyrics = lines.map(line => {
+            const parsedLyrics = [];
+            const cleanLines = [];
+
+            lines.forEach(line => {
                 const match = line.match(/\[(\d{2}):(\d{2}\.\d{2,3})\](.*)/);
                 if (match) {
                     const minutes = parseInt(match[1]);
                     const seconds = parseFloat(match[2]);
                     const startTime = minutes * 60 + seconds;
                     const content = match[3].trim();
-                    // Skip empty content if desired, but sometimes instrumental breaks are marked
-                    return { text: content, start: startTime };
+                    parsedLyrics.push({ text: content, start: startTime });
+                    cleanLines.push(line); // Keep valid lyric lines
+                } else if (line.trim() !== '' && !line.trim().startsWith('[')) {
+                    // Keep non-timestamped lines that aren't metadata tags (simple text)
+                    cleanLines.push(line);
                 }
-                return null; // Skip metadata or invalid lines
-            }).filter(item => item !== null); // Filter out nulls
+                // Metadata lines (starting with [ but not timestamp) are skipped in cleanLines
+            });
 
             if (parsedLyrics.length > 0) {
                 onParse(parsedLyrics);
+                setText(cleanLines.join('\n')); // Update textarea with clean content
             } else {
-                // Fallback if no valid lyrics found despite hasTimestamps (unlikely but safe)
                 const lines = inputText.split(',').filter(line => line.trim() !== '');
                 onParse(lines);
             }
@@ -105,7 +111,9 @@ function LyricInput({ onParse }) {
                     fontSize: '14px',
                     lineHeight: '1.5',
                     outline: 'none',
-                    transition: 'all 0.2s ease'
+                    transition: 'all 0.2s ease',
+                    whiteSpace: 'pre-wrap', // Ensure text wraps nicely
+                    wordBreak: 'break-word' // Prevent aggressive breaking
                 }}
                 placeholder="Paste lyrics here or drop .lrc file..."
             />
