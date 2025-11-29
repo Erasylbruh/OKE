@@ -444,7 +444,7 @@ function Editor() {
                     /* --- EDITOR MODE --- */
                     <div className="editor-desktop-container">
                         {/* Phase 1: Lyrics & Audio (Left Panel) */}
-                        <div className={`editor-panel left-panel ${activePhase === 1 ? 'mobile-visible' : 'mobile-hidden'}`} style={{
+                        <div className={`editor-panel left-panel ${activePhase !== 1 ? 'mobile-hidden' : ''}`} style={{
                             borderRight: '1px solid #333',
                             display: activePhase === 1 ? 'flex' : 'none',
                             flexDirection: 'column',
@@ -537,7 +537,7 @@ function Editor() {
                         </div>
 
                         {/* Phase 2: Style (Right Panel) */}
-                        <div className={`editor-panel right-panel ${activePhase === 2 ? 'mobile-visible' : 'mobile-hidden'}`} style={{
+                        <div className={`editor-panel right-panel ${activePhase !== 2 ? 'mobile-hidden' : ''}`} style={{
                             borderRight: '1px solid #333',
                             display: activePhase === 2 ? 'flex' : 'none',
                             flexDirection: 'column',
@@ -551,7 +551,7 @@ function Editor() {
                         </div>
 
                         {/* Phase 3: Publishing (Right Panel) */}
-                        <div className={`editor-panel right-panel ${activePhase === 3 ? 'mobile-visible' : 'mobile-hidden'}`} style={{
+                        <div className={`editor-panel right-panel ${activePhase !== 3 ? 'mobile-hidden' : ''}`} style={{
                             borderRight: '1px solid #333',
                             display: activePhase === 3 ? 'flex' : 'none',
                             flexDirection: 'column',
@@ -692,7 +692,7 @@ function Editor() {
 
                         {/* Center Panel: Preview */}
                         {/* Always visible on desktop. On mobile, only visible in Phase 4 */}
-                        <div className={`editor-panel center-panel ${activePhase === 4 ? 'mobile-visible' : 'mobile-hidden'}`} style={{
+                        <div className={`editor-panel center-panel ${activePhase !== 4 ? 'mobile-hidden' : ''}`} style={{
                             display: 'flex', // Overridden by mobile-hidden class on mobile
                             alignItems: 'center',
                             justifyContent: 'center',

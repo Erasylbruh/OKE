@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import API_URL from '../config';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -7,46 +8,33 @@ function Auth() {
     const [isLogin, setIsLogin] = useState(true);
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const navigate = useNavigate();
     const { t } = useLanguage();
 
     // Validation Logic
     const hasLength = password.length >= 8;
+    const hasUpper = /[A-Z]/.test(password);
     const hasNum = /\d/.test(password);
-    const hasSpecial = /[@#$%&]/.test(password);
-    const hasLetters = /[a-zA-Z]/.test(password);
+    const hasSpecial = /[!@#$%&]/.test(password);
 
-    const isPasswordValid = hasLength && hasNum && hasSpecial && hasLetters;
-
-    // Password Strength Calculation
-    const getStrength = () => {
-        if (!password) return 0;
-        let score = 0;
-        if (hasLength) score++;
-        if (hasNum) score++;
-        if (hasSpecial) score++;
-        if (hasLetters) score++;
-        return score; // 0 to 4
-    };
-
-    const strength = getStrength();
-    const strengthColor = strength < 2 ? '#E53935' : strength < 4 ? '#FDD835' : '#1DB954';
-    const strengthWidth = `${(strength / 4) * 100}%`;
+    const isPasswordValid = hasLength && hasUpper && hasNum && hasSpecial;
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
 
         if (!isLogin) {
-            const usernameRegex = /^(?=.*[a-z])(?=.*\d)[a-z0-9]{6,}$/;
+            // Username validation: 6+ chars, lowercase, letters (numbers optional)
+            const usernameRegex = /^[a-z0-9]{6,}$/;
             if (!usernameRegex.test(username)) {
-                setError('Username must be 6+ chars, lowercase, letters & numbers');
+                setError('Username must be 6+ chars, lowercase letters & numbers (optional)');
                 return;
             }
 
             if (!isPasswordValid) {
-                setError('Password is too weak');
+                setError('Password does not meet requirements');
                 return;
             }
         }
@@ -160,37 +148,49 @@ function Auth() {
                     <label style={{ display: 'block', color: '#888', marginBottom: '8px', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
                         {t('password')}
                     </label>
-                    <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        style={{ height: '48px', backgroundColor: '#121212' }}
-                    />
+                    <div style={{ position: 'relative' }}>
+                        <input
+                            type={showPassword ? "text" : "password"}
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                            style={{ height: '48px', backgroundColor: '#121212', paddingRight: '40px' }}
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            style={{
+                                position: 'absolute',
+                                right: '10px',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                background: 'none',
+                                border: 'none',
+                                color: '#888',
+                                cursor: 'pointer',
+                                padding: 0,
+                                display: 'flex',
+                                alignItems: 'center'
+                            }}
+                        >
+                            {showPassword ? <FaEyeSlash /> : <FaEye />}
+                        </button>
+                    </div>
 
                     {!isLogin && (
-                        <div style={{ marginTop: '10px' }}>
-                            <div style={{
-                                height: '4px',
-                                backgroundColor: '#333',
-                                borderRadius: '2px',
-                                overflow: 'hidden'
-                            }}>
-                                <div style={{
-                                    width: strengthWidth,
-                                    height: '100%',
-                                    backgroundColor: strengthColor,
-                                    transition: 'all 0.3s ease'
-                                }} />
+                        <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                            <div style={{ fontSize: '12px', color: hasLength ? '#1db954' : '#ff5555', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                {hasLength ? '✓' : '○'} At least 8 characters
                             </div>
-                            <p style={{
-                                fontSize: '12px',
-                                color: strengthColor,
-                                marginTop: '5px',
-                                textAlign: 'right'
-                            }}>
-                                {strength < 2 ? 'Weak' : strength < 4 ? 'Medium' : 'Strong'}
-                            </p>
+                            <div style={{ fontSize: '12px', color: hasUpper ? '#1db954' : '#ff5555', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                {hasUpper ? '✓' : '○'} At least one capital letter
+                            </div>
+                            <div style={{ fontSize: '12px', color: hasNum ? '#1db954' : '#ff5555', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                {hasNum ? '✓' : '○'} At least one number
+                            </div>
+                            <div style={{ fontSize: '12px', color: hasSpecial ? '#1db954' : '#ff5555', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                {hasSpecial ? '✓' : '○'} At least one special character (!,@,#,$,%,&)
+                            </div>
                         </div>
                     )}
                 </div>

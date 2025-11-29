@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard';
 import ForYou from './pages/ForYou';
 import AdminDashboard from './pages/AdminDashboard';
 import Settings from './pages/Settings';
+import EditProfile from './pages/EditProfile';
 import UserProfile from './pages/UserProfile';
 import LikedProjects from './pages/LikedProjects';
 import Editor from './pages/Editor';
@@ -80,6 +81,7 @@ function App() {
             <Route path="/auth" element={<Auth />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/settings/profile" element={<EditProfile />} />
             <Route path="/user/:username" element={<UserProfile />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/editor/:id?" element={<Editor />} />

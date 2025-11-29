@@ -91,154 +91,105 @@ function Settings() {
             <h1 style={{ marginBottom: '30px', textAlign: 'center' }}>{t('settings')}</h1>
 
             <div className="card">
-                {/* Profile Info (Read Only) */}
+                {/* Profile Info */}
                 <div style={{ marginBottom: '30px', paddingBottom: '20px', borderBottom: '1px solid var(--border-color)' }}>
-                    <h3 style={{ marginTop: 0, color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase' }}>{t('profile')}</h3>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginTop: '15px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                        <h3 style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase' }}>{t('profile')}</h3>
+                        <button
+                            onClick={() => navigate('/settings/profile')}
+                            style={{
+                                background: '#333',
+                                border: 'none',
+                                color: 'white',
+                                padding: '6px 12px',
+                                borderRadius: '4px',
+                                fontSize: '0.8rem',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            Edit Profile
+                        </button>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                         <div style={{
                             width: '60px',
                             height: '60px',
                             borderRadius: '50%',
-                            backgroundColor: '#333',
-                            backgroundImage: user.avatar_url ? `url(${user.avatar_url})` : 'none',
-                            backgroundSize: 'cover',
-                            backgroundPosition: 'center',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '1.5rem',
-                            color: '#888'
+                            overflow: 'hidden',
+                            backgroundColor: '#333'
                         }}>
-                            {!user.avatar_url && (user.nickname?.[0] || user.username?.[0] || '?').toUpperCase()}
+                            {user.avatar_url ? (
+                                <img src={user.avatar_url} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            ) : (
+                                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '1.5rem' }}>
+                                    {user.username?.[0]?.toUpperCase()}
+                                </div>
+                            )}
                         </div>
                         <div>
-                            <div style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>{user.nickname || user.username}</div>
+                            <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>{user.nickname || user.username}</div>
                             <div style={{ color: 'var(--text-muted)' }}>@{user.username}</div>
                         </div>
-                        <button
-                            onClick={() => navigate(`/user/${user.username}`)}
-                            className="secondary"
-                            style={{ marginLeft: 'auto', fontSize: '0.9rem', padding: '6px 12px' }}
-                        >
-                            {t('edit_profile')}
-                        </button>
                     </div>
                 </div>
 
-                {/* Language */}
+                {/* Language Settings */}
                 <div style={{ marginBottom: '30px' }}>
-                    <h3 style={{ marginTop: 0, color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase' }}>{t('language')}</h3>
+                    <label style={{ display: 'block', marginBottom: '10px', color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase' }}>{t('language')}</label>
                     <select
                         value={language}
                         onChange={(e) => setLanguage(e.target.value)}
-                        style={{
-                            width: '100%',
-                            padding: '12px',
-                            borderRadius: '8px',
-                            border: '1px solid var(--border-color)',
-                            backgroundColor: '#181818',
-                            color: 'white',
-                            marginTop: '10px',
-                            fontSize: '1rem'
-                        }}
+                        style={{ backgroundColor: '#121212' }}
                     >
                         <option value="en">English</option>
-                        <option value="ru">Russian (Русский)</option>
-                        <option value="kk">Kazakh (Қазақша)</option>
+                        <option value="kk">Қазақша</option>
+                        <option value="ru">Русский</option>
                     </select>
                 </div>
-
-                {/* Password */}
-                <div style={{ marginBottom: '30px' }}>
-                    <h3 style={{ marginTop: 0, color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase' }}>{t('change_password')}</h3>
-                    <input
-                        type="password"
-                        placeholder={t('new_password')}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        style={{
-                            width: '100%',
-                            padding: '12px',
-                            borderRadius: '8px',
-                            border: '1px solid var(--border-color)',
-                            backgroundColor: '#181818',
-                            color: 'white',
-                            marginTop: '10px',
-                            fontSize: '1rem'
-                        }}
-                    />
-                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '8px' }}>
-                        {t('password_requirements')}
-                    </p>
-                </div>
-
-                {/* Save Button */}
-                {message && (
-                    <div style={{
-                        padding: '12px',
-                        marginBottom: '20px',
-                        backgroundColor: message.includes('Error') ? 'rgba(255, 68, 68, 0.1)' : 'rgba(29, 185, 84, 0.1)',
-                        border: `1px solid ${message.includes('Error') ? '#ff4444' : '#1db954'}`,
-                        borderRadius: '8px',
-                        color: message.includes('Error') ? '#ff4444' : '#1db954',
-                        textAlign: 'center'
-                    }}>
-                        {message}
-                    </div>
-                )}
 
                 <button
                     onClick={handleSave}
                     className="primary"
-                    style={{ width: '100%', padding: '14px', fontSize: '1.1rem', borderRadius: '30px' }}
+                    style={{ width: '100%', padding: '12px', marginBottom: '20px' }}
                 >
-                    {t('save_changes')}
+                    {t('save_changes') || 'Save Changes'}
                 </button>
+
+                {message && <div style={{ color: '#1db954', textAlign: 'center', marginBottom: '20px' }}>{message}</div>}
+
+                {/* Danger Zone */}
+                <div style={{ marginTop: '40px', paddingTop: '20px', borderTop: '1px solid #333' }}>
+                    <h3 style={{ color: '#ff5555', marginTop: 0 }}>Danger Zone</h3>
+                    <p style={{ color: '#888', fontSize: '0.9rem', marginBottom: '15px' }}>
+                        Once you delete your account, there is no going back. Please be certain.
+                    </p>
+                    <button
+                        onClick={handleDeleteAccount}
+                        style={{
+                            backgroundColor: 'transparent',
+                            border: '1px solid #ff5555',
+                            color: '#ff5555',
+                            padding: '10px 20px',
+                            borderRadius: '5px'
+                        }}
+                    >
+                        Delete Account
+                    </button>
+                </div>
             </div>
 
-            {/* Danger Zone */}
-            <div style={{ marginTop: '40px', padding: '20px', border: '1px solid #ff4444', borderRadius: '12px', opacity: 0.7 }}>
-                <h3 style={{ marginTop: 0, color: '#ff4444', fontSize: '1rem' }}>{t('danger_zone')}</h3>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                    {t('delete_account_warning')}
-                </p>
-                <button
-                    onClick={handleDeleteAccount}
-                    style={{
-                        backgroundColor: 'transparent',
-                        color: '#ff4444',
-                        border: '1px solid #ff4444',
-                        padding: '8px 16px',
-                        borderRadius: '20px',
-                        cursor: 'pointer',
-                        marginTop: '10px'
-                    }}
-                >
-                    {t('delete_account')}
-                </button>
-            </div>
-
-            {/* Logout Button (Mobile) */}
-            <div style={{ marginTop: '20px', marginBottom: '40px', padding: '0 20px' }}>
+            {/* Logout Button */}
+            <div style={{ textAlign: 'center', marginTop: '30px' }}>
                 <button
                     onClick={() => {
                         localStorage.removeItem('token');
                         localStorage.removeItem('user');
                         navigate('/auth');
                     }}
-                    style={{
-                        width: '100%',
-                        backgroundColor: 'transparent',
-                        color: 'var(--text-muted)',
-                        border: '1px solid var(--border-color)',
-                        padding: '12px',
-                        borderRadius: '30px',
-                        cursor: 'pointer',
-                        fontSize: '1rem',
-                        fontWeight: 'bold'
-                    }}
+                    style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', textDecoration: 'underline' }}
                 >
-                    {t('logout') || 'Logout'}
+                    {t('logout') || 'Log Out'}
                 </button>
             </div>
         </div>
