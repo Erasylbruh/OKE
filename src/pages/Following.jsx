@@ -41,15 +41,16 @@ function Following() {
     }, [navigate]);
 
     return (
-        <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '20px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '30px' }}>
+    return (
+        <div className="following-container">
+            <div className="following-header">
                 <button
                     onClick={() => navigate(-1)}
-                    style={{ background: 'none', border: 'none', color: 'white', fontSize: '1.5rem', cursor: 'pointer' }}
+                    className="back-button"
                 >
                     ←
                 </button>
-                <h1 style={{ margin: 0 }}>{t('following') || 'Following'}</h1>
+                <h1 className="following-title">{t('following') || 'Following'}</h1>
             </div>
 
             {loading ? (
@@ -58,46 +59,23 @@ function Following() {
                 <>
                     {/* Profiles Section - Horizontal Scroll */}
                     {users.length > 0 && (
-                        <div style={{
-                            display: 'flex',
-                            gap: '20px',
-                            overflowX: 'auto',
-                            paddingBottom: '20px',
-                            marginBottom: '40px',
-                            scrollbarWidth: 'thin'
-                        }}>
+                        <div className="profiles-scroll-container">
                             {users.map(user => (
                                 <div
                                     key={user.id}
                                     onClick={() => navigate(`/user/${user.username}`)}
-                                    style={{
-                                        minWidth: '100px',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        alignItems: 'center',
-                                        gap: '10px',
-                                        cursor: 'pointer',
-                                    }}
+                                    className="profile-item"
                                 >
-                                    <div style={{
-                                        width: '70px',
-                                        height: '70px',
-                                        borderRadius: '50%',
-                                        backgroundColor: '#333',
-                                        backgroundImage: user.avatar_url ? `url(${user.avatar_url})` : 'none',
-                                        backgroundSize: 'cover',
-                                        backgroundPosition: 'center',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        fontSize: '1.5rem',
-                                        color: '#888',
-                                        border: '2px solid var(--primary)'
-                                    }}>
+                                    <div
+                                        className="profile-avatar"
+                                        style={{
+                                            backgroundImage: user.avatar_url ? `url(${user.avatar_url})` : 'none',
+                                        }}
+                                    >
                                         {!user.avatar_url && (user.nickname?.[0] || user.username?.[0] || '?').toUpperCase()}
                                     </div>
-                                    <div style={{ textAlign: 'center' }}>
-                                        <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100px' }}>
+                                    <div className="profile-name-container">
+                                        <p className="profile-name">
                                             {user.nickname || user.username}
                                         </p>
                                     </div>
@@ -119,13 +97,13 @@ function Following() {
                     </div>
 
                     {users.length === 0 && (
-                        <div style={{ textAlign: 'center', color: '#888', marginTop: '50px' }}>
+                        <div className="no-content-message">
                             {t('no_following') || 'You are not following anyone yet.'}
                         </div>
                     )}
 
                     {users.length > 0 && projects.length === 0 && (
-                        <div style={{ textAlign: 'center', color: '#888', marginTop: '50px' }}>
+                        <div className="no-content-message">
                             {t('no_posts_yet') || 'No posts from followed users yet.'}
                         </div>
                     )}
