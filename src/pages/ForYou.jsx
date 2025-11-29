@@ -1,22 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+
 import LikeButton from '../components/LikeButton';
 import ProjectCard from '../components/ProjectCard';
 import API_URL from '../config';
 import { useLanguage } from '../context/LanguageContext';
 
 function ForYou() {
-    const [projects, setProjects] = useState([]);
+    const [publicProjects, setPublicProjects] = useState([]);
+    const [followedProjects, setFollowedProjects] = useState([]);
+    const [followedUsers, setFollowedUsers] = useState([]);
+    const [activeTab, setActiveTab] = useState('foryou'); // 'foryou' or 'following'
+    const [loading, setLoading] = useState(false);
+
     const navigate = useNavigate();
     const { t } = useLanguage();
+    const token = localStorage.getItem('token');
 
+    // Fetch Public Projects (For You)
     useEffect(() => {
         const fetchPublicProjects = async () => {
             try {
                 const response = await fetch(`${API_URL}/api/projects/public`);
                 if (response.ok) {
                     const data = await response.json();
-                    setProjects(data);
+                    setPublicProjects(data);
                 }
             } catch (err) {
                 console.error(err);
@@ -25,9 +33,38 @@ function ForYou() {
         fetchPublicProjects();
     }, []);
 
-    // Mock trending logic: just take the first 5 projects for now
-    const trendingProjects = projects.slice(0, 5);
-    const recentProjects = projects;
+    // Fetch Followed Data (Following)
+    useEffect(() => {
+        if (activeTab === 'following' && token) {
+            const fetchFollowedData = async () => {
+                setLoading(true);
+                try {
+                    const headers = { 'Authorization': `Bearer ${token}` };
+
+                    // Fetch followed users
+                    const usersRes = await fetch(`${API_URL}/api/users/me/following`, { headers });
+                    if (usersRes.ok) {
+                        setFollowedUsers(await usersRes.json());
+                    }
+
+                    // Fetch projects from followed users
+                    const projectsRes = await fetch(`${API_URL}/api/projects/following`, { headers });
+                    if (projectsRes.ok) {
+                        setFollowedProjects(await projectsRes.json());
+                    }
+                } catch (err) {
+                    console.error(err);
+                } finally {
+                    setLoading(false);
+                }
+            };
+            fetchFollowedData();
+        }
+    }, [activeTab, token]);
+
+    // Mock trending logic for Public tab
+    const trendingProjects = publicProjects.slice(0, 5);
+    const recentProjects = publicProjects;
 
     return (
         <div className="foryou-container" style={{ paddingBottom: '80px' }}>
@@ -35,7 +72,7 @@ function ForYou() {
             <div className="hero-section">
                 <h1>{t('welcome_message') || 'Welcome to Gravity'}</h1>
                 <p>{t('hero_subtitle') || 'Discover, create, and share amazing music projects.'}</p>
-                {!localStorage.getItem('token') && (
+                {!token && (
                     <button
                         onClick={() => navigate('/auth')}
                         style={{
@@ -54,45 +91,149 @@ function ForYou() {
             </div>
 
             <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
-                {/* Trending Section */}
-                {trendingProjects.length > 0 && (
-                    <section>
-                        <div className="section-title">
-                            <i className="fas fa-fire" style={{ color: '#ff5500' }}></i>
-                            {t('trending') || 'Trending Now'}
-                        </div>
-                        <div className="trending-scroll-container">
-                            {trendingProjects.map((project) => (
-                                <div key={project.id} className="trending-card">
+
+                {/* Tab Switcher */}
+                <div className="tab-switcher">
+                    <button
+                        className={`tab-button ${activeTab === 'foryou' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('foryou')}
+                    >
+                        {t('for_you') || 'For You'}
+                    </button>
+                    <button
+                        className={`tab-button ${activeTab === 'following' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('following')}
+                    >
+                        {t('following') || 'Following'}
+                    </button>
+                </div>
+
+                {/* Content based on Active Tab */}
+                {activeTab === 'foryou' ? (
+                    <>
+                        {/* Trending Section */}
+                        {trendingProjects.length > 0 && (
+                            <section>
+                                <div className="section-title">
+                                    <i className="fas fa-fire" style={{ color: '#ff5500' }}></i>
+                                    {t('trending') || 'Trending Now'}
+                                </div>
+                                <div className="trending-scroll-container">
+                                    {trendingProjects.map((project) => (
+                                        <div key={project.id} className="trending-card">
+                                            <ProjectCard
+                                                project={project}
+                                                onClick={() => navigate(`/editor/${project.id}`, { state: { from: 'main' } })}
+                                                isOwner={false}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
+                        )}
+
+                        {/* Recent Projects Section */}
+                        <section>
+                            <div className="section-title">
+                                <i className="fas fa-clock" style={{ color: '#1db954' }}></i>
+                                {t('recent_projects') || 'Recent Projects'}
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '20px' }}>
+                                {recentProjects.map((project) => (
                                     <ProjectCard
+                                        key={project.id}
                                         project={project}
                                         onClick={() => navigate(`/editor/${project.id}`, { state: { from: 'main' } })}
                                         isOwner={false}
                                     />
-                                </div>
-                            ))}
-                        </div>
-                    </section>
-                )}
+                                ))}
+                                {recentProjects.length === 0 && <p className="no-content-message">{t('no_public_projects')}</p>}
+                            </div>
+                        </section>
+                    </>
+                ) : (
+                    /* Following Tab Content */
+                    <>
+                        {!token ? (
+                            <div className="no-content-message">
+                                <p>{t('login_to_see_following') || 'Please login to see posts from people you follow.'}</p>
+                                <button
+                                    onClick={() => navigate('/auth')}
+                                    style={{ marginTop: '10px', padding: '10px 20px' }}
+                                >
+                                    {t('login')}
+                                </button>
+                            </div>
+                        ) : loading ? (
+                            <div className="no-content-message">Loading...</div>
+                        ) : (
+                            <>
+                                {/* Followed Users (Horizontal Scroll) */}
+                                {followedUsers.length > 0 && (
+                                    <section>
+                                        <div className="section-title">
+                                            <i className="fas fa-user-friends" style={{ color: '#1db954' }}></i>
+                                            {t('creators_you_follow') || 'Creators You Follow'}
+                                        </div>
+                                        <div className="profiles-scroll-container">
+                                            {followedUsers.map(user => (
+                                                <div
+                                                    key={user.id}
+                                                    onClick={() => navigate(`/user/${user.username}`)}
+                                                    className="profile-item"
+                                                >
+                                                    <div
+                                                        className="profile-avatar"
+                                                        style={{
+                                                            backgroundImage: user.avatar_url ? `url(${user.avatar_url})` : 'none',
+                                                        }}
+                                                    >
+                                                        {!user.avatar_url && (user.nickname?.[0] || user.username?.[0] || '?').toUpperCase()}
+                                                    </div>
+                                                    <div className="profile-name-container">
+                                                        <p className="profile-name">
+                                                            {user.nickname || user.username}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </section>
+                                )}
 
-                {/* Recent Projects Section */}
-                <section>
-                    <div className="section-title">
-                        <i className="fas fa-clock" style={{ color: '#1db954' }}></i>
-                        {t('recent_projects') || 'Recent Projects'}
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '20px' }}>
-                        {recentProjects.map((project) => (
-                            <ProjectCard
-                                key={project.id}
-                                project={project}
-                                onClick={() => navigate(`/editor/${project.id}`, { state: { from: 'main' } })}
-                                isOwner={false}
-                            />
-                        ))}
-                        {recentProjects.length === 0 && <p className="no-content-message">{t('no_public_projects')}</p>}
-                    </div>
-                </section>
+                                {/* Followed Projects Grid */}
+                                <section>
+                                    <div className="section-title">
+                                        <i className="fas fa-rss" style={{ color: '#1db954' }}></i>
+                                        {t('latest_from_following') || 'Latest from Following'}
+                                    </div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '20px' }}>
+                                        {followedProjects.map((project) => (
+                                            <ProjectCard
+                                                key={project.id}
+                                                project={project}
+                                                onClick={() => navigate(`/editor/${project.id}`, { state: { from: 'main' } })}
+                                                isOwner={false}
+                                            />
+                                        ))}
+                                    </div>
+
+                                    {followedUsers.length === 0 && (
+                                        <div className="no-content-message">
+                                            {t('no_following') || 'You are not following anyone yet.'}
+                                        </div>
+                                    )}
+
+                                    {followedUsers.length > 0 && followedProjects.length === 0 && (
+                                        <div className="no-content-message">
+                                            {t('no_posts_yet') || 'No posts from followed users yet.'}
+                                        </div>
+                                    )}
+                                </section>
+                            </>
+                        )}
+                    </>
+                )}
             </div>
         </div>
     );
