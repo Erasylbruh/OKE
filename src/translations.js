@@ -85,7 +85,14 @@ export const translations = {
         style_step: "4. Customize Style",
         important_notes: "Important Notes",
         mp3_only_warning: "Only .mp3 files are supported.",
-        no_transcription_warning: "Auto-transcription is currently disabled. Please add lyrics manually."
+        no_transcription_warning: "Auto-transcription is currently disabled. Please add lyrics manually.",
+        information: "Information",
+        publishing: "Publishing",
+        phases: "Phases",
+        lyrics_and_audio: "Lyrics & Audio",
+        show_more: "Show More",
+        show_less: "Show Less",
+        description: "Description"
     },
     ru: {
         login: "Войти",
@@ -173,7 +180,14 @@ export const translations = {
         style_step: "4. Настройте Стиль",
         important_notes: "Важные примечания",
         mp3_only_warning: "Поддерживаются только файлы .mp3.",
-        no_transcription_warning: "Авто-транскрипция отключена. Пожалуйста, добавьте текст вручную."
+        no_transcription_warning: "Авто-транскрипция отключена. Пожалуйста, добавьте текст вручную.",
+        information: "Информация",
+        publishing: "Публикация",
+        phases: "Этапы",
+        lyrics_and_audio: "Текст и Аудио",
+        show_more: "Показать больше",
+        show_less: "Свернуть",
+        description: "Описание"
     },
     kk: {
         login: "Кіру",
@@ -261,6 +275,13 @@ export const translations = {
         style_step: "4. Стильді баптау",
         important_notes: "Маңызды ескертпелер",
         mp3_only_warning: "Тек .mp3 файлдары қолдау көрсетіледі.",
-        no_transcription_warning: "Авто-транскрипция өшірілген. Мәтінді қолмен қосыңыз."
+        no_transcription_warning: "Авто-транскрипция өшірілген. Мәтінді қолмен қосыңыз.",
+        information: "Ақпарат",
+        publishing: "Жариялау",
+        phases: "Кезеңдер",
+        lyrics_and_audio: "Мәтін және Аудио",
+        show_more: "Толығырақ",
+        show_less: "Жасыру",
+        description: "Сипаттама"
     }
 };

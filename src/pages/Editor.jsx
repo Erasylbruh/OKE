@@ -37,6 +37,13 @@ function Editor() {
     const [activeTab, setActiveTab] = useState('preview'); // 'preview' or 'controls'
     const [showHelp, setShowHelp] = useState(false);
 
+    // Refactor State
+    const [activePhase, setActivePhase] = useState(1); // 1: Lyrics/Audio, 2: Style, 3: Publishing
+    const [viewTab, setViewTab] = useState('lyrics'); // 'lyrics' (animation), 'info'
+    const [description, setDescription] = useState('');
+    const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+    const [projectOwner, setProjectOwner] = useState(null);
+
     // Load project
     useEffect(() => {
         if (!id) return;
@@ -71,6 +78,13 @@ function Editor() {
                         setIsOwner(false);
                     }
 
+                    setProjectOwner({
+                        id: project.user_id,
+                        username: project.username,
+                        nickname: project.nickname,
+                        avatar_url: project.avatar_url
+                    });
+
                     let data = project.data;
                     if (typeof data === 'string') {
                         try {
@@ -82,6 +96,7 @@ function Editor() {
                     }
                     setLyrics(data.lyrics || []);
                     setStyles(prev => data.styles || prev);
+                    setDescription(data.description || '');
                     setAudioUrl(project.audio_url);
                 } else {
                     alert('Project not found or unauthorized');
@@ -259,7 +274,7 @@ function Editor() {
         const payload = {
             name: projectName,
             is_public: isPublic,
-            data: { lyrics, styles }
+            data: { lyrics, styles, description }
         };
 
         try {
@@ -388,156 +403,13 @@ function Editor() {
     return (
         <div className="editor-container" style={{
             height: '100vh',
-            width: '100%', // Full width container
+            width: '100%',
             display: 'flex',
             flexDirection: 'column',
             backgroundColor: '#121212',
             color: 'white',
-            overflow: 'hidden' // Prevent page scroll
+            overflow: 'hidden'
         }}>
-            {/* Mobile Tab Switcher */}
-            <div className="mobile-tabs">
-                <button
-                    className={`tab-btn ${activeTab === 'preview' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('preview')}
-                >
-                    {t('preview')}
-                </button>
-                <button
-                    className={`tab-btn ${activeTab === 'controls' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('controls')}
-                >
-                    {t('controls')}
-                </button>
-                <button
-                    className={`tab-btn ${activeTab === 'style' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('style')}
-                >
-                    {t('style')}
-                </button>
-            </div>
-
-            <style>{`
-                .mobile-tabs {
-                    display: none;
-                    position: fixed;
-                    bottom: 0;
-                    left: 0;
-                    width: 100%;
-                    background-color: #181818;
-                    border-top: 1px solid #333;
-                    z-index: 100;
-                    height: 50px;
-                }
-
-                .tab-btn {
-                    flex: 1;
-                    background: none;
-                    border: none;
-                    color: #888;
-                    font-weight: bold;
-                    text-transform: uppercase;
-                    cursor: pointer;
-                    font-size: 14px;
-                }
-
-                .tab-btn.active {
-                    color: #1db954;
-                    border-top: 2px solid #1db954;
-                }
-
-                @media (max-width: 768px) {
-                    .mobile-tabs {
-                        display: flex;
-                    }
-
-                    .editor-panel {
-                        width: 100% !important;
-                        height: calc(100vh - 50px) !important; /* Subtract tab height */
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                        padding-bottom: 50px; /* Space for tabs */
-                    }
-
-                    .mobile-hidden {
-                        display: none !important;
-                    }
-
-                    .mobile-visible {
-                        display: flex !important;
-                    }
-                    
-                    /* Hide right panel on mobile unless active */
-                    .right-panel {
-                        display: none; /* Default hidden on mobile */
-                    }
-                    
-                    .mobile-only-icon {
-                        display: none;
-                    }
-
-                    @media (max-width: 768px) {
-                        .mobile-only-icon {
-                            display: inline;
-                        }
-                    }
-
-                    /* Adaptable Header Styles */
-                    .editor-toolbar {
-                        height: 60px;
-                        border-bottom: 1px solid #333;
-                        display: flex;
-                        align-items: center;
-                        justify-content: space-between;
-                        padding: 0 20px;
-                        background-color: #181818;
-                        flex-shrink: 0;
-                    }
-
-                    .project-title {
-                        margin: 0;
-                        font-size: 1.2rem;
-                        font-weight: bold;
-                        white-space: nowrap;
-                        overflow: hidden;
-                        text-overflow: ellipsis;
-                        max-width: 300px;
-                    }
-
-                    @media (max-width: 768px) {
-                        .editor-toolbar {
-                            height: 50px;
-                            padding: 0 10px;
-                        }
-
-                        .project-title {
-                            font-size: 1rem;
-                            max-width: 30vw; /* More space for buttons */
-                        }
-                        
-                        /* Hide public toggle text on mobile */
-                        .public-toggle-text {
-                            display: none;
-                        }
-
-                        /* Hide audio button text on mobile */
-                        .audio-btn-text {
-                            display: none;
-                        }
-
-                        /* Compact save button on mobile */
-                        .save-btn {
-                            padding: 8px 12px !important;
-                        }
-                        
-                        .save-btn span {
-                            font-size: 0.9rem;
-                        }
-                    }
-                }
-            `}</style>
-
             {/* Toolbar */}
             <div className="editor-toolbar">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -549,396 +421,332 @@ function Editor() {
                     </h1>
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    {/* Audio Upload Button in Toolbar */}
-                    {isOwner && (
-                        <>
-                            {!isUploading ? (
-                                <label style={{
-                                    cursor: 'pointer',
-                                    backgroundColor: '#1db954',
-                                    color: 'black',
-                                    padding: '8px 16px',
-                                    borderRadius: '20px',
-                                    fontSize: '0.9rem',
-                                    fontWeight: 'bold',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '8px',
-                                    transition: 'transform 0.2s, background-color 0.2s',
-                                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-                                }}
-                                    onMouseEnter={(e) => {
-                                        e.currentTarget.style.transform = 'scale(1.05)';
-                                        e.currentTarget.style.backgroundColor = '#1ed760';
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        e.currentTarget.style.transform = 'scale(1)';
-                                        e.currentTarget.style.backgroundColor = '#1db954';
-                                    }}
-                                >
-
-                                    <span className="audio-btn-text">{audioUrl ? `🎵 ${t('change_track')}` : `☁️ ${t('upload_audio')}`}</span>
-                                    {!audioUrl && <span className="mobile-only-icon">☁️</span>}
-                                    {audioUrl && <span className="mobile-only-icon">🎵</span>}
-                                    <input type="file" accept=".mp3,audio/mpeg" onChange={handleAudioUpload} style={{ display: 'none' }} />
-                                </label>
-                            ) : (
-                                <div style={{
-                                    width: '150px',
-                                    height: '36px',
-                                    backgroundColor: '#333',
-                                    borderRadius: '18px',
-                                    position: 'relative',
-                                    overflow: 'hidden',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center'
-                                }}>
-                                    <div style={{
-                                        position: 'absolute',
-                                        left: 0,
-                                        top: 0,
-                                        height: '100%',
-                                        width: `${uploadProgress}%`,
-                                        backgroundColor: '#1db954',
-                                        transition: 'width 0.2s ease-out'
-                                    }} />
-                                    <span style={{
-                                        position: 'relative',
-                                        zIndex: 1,
-                                        fontSize: '0.8rem',
-                                        fontWeight: 'bold',
-                                        color: 'white',
-                                        textShadow: '0 1px 2px rgba(0,0,0,0.5)'
-                                    }}>
-                                        {uploadProgress}%
-                                    </span>
-                                </div>
-                            )}
-
-                            {audioUrl && !isUploading && (
-                                <button
-                                    onClick={handleDeleteAudio}
-                                    style={{
-                                        background: 'rgba(255, 85, 85, 0.1)',
-                                        border: '1px solid #ff5555',
-                                        color: '#ff5555',
-                                        cursor: 'pointer',
-                                        padding: '8px',
-                                        borderRadius: '50%',
-                                        fontSize: '0.9rem',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        width: '36px',
-                                        height: '36px',
-                                        transition: 'all 0.2s',
-                                        lineHeight: 0 // Fix vertical alignment
-                                    }}
-                                    onMouseEnter={(e) => {
-                                        e.currentTarget.style.background = '#ff5555';
-                                        e.currentTarget.style.color = 'white';
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        e.currentTarget.style.background = 'rgba(255, 85, 85, 0.1)';
-                                        e.currentTarget.style.color = '#ff5555';
-                                    }}
-                                    title={t('remove_audio')}
-                                >
-                                    ✕
-                                </button>
-                            )}
-                        </>
-                    )}
-
-                    {!isOwner && <LikeButton projectId={id} />}
-                    {isOwner && (
-                        <>
-                            <div
-                                onClick={() => setIsPublic(!isPublic)}
-                                style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '8px',
-                                    cursor: 'pointer',
-                                    backgroundColor: '#333',
-                                    padding: '6px 12px',
-                                    borderRadius: '20px'
-                                }}
-                            >
-                                <div style={{
-                                    width: '10px',
-                                    height: '10px',
-                                    borderRadius: '50%',
-                                    backgroundColor: isPublic ? '#1db954' : '#888'
-                                }} />
-                                <span className="public-toggle-text" style={{ fontSize: '0.9rem' }}>{isPublic ? t('public') : t('private')}</span>
-                            </div>
-                            <button
-                                id="save-btn"
-                                onClick={handleSave}
-                                disabled={isSaving}
-                                className="primary save-btn"
-                                style={{ padding: '8px 24px', borderRadius: '20px' }}
-                            >
-                                {isSaving ? 'Saving...' : t('save')}
-                            </button>
-                        </>
-                    )}
-                </div>
-            </div>
-
-            {/* Main Content - Studio Layout */}
-            <div style={{ flex: 1, display: 'flex', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}>
-
-                {/* Left Panel: Lyrics & Timing (Owner Only) */}
+                {/* Phase Navigation (Owner Only) */}
                 {isOwner && (
-                    <div className={`editor-panel left-panel ${activeTab === 'controls' ? 'mobile-visible' : 'mobile-hidden'}`} style={{
-                        width: '450px', // Fixed width 450px
-                        borderRight: '1px solid #333',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        backgroundColor: '#181818',
-                        height: '100%' // Full height
-                    }}>
-                        <div style={{ padding: '20px', overflowY: 'auto', flex: 1 }}>
-                            <section style={{ marginBottom: '30px' }}>
-                                <h3 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>{t('lyrics')}</h3>
-                                <LyricInput onParse={handleLyricsParsed} />
-                            </section>
-
-                            {lyrics.length > 0 && (
-                                <section>
-                                    <h3 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>{t('timing')}</h3>
-                                    <TimingEditor lyrics={lyrics} onUpdate={updateLyric} />
-                                </section>
-                            )}
+                    <div className="phase-nav mobile-hidden" style={{ margin: 0, border: 'none', background: 'none' }}>
+                        <div className={`phase-step ${activePhase === 1 ? 'active' : ''}`} onClick={() => setActivePhase(1)}>
+                            1. {t('lyrics_and_audio')}
+                        </div>
+                        <div className={`phase-step ${activePhase === 2 ? 'active' : ''}`} onClick={() => setActivePhase(2)}>
+                            2. {t('style')}
+                        </div>
+                        <div className={`phase-step ${activePhase === 3 ? 'active' : ''}`} onClick={() => setActivePhase(3)}>
+                            3. {t('publishing')}
                         </div>
                     </div>
                 )}
 
-                {/* Center Panel: Preview */}
-                <div className={`editor-panel center-panel ${activeTab === 'preview' ? 'mobile-visible' : 'mobile-hidden'}`} style={{
-                    width: '569px', // Fixed width 569px
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: '#121212',
-                    position: 'relative',
-                    height: '100%' // Full height
-                }}>
-                    <Preview lyrics={lyrics} styles={styles} resetTrigger={resetTrigger} audioUrl={audioUrl} backgroundImageUrl={previewUrls[0]} />
-                </div>
-
-                {/* Right Panel: Settings (Owner) or Comments (Viewer) */}
-                <div className={`editor-panel right-panel ${activeTab === 'style' ? 'mobile-visible' : 'mobile-hidden'}`} style={{
-                    width: '450px', // Fixed width 450px
-                    borderLeft: '1px solid #333',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    backgroundColor: '#181818',
-                    height: '100%' // Full height
-                }}>
-                    <div style={{ padding: '20px', overflowY: 'auto', flex: 1 }}>
-                        {isOwner ? (
-                            <>
-                                <section style={{ marginBottom: '30px' }}>
-                                    <h3 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>{t('style')}</h3>
-                                    <StyleControls styles={styles} onUpdate={setStyles} />
-                                </section>
-
-                                <section>
-                                    <h3 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>{t('backgrounds')}</h3>
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
-                                        {previewUrls.map((url, index) => (
-                                            <div
-                                                key={index}
-                                                style={{
-                                                    position: 'relative',
-                                                    aspectRatio: '1',
-                                                    borderRadius: '50%', // Circular for vinyl look
-                                                    overflow: 'hidden',
-                                                    border: index === 0 ? '2px solid #1db954' : '1px solid #333',
-                                                    cursor: 'pointer',
-                                                    backgroundColor: '#282828',
-                                                    boxShadow: '0 4px 8px rgba(0,0,0,0.5)', // Shadow for depth
-                                                    transition: 'transform 0.2s'
-                                                }}
-                                                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05) rotate(5deg)'}
-                                                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1) rotate(0deg)'}
-                                                onDragOver={(e) => e.preventDefault()}
-                                                onDrop={(e) => handleSlotDrop(e, index)}
-                                                onClick={() => document.getElementById(`preview-upload-${index}`).click()}
-                                            >
-                                                {/* Vinyl Center Hole Effect */}
-                                                <div style={{
-                                                    position: 'absolute',
-                                                    top: '50%',
-                                                    left: '50%',
-                                                    transform: 'translate(-50%, -50%)',
-                                                    width: '15%',
-                                                    height: '15%',
-                                                    backgroundColor: '#181818',
-                                                    borderRadius: '50%',
-                                                    zIndex: 2,
-                                                    border: '2px solid #333'
-                                                }} />
-
-                                                {/* Vinyl Grooves Effect (Subtle overlay) */}
-                                                <div style={{
-                                                    position: 'absolute',
-                                                    top: 0,
-                                                    left: 0,
-                                                    width: '100%',
-                                                    height: '100%',
-                                                    background: 'repeating-radial-gradient(#000 0, #000 2px, transparent 3px, transparent 4px)',
-                                                    opacity: 0.1,
-                                                    zIndex: 1,
-                                                    pointerEvents: 'none'
-                                                }} />
-
-                                                {url ? (
-                                                    <img src={url} alt={`Slot ${index}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                                ) : (
-                                                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#555', fontSize: '2rem', paddingBottom: '4px' }}>+</div>
-                                                )}
-
-                                                {url && (
-                                                    <button
-                                                        onClick={(e) => { e.stopPropagation(); handleDeletePreview(index); }}
-                                                        style={{
-                                                            position: 'absolute',
-                                                            top: '50%',
-                                                            left: '50%',
-                                                            transform: 'translate(-50%, -50%)',
-                                                            background: 'rgba(0,0,0,0.8)',
-                                                            color: 'white',
-                                                            border: 'none',
-                                                            borderRadius: '50%',
-                                                            width: '24px',
-                                                            height: '24px',
-                                                            padding: 0,
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'center',
-                                                            cursor: 'pointer',
-                                                            fontSize: '14px',
-                                                            lineHeight: 1,
-                                                            zIndex: 10
-                                                        }}
-                                                    >
-                                                        ✕
-                                                    </button>
-                                                )}
-
-                                                {url && index !== 0 && (
-                                                    <button
-                                                        onClick={(e) => { e.stopPropagation(); handleSetMainPreview(index); }}
-                                                        style={{
-                                                            position: 'absolute', bottom: '5px', right: '50%',
-                                                            transform: 'translateX(50%)',
-                                                            background: 'rgba(0,0,0,0.8)', color: '#1db954',
-                                                            border: 'none', borderRadius: '4px',
-                                                            padding: '2px 6px', fontSize: '10px',
-                                                            cursor: 'pointer',
-                                                            zIndex: 3
-                                                        }}
-                                                    >
-                                                        ★
-                                                    </button>
-                                                )}
-
-                                                <input
-                                                    type="file"
-                                                    id={`preview-upload-${index}`}
-                                                    style={{ display: 'none' }}
-                                                    accept="image/*"
-                                                    onChange={(e) => handlePreviewUpload(index, e.target.files[0])}
-                                                />
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '10px' }}>
-                                        {t('drag_drop_images')}
-                                    </p>
-                                </section>
-                            </>
-                        ) : (
-                            <CommentsSection projectId={id} projectOwnerId={projectOwnerId} />
-                        )}
-                    </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    {!isOwner && <LikeButton projectId={id} />}
+                    {isOwner && (
+                        <button
+                            id="save-btn"
+                            onClick={handleSave}
+                            disabled={isSaving}
+                            className="primary save-btn"
+                            style={{ padding: '8px 24px', borderRadius: '20px' }}
+                        >
+                            {isSaving ? 'Saving...' : t('save')}
+                        </button>
+                    )}
                 </div>
             </div>
+
+            {/* Main Content */}
+            <div style={{ flex: 1, display: 'flex', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}>
+
+                {isOwner ? (
+                    /* --- EDITOR MODE (3 Phases) --- */
+                    <>
+                        {/* Phase 1: Lyrics & Audio (Left Panel) */}
+                        {activePhase === 1 && (
+                            <div className="editor-panel left-panel" style={{
+                                width: '450px',
+                                borderRight: '1px solid #333',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                backgroundColor: '#181818',
+                                height: '100%'
+                            }}>
+                                <div style={{ padding: '20px', overflowY: 'auto', flex: 1 }}>
+                                    {/* Audio Upload Section */}
+                                    <section style={{ marginBottom: '30px', padding: '20px', backgroundColor: '#222', borderRadius: '8px' }}>
+                                        <h3 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>Audio</h3>
+                                        {!isUploading ? (
+                                            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                                                <label className="primary" style={{ cursor: 'pointer', padding: '8px 16px', borderRadius: '20px', display: 'inline-block' }}>
+                                                    {audioUrl ? t('change_track') : t('upload_audio')}
+                                                    <input type="file" accept=".mp3,audio/mpeg" onChange={handleAudioUpload} style={{ display: 'none' }} />
+                                                </label>
+                                                {audioUrl && (
+                                                    <button onClick={handleDeleteAudio} style={{ background: 'none', border: '1px solid #ff5555', color: '#ff5555', borderRadius: '50%', width: '30px', height: '30px', cursor: 'pointer' }}>✕</button>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <div style={{ color: '#1db954' }}>Uploading... {uploadProgress}%</div>
+                                        )}
+                                    </section>
+
+                                    <section style={{ marginBottom: '30px' }}>
+                                        <h3 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>{t('lyrics')}</h3>
+                                        <LyricInput onParse={handleLyricsParsed} />
+                                    </section>
+
+                                    {lyrics.length > 0 && (
+                                        <section>
+                                            <h3 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>{t('timing')}</h3>
+                                            <TimingEditor lyrics={lyrics} onUpdate={updateLyric} />
+                                        </section>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Center Panel: Preview (Always visible in Editor Mode) */}
+                        <div className="editor-panel center-panel" style={{
+                            flex: 1,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            backgroundColor: '#121212',
+                            position: 'relative',
+                            height: '100%'
+                        }}>
+                            <Preview lyrics={lyrics} styles={styles} resetTrigger={resetTrigger} audioUrl={audioUrl} backgroundImageUrl={previewUrls[0]} />
+                        </div>
+
+                        {/* Phase 2: Style (Right Panel) */}
+                        {activePhase === 2 && (
+                            <div className="editor-panel right-panel" style={{
+                                width: '450px',
+                                borderLeft: '1px solid #333',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                backgroundColor: '#181818',
+                                height: '100%'
+                            }}>
+                                <div style={{ padding: '20px', overflowY: 'auto', flex: 1 }}>
+                                    <h3 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>{t('style')}</h3>
+                                    <StyleControls styles={styles} onUpdate={setStyles} />
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Phase 3: Publishing (Right Panel) */}
+                        {activePhase === 3 && (
+                            <div className="editor-panel right-panel" style={{
+                                width: '450px',
+                                borderLeft: '1px solid #333',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                backgroundColor: '#181818',
+                                height: '100%'
+                            }}>
+                                <div style={{ padding: '20px', overflowY: 'auto', flex: 1 }}>
+                                    <h3 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>{t('publishing')}</h3>
+
+                                    {/* Title Input */}
+                                    <div style={{ marginBottom: '20px' }}>
+                                        <label style={{ display: 'block', marginBottom: '5px', color: '#ccc' }}>{t('project_name')}</label>
+                                        <input
+                                            type="text"
+                                            value={projectName}
+                                            onChange={(e) => setProjectName(e.target.value)}
+                                            style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #333', background: '#222', color: 'white' }}
+                                        />
+                                    </div>
+
+                                    {/* Description Input */}
+                                    <div style={{ marginBottom: '20px' }}>
+                                        <label style={{ display: 'block', marginBottom: '5px', color: '#ccc' }}>{t('description')}</label>
+                                        <textarea
+                                            value={description}
+                                            onChange={(e) => setDescription(e.target.value)}
+                                            rows={5}
+                                            style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #333', background: '#222', color: 'white', resize: 'vertical' }}
+                                        />
+                                    </div>
+
+                                    {/* Preview Uploads */}
+                                    <section style={{ marginBottom: '20px' }}>
+                                        <h3 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>{t('preview')}</h3>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+                                            {previewUrls.map((url, index) => (
+                                                <div
+                                                    key={index}
+                                                    style={{
+                                                        position: 'relative',
+                                                        aspectRatio: '1',
+                                                        borderRadius: '50%',
+                                                        overflow: 'hidden',
+                                                        border: index === 0 ? '2px solid #1db954' : '1px solid #333',
+                                                        cursor: 'pointer',
+                                                        backgroundColor: '#282828',
+                                                        boxShadow: '0 4px 8px rgba(0,0,0,0.5)'
+                                                    }}
+                                                    onDragOver={(e) => e.preventDefault()}
+                                                    onDrop={(e) => handleSlotDrop(e, index)}
+                                                    onClick={() => document.getElementById(`preview-upload-${index}`).click()}
+                                                >
+                                                    {url ? (
+                                                        <img src={url} alt={`Slot ${index}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                    ) : (
+                                                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#555', fontSize: '2rem' }}>+</div>
+                                                    )}
+                                                    {url && (
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); handleDeletePreview(index); }}
+                                                            style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: 'rgba(0,0,0,0.8)', color: 'white', border: 'none', borderRadius: '50%', width: '24px', height: '24px', cursor: 'pointer' }}
+                                                        >✕</button>
+                                                    )}
+                                                    {url && index !== 0 && (
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); handleSetMainPreview(index); }}
+                                                            style={{ position: 'absolute', bottom: '5px', right: '50%', transform: 'translateX(50%)', background: 'rgba(0,0,0,0.8)', color: '#1db954', border: 'none', borderRadius: '4px', padding: '2px 6px', fontSize: '10px', cursor: 'pointer' }}
+                                                        >★</button>
+                                                    )}
+                                                    <input type="file" id={`preview-upload-${index}`} style={{ display: 'none' }} accept="image/*" onChange={(e) => handlePreviewUpload(index, e.target.files[0])} />
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '10px' }}>{t('drag_drop_images')}</p>
+                                    </section>
+
+                                    {/* Visibility Toggle */}
+                                    <div
+                                        onClick={() => setIsPublic(!isPublic)}
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '10px',
+                                            cursor: 'pointer',
+                                            backgroundColor: '#333',
+                                            padding: '10px',
+                                            borderRadius: '8px',
+                                            marginBottom: '20px'
+                                        }}
+                                    >
+                                        <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: isPublic ? '#1db954' : '#888' }} />
+                                        <span>{isPublic ? t('public') : t('private')}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </>
+                ) : (
+                    /* --- VIEWER MODE (2 Tabs) --- */
+                    <>
+                        {/* Tab 1: Lyrics (Animation) */}
+                        {viewTab === 'lyrics' && (
+                            <div className="editor-panel center-panel" style={{
+                                flex: 1,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                backgroundColor: '#121212',
+                                position: 'relative',
+                                height: '100%'
+                            }}>
+                                <Preview lyrics={lyrics} styles={styles} resetTrigger={resetTrigger} audioUrl={audioUrl} backgroundImageUrl={previewUrls[0]} />
+                            </div>
+                        )}
+
+                        {/* Tab 2: Information */}
+                        {viewTab === 'info' && (
+                            <div className="editor-panel right-panel" style={{
+                                width: '100%', // Full width on mobile/viewer
+                                maxWidth: '600px',
+                                margin: '0 auto',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                backgroundColor: '#181818',
+                                height: '100%'
+                            }}>
+                                <div style={{ padding: '20px', overflowY: 'auto', flex: 1 }}>
+                                    <h1 style={{ fontSize: '2rem', marginBottom: '10px' }}>{projectName}</h1>
+
+                                    {/* User Profile */}
+                                    {projectOwner && (
+                                        <div
+                                            style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', cursor: 'pointer' }}
+                                            onClick={() => navigate(`/user/${projectOwner.username}`)}
+                                        >
+                                            <div style={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', backgroundColor: '#333' }}>
+                                                {projectOwner.avatar_url ? (
+                                                    <img src={projectOwner.avatar_url} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                ) : (
+                                                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+                                                        {projectOwner.username?.[0]?.toUpperCase()}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div>
+                                                <div style={{ fontWeight: 'bold' }}>{projectOwner.nickname || projectOwner.username}</div>
+                                                <div style={{ fontSize: '0.8rem', color: '#888' }}>@{projectOwner.username}</div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Description */}
+                                    <div className={`description-expander ${isDescriptionExpanded ? 'expanded' : ''}`} style={{ maxHeight: isDescriptionExpanded ? 'none' : '100px', marginBottom: '20px' }}>
+                                        <p style={{ color: '#ccc', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{description || t('no_description') || 'No description'}</p>
+                                        {!isDescriptionExpanded && description && description.length > 100 && <div className="description-gradient" />}
+                                    </div>
+                                    {description && description.length > 100 && (
+                                        <button onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)} style={{ background: 'none', border: 'none', color: '#1db954', cursor: 'pointer', marginBottom: '20px', fontWeight: 'bold' }}>
+                                            {isDescriptionExpanded ? t('show_less') : t('show_more')}
+                                        </button>
+                                    )}
+
+                                    {/* Likes */}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '30px' }}>
+                                        <LikeButton projectId={id} />
+                                    </div>
+
+                                    <CommentsSection projectId={id} projectOwnerId={projectOwnerId} />
+                                </div>
+                            </div>
+                        )}
+                    </>
+                )}
+            </div>
+
+            {/* Mobile Tabs for Viewer */}
+            {!isOwner && (
+                <div className="mobile-tabs">
+                    <button
+                        className={`tab-btn ${viewTab === 'lyrics' ? 'active' : ''}`}
+                        onClick={() => setViewTab('lyrics')}
+                    >
+                        {t('lyrics')}
+                    </button>
+                    <button
+                        className={`tab-btn ${viewTab === 'info' ? 'active' : ''}`}
+                        onClick={() => setViewTab('info')}
+                    >
+                        {t('information')}
+                    </button>
+                </div>
+            )}
+
+            {/* Mobile Tabs for Editor (Phases) - Optional, if we want bottom nav for phases on mobile */}
+            {isOwner && (
+                <div className="mobile-tabs">
+                    <button className={`tab-btn ${activePhase === 1 ? 'active' : ''}`} onClick={() => setActivePhase(1)}>1. {t('lyrics')}</button>
+                    <button className={`tab-btn ${activePhase === 2 ? 'active' : ''}`} onClick={() => setActivePhase(2)}>2. {t('style')}</button>
+                    <button className={`tab-btn ${activePhase === 3 ? 'active' : ''}`} onClick={() => setActivePhase(3)}>3. {t('publishing')}</button>
+                </div>
+            )}
 
             {/* Help Modal */}
             {showHelp && (
                 <div style={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    backgroundColor: 'rgba(0,0,0,0.8)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    zIndex: 1000
+                    position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+                    backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
                 }}>
-                    <div style={{
-                        backgroundColor: '#181818',
-                        padding: '30px',
-                        borderRadius: '12px',
-                        maxWidth: '500px',
-                        width: '90%',
-                        border: '1px solid #333',
-                        boxShadow: '0 4px 20px rgba(0,0,0,0.5)'
-                    }}>
+                    <div style={{ backgroundColor: '#181818', padding: '30px', borderRadius: '12px', maxWidth: '500px', width: '90%', border: '1px solid #333' }}>
                         <h2 style={{ marginTop: 0, color: '#1db954', marginBottom: '20px' }}>{t('how_it_works')}</h2>
-
-                        <div style={{ marginBottom: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <span style={{ background: '#333', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}>1</span>
-                                <span>{t('upload_step')}</span>
-                            </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <span style={{ background: '#333', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}>2</span>
-                                <span>{t('lyrics_step')}</span>
-                            </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <span style={{ background: '#333', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}>3</span>
-                                <span>{t('timing_step')}</span>
-                            </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <span style={{ background: '#333', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}>4</span>
-                                <span>{t('style_step')}</span>
-                            </div>
-                        </div>
-
-                        <div style={{ backgroundColor: 'rgba(255, 165, 0, 0.1)', padding: '15px', borderRadius: '8px', border: '1px solid rgba(255, 165, 0, 0.3)' }}>
-                            <h4 style={{ marginTop: 0, color: 'orange', marginBottom: '10px' }}>{t('important_notes')}</h4>
-                            <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '0.9rem', color: '#ddd' }}>
-                                <li>{t('mp3_only_warning')}</li>
-                                <li>{t('no_transcription_warning')}</li>
-                            </ul>
-                        </div>
-
-                        <button
-                            onClick={() => setShowHelp(false)}
-                            style={{
-                                marginTop: '20px',
-                                width: '100%',
-                                padding: '12px',
-                                backgroundColor: '#1db954',
-                                border: 'none',
-                                borderRadius: '25px',
-                                color: 'black',
-                                fontWeight: 'bold',
-                                cursor: 'pointer'
-                            }}
-                        >
-                            OK
-                        </button>
+                        <button onClick={() => setShowHelp(false)} style={{ width: '100%', padding: '12px', backgroundColor: '#1db954', border: 'none', borderRadius: '25px', color: 'black', fontWeight: 'bold', cursor: 'pointer' }}>OK</button>
                     </div>
                 </div>
             )}
