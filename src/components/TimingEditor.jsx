@@ -96,7 +96,7 @@ function TimingEditor({ lyrics, onUpdate }) {
                     </button>
                 </div>
             ))}
-        </div> >
+        </div>
     );
 }
 
