@@ -48,20 +48,21 @@ const ProjectCard = ({ project, onClick, isOwner, onToggleVisibility, onDelete }
             className="card"
             onClick={onClick}
             style={{
-                padding: '15px',
+                padding: '10px 20px',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '20px',
                 height: 'auto',
-                minHeight: '140px',
+                minHeight: '100px',
                 transition: 'transform 0.2s, box-shadow 0.2s',
-                backgroundColor: '#181818', // Darker background for contrast
-                borderRadius: '12px',
-                overflow: 'visible' // Allow vinyl to pop out if needed, but here we keep it inside
+                backgroundColor: '#0f0f0f', // Very dark background
+                borderRadius: '8px',
+                border: '1px solid #222',
+                overflow: 'visible'
             }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#282828'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#181818'}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1a1a1a'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#0f0f0f'}
         >
             {/* Vinyl Section */}
             <div style={{ position: 'relative', width: '100px', height: '100px', flexShrink: 0 }}>

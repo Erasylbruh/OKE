@@ -138,7 +138,7 @@ function ForYou() {
                                 <i className="fas fa-clock" style={{ color: '#1db954' }}></i>
                                 {t('recent_projects') || 'Recent Projects'}
                             </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '20px' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                                 {recentProjects.map((project) => (
                                     <ProjectCard
                                         key={project.id}
@@ -201,13 +201,13 @@ function ForYou() {
                                     </section>
                                 )}
 
-                                {/* Followed Projects Grid */}
+                                {/* Followed Projects List */}
                                 <section>
                                     <div className="section-title">
                                         <i className="fas fa-rss" style={{ color: '#1db954' }}></i>
                                         {t('latest_from_following') || 'Latest from Following'}
                                     </div>
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '20px' }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                                         {followedProjects.map((project) => (
                                             <ProjectCard
                                                 key={project.id}
@@ -238,5 +238,3 @@ function ForYou() {
         </div>
     );
 }
-
-export default ForYou;
