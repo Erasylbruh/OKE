@@ -133,19 +133,7 @@ function ForYou() {
                                     <i className="fas fa-fire" style={{ color: '#ff5500' }}></i>
                                     {t('trending')}
                                 </div>
-                                <div className="trending-scroll-container" style={{
-                                    display: 'flex',
-                                    gap: '20px',
-                                    overflowX: 'auto',
-                                    paddingBottom: '20px',
-                                    scrollbarWidth: 'none', /* Firefox */
-                                    msOverflowStyle: 'none'  /* IE 10+ */
-                                }}>
-                                    <style>{`
-                                        .trending-scroll-container::-webkit-scrollbar {
-                                            display: none; /* Chrome/Safari/Webkit */
-                                        }
-                                    `}</style>
+                                <div className="trending-scroll-container">
                                     {trendingProjects.map((project) => (
                                         <div key={project.id} className="trending-card">
                                             <ProjectCard

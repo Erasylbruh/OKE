@@ -158,3 +158,77 @@ button.danger:hover {
     /* Space for mobile nav if needed */
   }
 }
+
+/* Mobile Bottom Navigation */
+.bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  background-color: #181818;
+  border-top: 1px solid #333;
+  z-index: 1000;
+  justify-content: space-around;
+  align-items: center;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.nav-item {
+  background: none;
+  border: none;
+  color: #888;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  padding: 5px;
+  flex: 1;
+  height: 100%;
+}
+
+.nav-item.active {
+  color: white;
+}
+
+.nav-item span {
+  margin-top: 4px;
+}
+
+@media (max-width: 768px) {
+  .bottom-nav {
+    display: flex;
+  }
+}
+
+/* Trending Section */
+.trending-card {
+  min-width: 350px;
+  /* Wider cards for trending */
+  flex-shrink: 0;
+}
+
+.trending-scroll-container {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  padding-bottom: 20px;
+  scrollbar-width: thin;
+  /* Firefox */
+  scrollbar-color: var(--primary) var(--bg-body);
+}
+
+.trending-scroll-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.trending-scroll-container::-webkit-scrollbar-track {
+  background: var(--bg-body);
+}
+
+.trending-scroll-container::-webkit-scrollbar-thumb {
+  background-color: var(--primary);
+  border-radius: 4px;
+}

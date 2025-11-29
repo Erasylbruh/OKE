@@ -356,7 +356,9 @@ app.put('/api/users/profile', authenticateToken, uploadAvatar.single('avatar'), 
 app.get('/api/users/likes', authenticateToken, async (req, res) => {
     try {
         const [projects] = await db.execute(`
-            SELECT p.id, p.name, p.created_at, p.updated_at, u.username, u.nickname, u.avatar_url 
+            SELECT p.id, p.name, p.preview_url, p.preview_urls, p.audio_url, p.is_public, p.created_at, p.updated_at, u.username, u.nickname, u.avatar_url,
+            (SELECT COUNT(*) FROM likes l2 WHERE l2.project_id = p.id) as likes_count,
+            (SELECT COUNT(*) FROM comments c WHERE c.project_id = p.id) as comments_count
             FROM projects p 
             JOIN likes l ON p.id = l.project_id 
             JOIN users u ON p.user_id = u.id 

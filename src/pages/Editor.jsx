@@ -472,6 +472,16 @@ function Editor() {
                     .right-panel {
                         display: none; /* Default hidden on mobile */
                     }
+                    
+                    .mobile-only-icon {
+                        display: none;
+                    }
+
+                    @media (max-width: 768px) {
+                        .mobile-only-icon {
+                            display: inline;
+                        }
+                    }
 
                     /* Adaptable Header Styles */
                     .editor-toolbar {
@@ -509,6 +519,20 @@ function Editor() {
                         /* Hide public toggle text on mobile */
                         .public-toggle-text {
                             display: none;
+                        }
+
+                        /* Hide audio button text on mobile */
+                        .audio-btn-text {
+                            display: none;
+                        }
+
+                        /* Compact save button on mobile */
+                        .save-btn {
+                            padding: 8px 12px !important;
+                        }
+                        
+                        .save-btn span {
+                            font-size: 0.9rem;
                         }
                     }
                 }
@@ -553,7 +577,10 @@ function Editor() {
                                         e.currentTarget.style.backgroundColor = '#1db954';
                                     }}
                                 >
-                                    <span>{audioUrl ? `🎵 ${t('change_track')}` : `☁️ ${t('upload_audio')}`}</span>
+
+                                    <span className="audio-btn-text">{audioUrl ? `🎵 ${t('change_track')}` : `☁️ ${t('upload_audio')}`}</span>
+                                    {!audioUrl && <span className="mobile-only-icon">☁️</span>}
+                                    {audioUrl && <span className="mobile-only-icon">🎵</span>}
                                     <input type="file" accept=".mp3,audio/mpeg" onChange={handleAudioUpload} style={{ display: 'none' }} />
                                 </label>
                             ) : (
@@ -652,7 +679,7 @@ function Editor() {
                                 id="save-btn"
                                 onClick={handleSave}
                                 disabled={isSaving}
-                                className="primary"
+                                className="primary save-btn"
                                 style={{ padding: '8px 24px', borderRadius: '20px' }}
                             >
                                 {isSaving ? 'Saving...' : t('save')}
