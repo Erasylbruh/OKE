@@ -28,18 +28,16 @@ function Sidebar() {
                         {t('main') || 'Main'}
                     </NavLink>
 
-
-
                     <NavLink to={`/user/${user.username}`} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
                         {t('profile') || 'Profile'}
                     </NavLink>
 
-                    <NavLink to="/settings" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-                        {t('settings')}
-                    </NavLink>
-
                     <NavLink to="/liked-projects" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
                         {t('liked_projects')}
+                    </NavLink>
+
+                    <NavLink to="/settings" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+                        {t('settings')}
                     </NavLink>
                 </nav>
 
@@ -120,6 +118,7 @@ function Sidebar() {
                     font-weight: 500;
                     display: flex;
                     align-items: center;
+                    justify-content: center;
                 }
 
                 .nav-item:hover {
