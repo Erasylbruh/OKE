@@ -576,9 +576,15 @@ app.post('/api/projects/:id/audio', authenticateToken, uploadAudio.single('audio
                 });
             });
 
-            lyrics = await transcribePromise;
+            // Race between transcription and timeout
+            const timeoutPromise = new Promise((resolve) => setTimeout(() => resolve(null), 5000)); // 5s timeout
 
-            if (lyrics.length > 0) {
+            lyrics = await Promise.race([transcribePromise, timeoutPromise]);
+
+            if (!lyrics) {
+                console.log('Transcription timed out or returned null');
+                lyrics = [];
+            } else if (lyrics.length > 0) {
                 // Update project data with new lyrics
                 const [projData] = await db.execute('SELECT data FROM projects WHERE id = ?', [req.params.id]);
                 let currentData = projData[0].data || {};
