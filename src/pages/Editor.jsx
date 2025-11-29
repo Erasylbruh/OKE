@@ -616,13 +616,45 @@ function Editor() {
                                                 {url && (
                                                     <button
                                                         onClick={(e) => { e.stopPropagation(); handleDeletePreview(index); }}
-                                                        style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: 'rgba(0,0,0,0.8)', color: 'white', border: 'none', borderRadius: '50%', width: '24px', height: '24px', cursor: 'pointer' }}
+                                                        style={{
+                                                            position: 'absolute',
+                                                            top: '50%',
+                                                            left: '50%',
+                                                            transform: 'translate(-50%, -50%)',
+                                                            background: 'rgba(0,0,0,0.8)',
+                                                            color: 'white',
+                                                            border: 'none',
+                                                            borderRadius: '50%',
+                                                            width: '30px',
+                                                            height: '30px',
+                                                            cursor: 'pointer',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            fontSize: '16px'
+                                                        }}
                                                     >✕</button>
                                                 )}
                                                 {url && index !== 0 && (
                                                     <button
                                                         onClick={(e) => { e.stopPropagation(); handleSetMainPreview(index); }}
-                                                        style={{ position: 'absolute', bottom: '5px', right: '50%', transform: 'translateX(50%)', background: 'rgba(0,0,0,0.8)', color: '#1db954', border: 'none', borderRadius: '4px', padding: '2px 6px', fontSize: '10px', cursor: 'pointer' }}
+                                                        style={{
+                                                            position: 'absolute',
+                                                            bottom: '10px',
+                                                            left: '50%',
+                                                            transform: 'translateX(-50%)',
+                                                            background: 'rgba(0,0,0,0.8)',
+                                                            color: '#1db954',
+                                                            border: 'none',
+                                                            borderRadius: '50%',
+                                                            width: '24px',
+                                                            height: '24px',
+                                                            cursor: 'pointer',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            fontSize: '12px'
+                                                        }}
                                                     >★</button>
                                                 )}
                                                 <input type="file" id={`preview-upload-${index}`} style={{ display: 'none' }} accept="image/*" onChange={(e) => handlePreviewUpload(index, e.target.files[0])} />

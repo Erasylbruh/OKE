@@ -109,17 +109,110 @@ function Preview({ lyrics, styles, resetTrigger, audioUrl, backgroundImageUrl })
         }}>
             {audioUrl && <audio ref={audioRef} src={audioUrl} />}
 
-            {/* Player Controls - Top */}
+            {/* Lyrics Display - Full Height, Scrollable */}
+            <div
+                ref={scrollContainerRef}
+                className="lyrics-display"
+                style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    overflowY: 'auto',
+                    padding: '0 40px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    // Padding top to clear the player controls (approx 100px) + some buffer
+                    paddingTop: '140px',
+                    // Padding bottom to center the last line
+                    paddingBottom: 'calc(50% - 20px)',
+                    textAlign: 'left',
+                    alignItems: 'flex-start',
+                    boxSizing: 'border-box',
+                    zIndex: 1
+                }}
+            >
+                {lyrics.map((line, index) => {
+                    const isActive = currentTime >= line.start && currentTime <= line.end;
+                    const isPast = currentTime > line.end;
+
+                    let fillPercentage = 0;
+                    if (isPast) {
+                        fillPercentage = 100;
+                    } else if (isActive) {
+                        const duration = line.end - line.start;
+                        if (duration > 0) {
+                            fillPercentage = ((currentTime - line.start) / duration) * 100;
+                        }
+                    }
+
+                    return (
+                        <div
+                            key={index}
+                            ref={isActive ? activeLineRef : null}
+                            style={{
+                                marginBottom: '30px',
+                                position: 'relative',
+                                display: 'block',
+                                width: 'fit-content',
+                                textAlign: 'left',
+                                fontSize: isActive ? `${styles.activeFontSize}px` : `${styles.fontSize}px`,
+                                fontFamily: styles.fontFamily,
+                                fontWeight: 'bold', // Spotify style bold
+                                transition: 'all 0.3s ease-out',
+                                whiteSpace: 'nowrap',
+                                opacity: isActive ? 1 : 0.3, // Lower opacity for inactive to mimic dark/inactive look
+                                transform: isActive ? 'scale(1.05)' : 'scale(1)',
+                                transformOrigin: 'left center',
+                                cursor: 'default'
+                            }}
+                        >
+                            {/* Inactive Layer (Background) */}
+                            <div style={{ color: styles.color }}>
+                                {line.text}
+                            </div>
+
+                            {/* Active Layer (Foreground Mask) */}
+                            <div style={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                height: '100%',
+                                width: `${fillPercentage}%`,
+                                overflow: 'hidden',
+                                pointerEvents: 'none',
+                                whiteSpace: 'nowrap'
+                            }}>
+                                <div style={{
+                                    color: styles.fillColor,
+                                    position: 'absolute',
+                                    left: 0,
+                                    top: 0,
+                                }}>
+                                    {line.text}
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })}
+                {lyrics.length === 0 && <div style={{ opacity: 0.5, fontWeight: 'bold', padding: '20px' }}>Lyrics will appear here...</div>}
+            </div>
+
+            {/* Player Controls - Top (Absolute Overlay) */}
             <div style={{
+                position: 'absolute',
+                top: '20px',
+                left: '20px',
+                right: '20px',
                 padding: '15px 20px',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '15px',
-                backgroundColor: 'rgba(0, 0, 0, 0.3)', // Semi-transparent dark
-                backdropFilter: 'blur(5px)', // Glass effect
+                backgroundColor: 'rgba(0, 0, 0, 0.6)', // Darker background for better hiding
+                backdropFilter: 'blur(10px)', // Stronger blur
                 borderRadius: '12px',
-                margin: '20px',
-                boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                boxShadow: '0 4px 6px rgba(0,0,0,0.2)',
                 zIndex: 10
             }}>
                 {/* Vinyl & Play Button Container */}
@@ -312,88 +405,7 @@ function Preview({ lyrics, styles, resetTrigger, audioUrl, backgroundImageUrl })
 
             {/* Static Header Text Removed (Moved inside player controls) */}
 
-            {/* Lyrics Display */}
-            <div
-                ref={scrollContainerRef}
-                className="lyrics-display"
-                style={{
-                    flex: 1,
-                    overflowY: 'auto',
-                    padding: '0 40px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    // Use 50% of container height to push content to center
-                    paddingTop: 'calc(50% - 20px)',
-                    paddingBottom: 'calc(50% - 20px)',
-                    textAlign: 'left',
-                    alignItems: 'flex-start'
-                }}
-            >
-                {lyrics.map((line, index) => {
-                    const isActive = currentTime >= line.start && currentTime <= line.end;
-                    const isPast = currentTime > line.end;
 
-                    let fillPercentage = 0;
-                    if (isPast) {
-                        fillPercentage = 100;
-                    } else if (isActive) {
-                        const duration = line.end - line.start;
-                        if (duration > 0) {
-                            fillPercentage = ((currentTime - line.start) / duration) * 100;
-                        }
-                    }
-
-                    return (
-                        <div
-                            key={index}
-                            ref={isActive ? activeLineRef : null}
-                            style={{
-                                marginBottom: '30px',
-                                position: 'relative',
-                                display: 'block',
-                                width: 'fit-content',
-                                textAlign: 'left',
-                                fontSize: isActive ? `${styles.activeFontSize}px` : `${styles.fontSize}px`,
-                                fontFamily: styles.fontFamily,
-                                fontWeight: 'bold', // Spotify style bold
-                                transition: 'all 0.3s ease-out',
-                                whiteSpace: 'nowrap',
-                                opacity: isActive ? 1 : 0.3, // Lower opacity for inactive to mimic dark/inactive look
-                                transform: isActive ? 'scale(1.05)' : 'scale(1)',
-                                transformOrigin: 'left center',
-                                cursor: 'default'
-                            }}
-                        >
-                            {/* Inactive Layer (Background) */}
-                            <div style={{ color: styles.color }}>
-                                {line.text}
-                            </div>
-
-                            {/* Active Layer (Foreground Mask) */}
-                            <div style={{
-                                position: 'absolute',
-                                top: 0,
-                                left: 0,
-                                height: '100%',
-                                width: `${fillPercentage}%`,
-                                overflow: 'hidden',
-                                pointerEvents: 'none',
-                                whiteSpace: 'nowrap'
-                            }}>
-                                <div style={{
-                                    color: styles.fillColor,
-                                    position: 'absolute',
-                                    left: 0,
-                                    top: 0,
-                                }}>
-                                    {line.text}
-                                </div>
-                            </div>
-                        </div>
-                    );
-                })}
-                {lyrics.length === 0 && <div style={{ opacity: 0.5, fontWeight: 'bold', padding: '20px' }}>Lyrics will appear here...</div>}
-            </div>
         </div>
     );
 }

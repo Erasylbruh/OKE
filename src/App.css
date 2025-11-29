@@ -315,9 +315,15 @@ button.danger:hover {
   .viewer-desktop-container {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    /* Side by side */
+    /* Side by side 1:1 */
     height: 100%;
     width: 100%;
+  }
+
+  .viewer-desktop-container .editor-panel {
+    min-width: 0;
+    /* Allow shrinking if needed to maintain grid */
+    width: 100% !important;
   }
 
   .editor-desktop-container {
