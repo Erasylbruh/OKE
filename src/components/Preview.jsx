@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-function Preview({ lyrics, styles, resetTrigger, audioUrl, backgroundImageUrl }) {
+function Preview({ lyrics, styles, resetTrigger, audioUrl, backgroundImageUrl, projectName }) {
     const [currentTime, setCurrentTime] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
     const activeLineRef = useRef(null);
@@ -130,7 +130,8 @@ function Preview({ lyrics, styles, resetTrigger, audioUrl, backgroundImageUrl })
                     textAlign: 'left',
                     alignItems: 'flex-start',
                     boxSizing: 'border-box',
-                    zIndex: 1
+                    zIndex: 1,
+                    paddingLeft: '50px' // Increased padding to align with player
                 }}
             >
                 {lyrics.map((line, index) => {
@@ -165,7 +166,9 @@ function Preview({ lyrics, styles, resetTrigger, audioUrl, backgroundImageUrl })
                                 opacity: isActive ? 1 : 0.3, // Lower opacity for inactive to mimic dark/inactive look
                                 transform: isActive ? 'scale(1.05)' : 'scale(1)',
                                 transformOrigin: 'left center',
-                                cursor: 'default'
+                                cursor: 'default',
+                                WebkitTextStroke: '0px', // Fix thin white stroke
+                                textStroke: '0px'
                             }}
                         >
                             {/* Inactive Layer (Background) */}
@@ -287,7 +290,7 @@ function Preview({ lyrics, styles, resetTrigger, audioUrl, backgroundImageUrl })
 
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                     {/* Header Text Moved Here */}
-                    {styles.headerText && (
+                    {(projectName || styles.headerText) && (
                         <div style={{
                             fontSize: '14px',
                             fontWeight: 'bold',
@@ -297,7 +300,7 @@ function Preview({ lyrics, styles, resetTrigger, audioUrl, backgroundImageUrl })
                             overflow: 'hidden',
                             textOverflow: 'ellipsis'
                         }}>
-                            {styles.headerText}
+                            {projectName || styles.headerText}
                         </div>
                     )}
 

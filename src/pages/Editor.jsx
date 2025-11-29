@@ -631,7 +631,9 @@ function Editor() {
                                                             display: 'flex',
                                                             alignItems: 'center',
                                                             justifyContent: 'center',
-                                                            fontSize: '16px'
+                                                            fontSize: '16px',
+                                                            padding: 0,
+                                                            lineHeight: 1
                                                         }}
                                                     >✕</button>
                                                 )}
@@ -653,7 +655,9 @@ function Editor() {
                                                             display: 'flex',
                                                             alignItems: 'center',
                                                             justifyContent: 'center',
-                                                            fontSize: '12px'
+                                                            fontSize: '12px',
+                                                            padding: 0,
+                                                            lineHeight: 1
                                                         }}
                                                     >★</button>
                                                 )}
@@ -666,23 +670,7 @@ function Editor() {
 
                                 {/* Visibility & Save */}
                                 <div style={{ display: 'flex', gap: '10px', marginTop: '30px' }}>
-                                    <div
-                                        onClick={() => setIsPublic(!isPublic)}
-                                        style={{
-                                            flex: 1,
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            gap: '10px',
-                                            cursor: 'pointer',
-                                            backgroundColor: '#333',
-                                            padding: '12px',
-                                            borderRadius: '25px'
-                                        }}
-                                    >
-                                        <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: isPublic ? '#1db954' : '#888' }} />
-                                        <span>{isPublic ? t('public') : t('private')}</span>
-                                    </div>
+                                    {/* Public/Private Toggle Removed */}
 
                                     <button
                                         id="save-btn"
@@ -707,7 +695,7 @@ function Editor() {
                             position: 'relative',
                             height: '100%'
                         }}>
-                            <Preview lyrics={lyrics} styles={styles} resetTrigger={resetTrigger} audioUrl={audioUrl} backgroundImageUrl={previewUrls[0]} />
+                            <Preview lyrics={lyrics} styles={styles} resetTrigger={resetTrigger} audioUrl={audioUrl} backgroundImageUrl={previewUrls[0]} projectName={projectName} />
                         </div>
                     </div>
                 ) : (
@@ -722,7 +710,7 @@ function Editor() {
                             position: 'relative',
                             height: '100%'
                         }}>
-                            <Preview lyrics={lyrics} styles={styles} resetTrigger={resetTrigger} audioUrl={audioUrl} backgroundImageUrl={previewUrls[0]} />
+                            <Preview lyrics={lyrics} styles={styles} resetTrigger={resetTrigger} audioUrl={audioUrl} backgroundImageUrl={previewUrls[0]} projectName={projectName} />
                         </div>
 
                         {/* Tab 2: Information */}
