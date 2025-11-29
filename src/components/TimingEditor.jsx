@@ -87,9 +87,16 @@ function TimingEditor({ lyrics, onUpdate }) {
                             </label>
                         </div>
                     </div>
+                    <button
+                        className="circular-btn"
+                        onClick={() => onUpdate(index, 'remove')}
+                        title="Remove line"
+                    >
+                        ✕
+                    </button>
                 </div>
             ))}
-        </div >
+        </div> >
     );
 }
 

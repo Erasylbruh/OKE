@@ -258,6 +258,9 @@ function Editor() {
 
     const updateLyric = (index, field, value) => {
         setLyrics((prev) => {
+            if (field === 'remove') {
+                return prev.filter((_, i) => i !== index);
+            }
             const newLyrics = [...prev];
             newLyrics[index] = { ...newLyrics[index], [field]: value };
             if (field === 'end' && index < newLyrics.length - 1) {
@@ -421,7 +424,7 @@ function Editor() {
                     </h1>
                 </div>
 
-                {/* Phase Navigation (Owner Only) */}
+                {/* Phase Navigation (Owner Only) - Desktop Only now */}
                 {isOwner && (
                     <div className="phase-nav mobile-hidden" style={{ margin: 0, border: 'none', background: 'none' }}>
                         <div className={`phase-step ${activePhase === 1 ? 'active' : ''}`} onClick={() => setActivePhase(1)}>
@@ -439,6 +442,28 @@ function Editor() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                     {!isOwner && <LikeButton projectId={id} />}
                     {isOwner && (
+                        <div
+                            onClick={() => setIsPublic(!isPublic)}
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                cursor: 'pointer',
+                                backgroundColor: '#333',
+                                padding: '6px 12px',
+                                borderRadius: '20px'
+                            }}
+                        >
+                            <div style={{
+                                width: '10px',
+                                height: '10px',
+                                borderRadius: '50%',
+                                backgroundColor: isPublic ? '#1db954' : '#888'
+                            }} />
+                            <span className="public-toggle-text" style={{ fontSize: '0.9rem' }}>{isPublic ? t('public') : t('private')}</span>
+                        </div>
+                    )}
+                    {isOwner && (
                         <button
                             id="save-btn"
                             onClick={handleSave}
@@ -453,58 +478,166 @@ function Editor() {
             </div>
 
             {/* Main Content */}
-            <div style={{ flex: 1, display: 'flex', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}>
+            <div style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
 
                 {isOwner ? (
-                    /* --- EDITOR MODE (3 Phases) --- */
-                    <>
+                    /* --- EDITOR MODE --- */
+                    <div className="editor-desktop-container">
                         {/* Phase 1: Lyrics & Audio (Left Panel) */}
-                        {activePhase === 1 && (
-                            <div className="editor-panel left-panel" style={{
-                                width: '450px',
-                                borderRight: '1px solid #333',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                backgroundColor: '#181818',
-                                height: '100%'
-                            }}>
-                                <div style={{ padding: '20px', overflowY: 'auto', flex: 1 }}>
-                                    {/* Audio Upload Section */}
-                                    <section style={{ marginBottom: '30px', padding: '20px', backgroundColor: '#222', borderRadius: '8px' }}>
-                                        <h3 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>Audio</h3>
-                                        {!isUploading ? (
-                                            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                                                <label className="primary" style={{ cursor: 'pointer', padding: '8px 16px', borderRadius: '20px', display: 'inline-block' }}>
-                                                    {audioUrl ? t('change_track') : t('upload_audio')}
-                                                    <input type="file" accept=".mp3,audio/mpeg" onChange={handleAudioUpload} style={{ display: 'none' }} />
-                                                </label>
-                                                {audioUrl && (
-                                                    <button onClick={handleDeleteAudio} style={{ background: 'none', border: '1px solid #ff5555', color: '#ff5555', borderRadius: '50%', width: '30px', height: '30px', cursor: 'pointer' }}>✕</button>
-                                                )}
-                                            </div>
-                                        ) : (
-                                            <div style={{ color: '#1db954' }}>Uploading... {uploadProgress}%</div>
-                                        )}
-                                    </section>
-
-                                    <section style={{ marginBottom: '30px' }}>
-                                        <h3 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>{t('lyrics')}</h3>
-                                        <LyricInput onParse={handleLyricsParsed} />
-                                    </section>
-
-                                    {lyrics.length > 0 && (
-                                        <section>
-                                            <h3 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>{t('timing')}</h3>
-                                            <TimingEditor lyrics={lyrics} onUpdate={updateLyric} />
-                                        </section>
+                        <div className={`editor-panel left-panel ${activePhase === 1 ? 'mobile-visible' : 'mobile-hidden'}`} style={{
+                            borderRight: '1px solid #333',
+                            display: activePhase === 1 ? 'flex' : 'none', // Desktop: controlled by CSS if needed, but here logic handles it
+                            flexDirection: 'column',
+                            backgroundColor: '#181818',
+                            overflowY: 'auto'
+                        }}>
+                            <div style={{ padding: '20px', flex: 1 }}>
+                                {/* Audio Upload Section */}
+                                <section className="audio-upload-section">
+                                    <h3 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>Audio</h3>
+                                    {!isUploading ? (
+                                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                                            <label className="primary" style={{ cursor: 'pointer', padding: '8px 16px', borderRadius: '20px', display: 'inline-block' }}>
+                                                {audioUrl ? t('change_track') : t('upload_audio')}
+                                                <input type="file" accept=".mp3,audio/mpeg" onChange={handleAudioUpload} style={{ display: 'none' }} />
+                                            </label>
+                                            {audioUrl && (
+                                                <button className="circular-btn" onClick={handleDeleteAudio} title="Remove Audio">✕</button>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div style={{ color: '#1db954' }}>Uploading... {uploadProgress}%</div>
                                     )}
+                                </section>
+
+                                <section style={{ marginBottom: '30px' }}>
+                                    <h3 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>{t('lyrics')}</h3>
+                                    <LyricInput onParse={handleLyricsParsed} />
+                                </section>
+
+                                {lyrics.length > 0 && (
+                                    <section>
+                                        <h3 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>{t('timing')}</h3>
+                                        <TimingEditor lyrics={lyrics} onUpdate={updateLyric} />
+                                    </section>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Phase 2: Style (Right Panel) */}
+                        <div className={`editor-panel right-panel ${activePhase === 2 ? 'mobile-visible' : 'mobile-hidden'}`} style={{
+                            borderRight: '1px solid #333',
+                            display: activePhase === 2 ? 'flex' : 'none',
+                            flexDirection: 'column',
+                            backgroundColor: '#181818',
+                            overflowY: 'auto'
+                        }}>
+                            <div style={{ padding: '20px', flex: 1 }}>
+                                <h3 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>{t('style')}</h3>
+                                <StyleControls styles={styles} onUpdate={setStyles} />
+                            </div>
+                        </div>
+
+                        {/* Phase 3: Publishing (Right Panel) */}
+                        <div className={`editor-panel right-panel ${activePhase === 3 ? 'mobile-visible' : 'mobile-hidden'}`} style={{
+                            borderRight: '1px solid #333',
+                            display: activePhase === 3 ? 'flex' : 'none',
+                            flexDirection: 'column',
+                            backgroundColor: '#181818',
+                            overflowY: 'auto'
+                        }}>
+                            <div style={{ padding: '20px', flex: 1 }}>
+                                <h3 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>{t('publishing')}</h3>
+
+                                {/* Title Input */}
+                                <div style={{ marginBottom: '20px' }}>
+                                    <label style={{ display: 'block', marginBottom: '5px', color: '#ccc' }}>{t('project_name')}</label>
+                                    <input
+                                        type="text"
+                                        value={projectName}
+                                        onChange={(e) => setProjectName(e.target.value)}
+                                        style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #333', background: '#222', color: 'white' }}
+                                    />
+                                </div>
+
+                                {/* Description Input */}
+                                <div style={{ marginBottom: '20px' }}>
+                                    <label style={{ display: 'block', marginBottom: '5px', color: '#ccc' }}>{t('description')}</label>
+                                    <textarea
+                                        value={description}
+                                        onChange={(e) => setDescription(e.target.value)}
+                                        rows={5}
+                                        style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #333', background: '#222', color: 'white', resize: 'vertical' }}
+                                    />
+                                </div>
+
+                                {/* Preview Uploads */}
+                                <section style={{ marginBottom: '20px' }}>
+                                    <h3 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>{t('preview')}</h3>
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+                                        {previewUrls.map((url, index) => (
+                                            <div
+                                                key={index}
+                                                style={{
+                                                    position: 'relative',
+                                                    aspectRatio: '1',
+                                                    borderRadius: '50%',
+                                                    overflow: 'hidden',
+                                                    border: index === 0 ? '2px solid #1db954' : '1px solid #333',
+                                                    cursor: 'pointer',
+                                                    backgroundColor: '#282828',
+                                                    boxShadow: '0 4px 8px rgba(0,0,0,0.5)'
+                                                }}
+                                                onDragOver={(e) => e.preventDefault()}
+                                                onDrop={(e) => handleSlotDrop(e, index)}
+                                                onClick={() => document.getElementById(`preview-upload-${index}`).click()}
+                                            >
+                                                {url ? (
+                                                    <img src={url} alt={`Slot ${index}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                ) : (
+                                                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#555', fontSize: '2rem' }}>+</div>
+                                                )}
+                                                {url && (
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); handleDeletePreview(index); }}
+                                                        style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: 'rgba(0,0,0,0.8)', color: 'white', border: 'none', borderRadius: '50%', width: '24px', height: '24px', cursor: 'pointer' }}
+                                                    >✕</button>
+                                                )}
+                                                {url && index !== 0 && (
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); handleSetMainPreview(index); }}
+                                                        style={{ position: 'absolute', bottom: '5px', right: '50%', transform: 'translateX(50%)', background: 'rgba(0,0,0,0.8)', color: '#1db954', border: 'none', borderRadius: '4px', padding: '2px 6px', fontSize: '10px', cursor: 'pointer' }}
+                                                    >★</button>
+                                                )}
+                                                <input type="file" id={`preview-upload-${index}`} style={{ display: 'none' }} accept="image/*" onChange={(e) => handlePreviewUpload(index, e.target.files[0])} />
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '10px' }}>{t('drag_drop_images')}</p>
+                                </section>
+
+                                {/* Visibility Toggle */}
+                                <div
+                                    onClick={() => setIsPublic(!isPublic)}
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '10px',
+                                        cursor: 'pointer',
+                                        backgroundColor: '#333',
+                                        padding: '10px',
+                                        borderRadius: '8px',
+                                        marginBottom: '20px'
+                                    }}
+                                >
+                                    <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: isPublic ? '#1db954' : '#888' }} />
+                                    <span>{isPublic ? t('public') : t('private')}</span>
                                 </div>
                             </div>
-                        )}
+                        </div>
 
-                        {/* Center Panel: Preview (Always visible in Editor Mode) */}
+                        {/* Center Panel: Preview (Always visible) */}
                         <div className="editor-panel center-panel" style={{
-                            flex: 1,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -514,227 +647,102 @@ function Editor() {
                         }}>
                             <Preview lyrics={lyrics} styles={styles} resetTrigger={resetTrigger} audioUrl={audioUrl} backgroundImageUrl={previewUrls[0]} />
                         </div>
-
-                        {/* Phase 2: Style (Right Panel) */}
-                        {activePhase === 2 && (
-                            <div className="editor-panel right-panel" style={{
-                                width: '450px',
-                                borderLeft: '1px solid #333',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                backgroundColor: '#181818',
-                                height: '100%'
-                            }}>
-                                <div style={{ padding: '20px', overflowY: 'auto', flex: 1 }}>
-                                    <h3 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>{t('style')}</h3>
-                                    <StyleControls styles={styles} onUpdate={setStyles} />
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Phase 3: Publishing (Right Panel) */}
-                        {activePhase === 3 && (
-                            <div className="editor-panel right-panel" style={{
-                                width: '450px',
-                                borderLeft: '1px solid #333',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                backgroundColor: '#181818',
-                                height: '100%'
-                            }}>
-                                <div style={{ padding: '20px', overflowY: 'auto', flex: 1 }}>
-                                    <h3 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>{t('publishing')}</h3>
-
-                                    {/* Title Input */}
-                                    <div style={{ marginBottom: '20px' }}>
-                                        <label style={{ display: 'block', marginBottom: '5px', color: '#ccc' }}>{t('project_name')}</label>
-                                        <input
-                                            type="text"
-                                            value={projectName}
-                                            onChange={(e) => setProjectName(e.target.value)}
-                                            style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #333', background: '#222', color: 'white' }}
-                                        />
-                                    </div>
-
-                                    {/* Description Input */}
-                                    <div style={{ marginBottom: '20px' }}>
-                                        <label style={{ display: 'block', marginBottom: '5px', color: '#ccc' }}>{t('description')}</label>
-                                        <textarea
-                                            value={description}
-                                            onChange={(e) => setDescription(e.target.value)}
-                                            rows={5}
-                                            style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #333', background: '#222', color: 'white', resize: 'vertical' }}
-                                        />
-                                    </div>
-
-                                    {/* Preview Uploads */}
-                                    <section style={{ marginBottom: '20px' }}>
-                                        <h3 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>{t('preview')}</h3>
-                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
-                                            {previewUrls.map((url, index) => (
-                                                <div
-                                                    key={index}
-                                                    style={{
-                                                        position: 'relative',
-                                                        aspectRatio: '1',
-                                                        borderRadius: '50%',
-                                                        overflow: 'hidden',
-                                                        border: index === 0 ? '2px solid #1db954' : '1px solid #333',
-                                                        cursor: 'pointer',
-                                                        backgroundColor: '#282828',
-                                                        boxShadow: '0 4px 8px rgba(0,0,0,0.5)'
-                                                    }}
-                                                    onDragOver={(e) => e.preventDefault()}
-                                                    onDrop={(e) => handleSlotDrop(e, index)}
-                                                    onClick={() => document.getElementById(`preview-upload-${index}`).click()}
-                                                >
-                                                    {url ? (
-                                                        <img src={url} alt={`Slot ${index}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                                    ) : (
-                                                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#555', fontSize: '2rem' }}>+</div>
-                                                    )}
-                                                    {url && (
-                                                        <button
-                                                            onClick={(e) => { e.stopPropagation(); handleDeletePreview(index); }}
-                                                            style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: 'rgba(0,0,0,0.8)', color: 'white', border: 'none', borderRadius: '50%', width: '24px', height: '24px', cursor: 'pointer' }}
-                                                        >✕</button>
-                                                    )}
-                                                    {url && index !== 0 && (
-                                                        <button
-                                                            onClick={(e) => { e.stopPropagation(); handleSetMainPreview(index); }}
-                                                            style={{ position: 'absolute', bottom: '5px', right: '50%', transform: 'translateX(50%)', background: 'rgba(0,0,0,0.8)', color: '#1db954', border: 'none', borderRadius: '4px', padding: '2px 6px', fontSize: '10px', cursor: 'pointer' }}
-                                                        >★</button>
-                                                    )}
-                                                    <input type="file" id={`preview-upload-${index}`} style={{ display: 'none' }} accept="image/*" onChange={(e) => handlePreviewUpload(index, e.target.files[0])} />
-                                                </div>
-                                            ))}
-                                        </div>
-                                        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '10px' }}>{t('drag_drop_images')}</p>
-                                    </section>
-
-                                    {/* Visibility Toggle */}
-                                    <div
-                                        onClick={() => setIsPublic(!isPublic)}
-                                        style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '10px',
-                                            cursor: 'pointer',
-                                            backgroundColor: '#333',
-                                            padding: '10px',
-                                            borderRadius: '8px',
-                                            marginBottom: '20px'
-                                        }}
-                                    >
-                                        <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: isPublic ? '#1db954' : '#888' }} />
-                                        <span>{isPublic ? t('public') : t('private')}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </>
+                    </div>
                 ) : (
-                    /* --- VIEWER MODE (2 Tabs) --- */
-                    <>
+                    /* --- VIEWER MODE --- */
+                    <div className="viewer-desktop-container">
                         {/* Tab 1: Lyrics (Animation) */}
-                        {viewTab === 'lyrics' && (
-                            <div className="editor-panel center-panel" style={{
-                                flex: 1,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                backgroundColor: '#121212',
-                                position: 'relative',
-                                height: '100%'
-                            }}>
-                                <Preview lyrics={lyrics} styles={styles} resetTrigger={resetTrigger} audioUrl={audioUrl} backgroundImageUrl={previewUrls[0]} />
-                            </div>
-                        )}
+                        <div className={`editor-panel center-panel ${viewTab === 'lyrics' ? 'mobile-visible' : 'mobile-hidden'}`} style={{
+                            display: 'flex', // Always flex in desktop grid
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            backgroundColor: '#121212',
+                            position: 'relative',
+                            height: '100%'
+                        }}>
+                            <Preview lyrics={lyrics} styles={styles} resetTrigger={resetTrigger} audioUrl={audioUrl} backgroundImageUrl={previewUrls[0]} />
+                        </div>
 
                         {/* Tab 2: Information */}
-                        {viewTab === 'info' && (
-                            <div className="editor-panel right-panel" style={{
-                                width: '100%', // Full width on mobile/viewer
-                                maxWidth: '600px',
-                                margin: '0 auto',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                backgroundColor: '#181818',
-                                height: '100%'
-                            }}>
-                                <div style={{ padding: '20px', overflowY: 'auto', flex: 1 }}>
-                                    <h1 style={{ fontSize: '2rem', marginBottom: '10px' }}>{projectName}</h1>
+                        <div className={`editor-panel right-panel ${viewTab === 'info' ? 'mobile-visible' : 'mobile-hidden'}`} style={{
+                            display: 'flex', // Always flex in desktop grid
+                            flexDirection: 'column',
+                            backgroundColor: '#181818',
+                            height: '100%',
+                            overflowY: 'auto'
+                        }}>
+                            <div style={{ padding: '20px', flex: 1 }}>
+                                <h1 style={{ fontSize: '2rem', marginBottom: '10px' }}>{projectName}</h1>
 
-                                    {/* User Profile */}
-                                    {projectOwner && (
-                                        <div
-                                            style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', cursor: 'pointer' }}
-                                            onClick={() => navigate(`/user/${projectOwner.username}`)}
-                                        >
-                                            <div style={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', backgroundColor: '#333' }}>
-                                                {projectOwner.avatar_url ? (
-                                                    <img src={projectOwner.avatar_url} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                                ) : (
-                                                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
-                                                        {projectOwner.username?.[0]?.toUpperCase()}
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <div>
-                                                <div style={{ fontWeight: 'bold' }}>{projectOwner.nickname || projectOwner.username}</div>
-                                                <div style={{ fontSize: '0.8rem', color: '#888' }}>@{projectOwner.username}</div>
-                                            </div>
+                                {/* User Profile */}
+                                {projectOwner && (
+                                    <div
+                                        style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', cursor: 'pointer' }}
+                                        onClick={() => navigate(`/user/${projectOwner.username}`)}
+                                    >
+                                        <div style={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', backgroundColor: '#333' }}>
+                                            {projectOwner.avatar_url ? (
+                                                <img src={projectOwner.avatar_url} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                            ) : (
+                                                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+                                                    {projectOwner.username?.[0]?.toUpperCase()}
+                                                </div>
+                                            )}
                                         </div>
-                                    )}
-
-                                    {/* Description */}
-                                    <div className={`description-expander ${isDescriptionExpanded ? 'expanded' : ''}`} style={{ maxHeight: isDescriptionExpanded ? 'none' : '100px', marginBottom: '20px' }}>
-                                        <p style={{ color: '#ccc', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{description || t('no_description') || 'No description'}</p>
-                                        {!isDescriptionExpanded && description && description.length > 100 && <div className="description-gradient" />}
+                                        <div>
+                                            <div style={{ fontWeight: 'bold' }}>{projectOwner.nickname || projectOwner.username}</div>
+                                            <div style={{ fontSize: '0.8rem', color: '#888' }}>@{projectOwner.username}</div>
+                                        </div>
                                     </div>
-                                    {description && description.length > 100 && (
-                                        <button onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)} style={{ background: 'none', border: 'none', color: '#1db954', cursor: 'pointer', marginBottom: '20px', fontWeight: 'bold' }}>
-                                            {isDescriptionExpanded ? t('show_less') : t('show_more')}
-                                        </button>
-                                    )}
+                                )}
 
-                                    {/* Likes */}
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '30px' }}>
-                                        <LikeButton projectId={id} />
-                                    </div>
-
-                                    <CommentsSection projectId={id} projectOwnerId={projectOwnerId} />
+                                {/* Description */}
+                                <div className={`description-expander ${isDescriptionExpanded ? 'expanded' : ''}`} style={{ maxHeight: isDescriptionExpanded ? 'none' : '100px', marginBottom: '20px' }}>
+                                    <p style={{ color: '#ccc', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{description || t('no_description') || 'No description'}</p>
+                                    {!isDescriptionExpanded && description && description.length > 100 && <div className="description-gradient" />}
                                 </div>
+                                {description && description.length > 100 && (
+                                    <button onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)} style={{ background: 'none', border: 'none', color: '#1db954', cursor: 'pointer', marginBottom: '20px', fontWeight: 'bold' }}>
+                                        {isDescriptionExpanded ? t('show_less') : t('show_more')}
+                                    </button>
+                                )}
+
+                                {/* Likes */}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '30px' }}>
+                                    <LikeButton projectId={id} />
+                                </div>
+
+                                <CommentsSection projectId={id} projectOwnerId={projectOwnerId} />
                             </div>
-                        )}
-                    </>
+                        </div>
+                    </div>
                 )}
             </div>
 
             {/* Mobile Tabs for Viewer */}
             {!isOwner && (
-                <div className="mobile-tabs">
+                <div className="mobile-nav-viewer">
                     <button
-                        className={`tab-btn ${viewTab === 'lyrics' ? 'active' : ''}`}
+                        className={`nav-item ${viewTab === 'lyrics' ? 'active' : ''}`}
                         onClick={() => setViewTab('lyrics')}
                     >
-                        {t('lyrics')}
+                        <span>{t('lyrics')}</span>
                     </button>
                     <button
-                        className={`tab-btn ${viewTab === 'info' ? 'active' : ''}`}
+                        className={`nav-item ${viewTab === 'info' ? 'active' : ''}`}
                         onClick={() => setViewTab('info')}
                     >
-                        {t('information')}
+                        <span>{t('information')}</span>
                     </button>
                 </div>
             )}
 
-            {/* Mobile Tabs for Editor (Phases) - Optional, if we want bottom nav for phases on mobile */}
+            {/* Mobile Tabs for Editor (Phases) */}
             {isOwner && (
-                <div className="mobile-tabs">
-                    <button className={`tab-btn ${activePhase === 1 ? 'active' : ''}`} onClick={() => setActivePhase(1)}>1. {t('lyrics')}</button>
-                    <button className={`tab-btn ${activePhase === 2 ? 'active' : ''}`} onClick={() => setActivePhase(2)}>2. {t('style')}</button>
-                    <button className={`tab-btn ${activePhase === 3 ? 'active' : ''}`} onClick={() => setActivePhase(3)}>3. {t('publishing')}</button>
+                <div className="mobile-nav-editor">
+                    <button className={`nav-item ${activePhase === 1 ? 'active' : ''}`} onClick={() => setActivePhase(1)}><span>{t('lyrics')}</span></button>
+                    <button className={`nav-item ${activePhase === 2 ? 'active' : ''}`} onClick={() => setActivePhase(2)}><span>{t('style')}</span></button>
+                    <button className={`nav-item ${activePhase === 3 ? 'active' : ''}`} onClick={() => setActivePhase(3)}><span>{t('publishing')}</span></button>
                 </div>
             )}
 
