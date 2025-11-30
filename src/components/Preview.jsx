@@ -1,11 +1,20 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 
 function Preview({ lyrics, styles, resetTrigger, audioUrl, backgroundImageUrl, projectName }) {
     const [currentTime, setCurrentTime] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
-    const activeLineRef = useRef(null);
+
+    // Refs
     const scrollContainerRef = useRef(null);
     const audioRef = useRef(null);
+    const lineRefs = useRef([]); // Store refs for all lines
+    const requestRef = useRef(); // For requestAnimationFrame
+    const startTimeRef = useRef(0); // For timer logic without audio
+
+    // Derived state: Find the index of the currently active line
+    const activeLineIndex = useMemo(() => {
+        return lyrics.findIndex(line => currentTime >= line.start && currentTime <= line.end);
+    }, [lyrics, currentTime]);
 
     // Reset when trigger changes
     useEffect(() => {
@@ -15,53 +24,67 @@ function Preview({ lyrics, styles, resetTrigger, audioUrl, backgroundImageUrl, p
             audioRef.current.pause();
             audioRef.current.currentTime = 0;
         }
+        if (requestRef.current) cancelAnimationFrame(requestRef.current);
     }, [resetTrigger, audioUrl]);
 
-    // Player logic
-    useEffect(() => {
-        let interval;
-        if (isPlaying) {
-            if (audioRef.current && audioUrl) {
-                audioRef.current.play().catch(e => console.error("Audio play error:", e));
-            }
-
-            // If audio is present, use audio time. Otherwise use timer.
-            if (audioUrl) {
-                interval = setInterval(() => {
-                    if (audioRef.current) {
-                        setCurrentTime(audioRef.current.currentTime);
-                        if (audioRef.current.ended) {
-                            setIsPlaying(false);
-                        }
-                    }
-                }, 16);
-            } else {
-                const start = Date.now() - currentTime * 1000;
-                interval = setInterval(() => {
-                    const time = (Date.now() - start) / 1000;
-                    setCurrentTime(time);
-
-                    const lastEnd = lyrics.length > 0 ? Math.max(...lyrics.map(l => l.end)) : 0;
-                    if (time > lastEnd + 2) { // Stop 2s after last end
-                        setIsPlaying(false);
-                        setCurrentTime(0);
-                    }
-                }, 16); // ~60fps
+    // Animation Loop Logic
+    const animate = () => {
+        if (audioUrl && audioRef.current) {
+            // SYNC WITH AUDIO
+            setCurrentTime(audioRef.current.currentTime);
+            if (audioRef.current.ended) {
+                setIsPlaying(false);
+                return; // Stop loop
             }
         } else {
-            if (audioRef.current) {
-                audioRef.current.pause();
+            // SYNC WITH TIMER (No Audio)
+            const now = Date.now();
+            const time = (now - startTimeRef.current) / 1000;
+            setCurrentTime(time);
+
+            const lastEnd = lyrics.length > 0 ? Math.max(...lyrics.map(l => l.end)) : 0;
+            if (time > lastEnd + 2) {
+                setIsPlaying(false);
+                setCurrentTime(0);
+                return; // Stop loop
             }
         }
-        return () => clearInterval(interval);
-    }, [isPlaying, lyrics, audioUrl]); // eslint-disable-line react-hooks/exhaustive-deps
+        // Continue loop
+        requestRef.current = requestAnimationFrame(animate);
+    };
 
-    // Auto-scroll logic
+    // Toggle Play/Pause Effect
     useEffect(() => {
-        if (activeLineRef.current) {
-            activeLineRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if (isPlaying) {
+            if (audioUrl && audioRef.current) {
+                audioRef.current.play().catch(e => console.error("Audio play error:", e));
+            } else {
+                // If no audio, calculate where start time should be relative to current progress
+                startTimeRef.current = Date.now() - (currentTime * 1000);
+            }
+            requestRef.current = requestAnimationFrame(animate);
+        } else {
+            if (audioUrl && audioRef.current) {
+                audioRef.current.pause();
+            }
+            if (requestRef.current) cancelAnimationFrame(requestRef.current);
         }
-    }, [currentTime]);
+
+        return () => {
+            if (requestRef.current) cancelAnimationFrame(requestRef.current);
+        };
+    }, [isPlaying, audioUrl]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // --- SMART AUTO-SCROLL LOGIC ---
+    useEffect(() => {
+        // Only scroll if we have a valid active line index
+        if (activeLineIndex !== -1 && lineRefs.current[activeLineIndex]) {
+            lineRefs.current[activeLineIndex].scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+        }
+    }, [activeLineIndex]); // <--- Only triggers when the LINE changes, not every millisecond
 
     const togglePlay = () => {
         setIsPlaying(!isPlaying);
@@ -70,25 +93,18 @@ function Preview({ lyrics, styles, resetTrigger, audioUrl, backgroundImageUrl, p
     const handleSeek = (e) => {
         const newTime = parseFloat(e.target.value);
         setCurrentTime(newTime);
+
         if (audioRef.current) {
             audioRef.current.currentTime = newTime;
-        }
-
-        if (isPlaying) {
-            // If using timer (no audio), we need to reset start time in effect, 
-            // but since effect depends on isPlaying, toggling it is easiest way to reset if not using audio.
-            // With audio, setting currentTime is enough.
-            if (!audioUrl) {
-                setIsPlaying(false);
-                setTimeout(() => setIsPlaying(true), 10);
-            }
+        } else {
+            // Update the reference start time so the timer resumes from the new seek point
+            startTimeRef.current = Date.now() - (newTime * 1000);
         }
     };
 
     const lastEnd = lyrics.length > 0 ? Math.max(...lyrics.map(l => l.end)) : 0;
     const maxTime = audioRef.current?.duration || lastEnd + 2;
 
-    // Format time for display
     const formatTimeSimple = (t) => {
         if (!t && t !== 0) return "0.0s";
         return t.toFixed(1) + 's';
@@ -97,19 +113,18 @@ function Preview({ lyrics, styles, resetTrigger, audioUrl, backgroundImageUrl, p
     return (
         <div className="preview-container" style={{
             height: '100%',
-            width: '100%', // Ensure full width of parent (569px)
+            width: '100%',
             display: 'flex',
             flexDirection: 'column',
             backgroundColor: styles.backgroundColor,
             color: styles.color,
             fontFamily: styles.fontFamily,
             borderRadius: '12px',
-            overflow: 'hidden',
             position: 'relative'
         }}>
             {audioUrl && <audio ref={audioRef} src={audioUrl} />}
 
-            {/* Lyrics Display - Full Height, Scrollable */}
+            {/* Lyrics Display */}
             <div
                 ref={scrollContainerRef}
                 className="lyrics-display"
@@ -123,35 +138,34 @@ function Preview({ lyrics, styles, resetTrigger, audioUrl, backgroundImageUrl, p
                     padding: '0 40px',
                     display: 'flex',
                     flexDirection: 'column',
-                    // Padding top to clear the player controls (approx 100px) + some buffer
                     paddingTop: '140px',
-                    // Padding bottom to center the last line
                     paddingBottom: 'calc(50% - 20px)',
                     textAlign: 'left',
                     alignItems: 'flex-start',
-                    boxSizing: 'border-box',
                     zIndex: 1,
-                    paddingLeft: '50px' // Increased padding to align with player
+                    paddingLeft: '50px'
                 }}
             >
                 {lyrics.map((line, index) => {
-                    const isActive = currentTime >= line.start && currentTime <= line.end;
-                    const isPast = currentTime > line.end;
+                    const isActive = index === activeLineIndex;
+                    const isPast = activeLineIndex > index || (currentTime > line.end);
 
                     let fillPercentage = 0;
-                    if (isPast) {
+                    if (isPast && !isActive) {
                         fillPercentage = 100;
                     } else if (isActive) {
                         const duration = line.end - line.start;
                         if (duration > 0) {
                             fillPercentage = ((currentTime - line.start) / duration) * 100;
+                            // Clamp percentage
+                            fillPercentage = Math.min(100, Math.max(0, fillPercentage));
                         }
                     }
 
                     return (
                         <div
                             key={index}
-                            ref={isActive ? activeLineRef : null}
+                            ref={el => lineRefs.current[index] = el} // Store ref by index
                             style={{
                                 marginBottom: '30px',
                                 position: 'relative',
@@ -160,15 +174,14 @@ function Preview({ lyrics, styles, resetTrigger, audioUrl, backgroundImageUrl, p
                                 textAlign: 'left',
                                 fontSize: isActive ? `${styles.activeFontSize}px` : `${styles.fontSize}px`,
                                 fontFamily: styles.fontFamily,
-                                fontWeight: 'bold', // Spotify style bold
-                                transition: 'all 0.3s ease-out',
+                                fontWeight: 'bold',
+                                transition: 'transform 0.3s ease-out, opacity 0.3s ease-out', // Smooth transition
                                 whiteSpace: 'nowrap',
-                                opacity: isActive ? 1 : 0.3, // Lower opacity for inactive to mimic dark/inactive look
+                                opacity: isActive ? 1 : 0.3,
                                 transform: isActive ? 'scale(1.05)' : 'scale(1)',
                                 transformOrigin: 'left center',
                                 cursor: 'default',
-                                textShadow: 'none', // Ensure no shadow looks like a border
-                                WebkitTextStroke: '0', // Ensure no stroke
+                                WebkitTextStroke: '0',
                             }}
                         >
                             {/* Inactive Layer (Background) */}
@@ -176,7 +189,7 @@ function Preview({ lyrics, styles, resetTrigger, audioUrl, backgroundImageUrl, p
                                 {line.text}
                             </div>
 
-                            {/* Active Layer (Foreground Mask) */}
+                            {/* Active Layer (Foreground Mask - Karaoke Effect) */}
                             <div style={{
                                 position: 'absolute',
                                 top: 0,
@@ -185,7 +198,8 @@ function Preview({ lyrics, styles, resetTrigger, audioUrl, backgroundImageUrl, p
                                 width: `${fillPercentage}%`,
                                 overflow: 'hidden',
                                 pointerEvents: 'none',
-                                whiteSpace: 'nowrap'
+                                whiteSpace: 'nowrap',
+                                transition: 'width 0.1s linear' // Slight smoothing on the fill width
                             }}>
                                 <div style={{
                                     color: styles.fillColor,
@@ -193,8 +207,6 @@ function Preview({ lyrics, styles, resetTrigger, audioUrl, backgroundImageUrl, p
                                     left: 0,
                                     top: 0,
                                     WebkitTextStroke: '0px',
-                                    textStroke: '0px',
-                                    textShadow: 'none'
                                 }}>
                                     {line.text}
                                 </div>
@@ -205,7 +217,7 @@ function Preview({ lyrics, styles, resetTrigger, audioUrl, backgroundImageUrl, p
                 {lyrics.length === 0 && <div style={{ opacity: 0.5, fontWeight: 'bold', padding: '20px' }}>Lyrics will appear here...</div>}
             </div>
 
-            {/* Player Controls - Top (Absolute Overlay) */}
+            {/* Player Controls */}
             <div style={{
                 position: 'absolute',
                 top: '20px',
@@ -215,15 +227,14 @@ function Preview({ lyrics, styles, resetTrigger, audioUrl, backgroundImageUrl, p
                 display: 'flex',
                 alignItems: 'center',
                 gap: '15px',
-                backgroundColor: 'rgba(0, 0, 0, 0.6)', // Darker background for better hiding
-                backdropFilter: 'blur(10px)', // Stronger blur
+                backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                backdropFilter: 'blur(10px)',
                 borderRadius: '12px',
                 boxShadow: '0 4px 6px rgba(0,0,0,0.2)',
                 zIndex: 10
             }}>
                 {/* Vinyl & Play Button Container */}
                 <div style={{ position: 'relative', width: '60px', height: '60px', flexShrink: 0 }}>
-                    {/* Rotating Vinyl */}
                     <div style={{
                         width: '100%',
                         height: '100%',
@@ -250,8 +261,6 @@ function Preview({ lyrics, styles, resetTrigger, audioUrl, backgroundImageUrl, p
                                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                             />
                         )}
-
-                        {/* Vinyl Grooves */}
                         <div style={{
                             position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
                             background: 'repeating-radial-gradient(#000 0, #000 2px, transparent 3px, transparent 4px)',
@@ -259,7 +268,6 @@ function Preview({ lyrics, styles, resetTrigger, audioUrl, backgroundImageUrl, p
                         }} />
                     </div>
 
-                    {/* Static Play Button Overlay */}
                     <button
                         onClick={togglePlay}
                         style={{
@@ -292,7 +300,6 @@ function Preview({ lyrics, styles, resetTrigger, audioUrl, backgroundImageUrl, p
                 </div>
 
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                    {/* Header Text Moved Here */}
                     {(projectName || styles.headerText) && (
                         <div style={{
                             fontSize: '14px',
@@ -307,7 +314,6 @@ function Preview({ lyrics, styles, resetTrigger, audioUrl, backgroundImageUrl, p
                         </div>
                     )}
 
-                    {/* Custom Range Input Styling */}
                     <style>
                         {`
                             input[type=range].custom-range {
@@ -315,56 +321,35 @@ function Preview({ lyrics, styles, resetTrigger, audioUrl, backgroundImageUrl, p
                                 width: 100%;
                                 background: transparent;
                                 cursor: pointer;
-                                height: 20px; /* Hit area */
+                                height: 20px;
                                 margin: 0;
                             }
-                            input[type=range].custom-range:focus {
-                                outline: none;
-                            }
-                            
-                            /* Webkit (Chrome, Safari, Edge) */
+                            input[type=range].custom-range:focus { outline: none; }
                             input[type=range].custom-range::-webkit-slider-runnable-track {
-                                width: 100%;
-                                height: 4px;
-                                cursor: pointer;
-                                background: rgba(255,255,255,0.2);
-                                border-radius: 2px;
+                                width: 100%; height: 4px; cursor: pointer;
+                                background: rgba(255,255,255,0.2); border-radius: 2px;
                             }
                             input[type=range].custom-range::-webkit-slider-thumb {
-                                height: 12px;
-                                width: 12px;
-                                border-radius: 50%;
+                                height: 12px; width: 12px; border-radius: 50%;
                                 background: ${styles.fillColor};
-                                cursor: pointer;
-                                -webkit-appearance: none;
-                                margin-top: -4px; /* Center thumb on track */
+                                cursor: pointer; -webkit-appearance: none;
+                                margin-top: -4px;
                             }
-                            
-                            /* Firefox */
                             input[type=range].custom-range::-moz-range-track {
-                                width: 100%;
-                                height: 4px;
-                                cursor: pointer;
-                                background: rgba(255,255,255,0.2);
-                                border-radius: 2px;
+                                width: 100%; height: 4px; cursor: pointer;
+                                background: rgba(255,255,255,0.2); border-radius: 2px;
                             }
                             input[type=range].custom-range::-moz-range-thumb {
-                                height: 12px;
-                                width: 12px;
-                                border: none;
-                                border-radius: 50%;
-                                background: ${styles.fillColor};
+                                height: 12px; width: 12px; border: none;
+                                border-radius: 50%; background: ${styles.fillColor};
                                 cursor: pointer;
                             }
                         `}
                     </style>
                     <div style={{ position: 'relative', height: '4px', width: '100%', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '2px', margin: '8px 0' }}>
-                        {/* Filled portion of the bar */}
                         <div style={{
                             position: 'absolute',
-                            left: 0,
-                            top: 0,
-                            height: '100%',
+                            left: 0, top: 0, height: '100%',
                             width: `${(currentTime / (maxTime || 1)) * 100}%`,
                             backgroundColor: styles.fillColor,
                             borderRadius: '2px',
@@ -379,26 +364,18 @@ function Preview({ lyrics, styles, resetTrigger, audioUrl, backgroundImageUrl, p
                             value={currentTime}
                             onChange={handleSeek}
                             style={{
-                                position: 'absolute',
-                                top: '-8px', // Align input over the visual bar
-                                left: 0,
-                                width: '100%',
-                                opacity: 0, // Hide default input, use custom visual
-                                height: '20px',
-                                zIndex: 2
+                                position: 'absolute', top: '-8px', left: 0,
+                                width: '100%', opacity: 0, height: '20px', zIndex: 2
                             }}
                         />
                         <div style={{
                             position: 'absolute',
                             left: `${(currentTime / (maxTime || 1)) * 100}%`,
-                            top: '-4px',
-                            width: '12px',
-                            height: '12px',
+                            top: '-4px', width: '12px', height: '12px',
                             backgroundColor: styles.fillColor,
                             borderRadius: '50%',
                             transform: 'translateX(-50%)',
-                            pointerEvents: 'none',
-                            zIndex: 1
+                            pointerEvents: 'none', zIndex: 1
                         }} />
                     </div>
 
@@ -408,10 +385,6 @@ function Preview({ lyrics, styles, resetTrigger, audioUrl, backgroundImageUrl, p
                     </div>
                 </div>
             </div>
-
-            {/* Static Header Text Removed (Moved inside player controls) */}
-
-
         </div>
     );
 }
