@@ -73,22 +73,21 @@ function Sidebar() {
             <style>{`
                 /* Sidebar Styles from test.css */
                 .sidebar {
-                    width: 280px;
+                    width: 250px;
                     height: 100vh;
-                    background-color: #121212; /* var(--surface) */
+                    background-color: #121212;
                     color: white;
                     display: flex;
                     flex-direction: column;
-                    padding: 1.5rem;
                     position: fixed;
-                    top: 0; /* Reset top */
-                    left: 0; /* Reset left */
+                    top: 0;
+                    left: 0;
                     overflow: hidden;
                     z-index: 1000;
                     font-family: 'Montserrat', sans-serif;
-                    border: none; /* Reset border */
-                    border-radius: 0; /* Reset radius */
-                    box-shadow: none; /* Reset shadow */
+                    border: none;
+                    border-radius: 0;
+                    box-shadow: none;
                 }
 
                 .sidebar-header {
@@ -108,8 +107,6 @@ function Sidebar() {
 
                 .sidebar-nav {
                     flex: 1;
-                    display: flex;
-                    flex-direction: column;
                     gap: 0.5rem;
                 }
 
@@ -117,13 +114,12 @@ function Sidebar() {
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    width: 100%;
-                    padding: 0.75rem 1rem;
                     border-radius: 0.25rem;
                     font-weight: 500;
                     text-decoration: none;
                     transition: background-color 0.2s, color 0.2s;
                     color: #d1d5db;
+                    font-size: .875em;
                 }
 
                 .nav-item:hover {
@@ -153,10 +149,9 @@ function Sidebar() {
                 }
 
                 .logout-btn {
-                    width: 100%;
                     background-color: transparent;
-                    border: 2px solid #6b7280;
-                    color: #e5e7eb;
+                    border: 2px solid #e1101;
+                    color: #e1101;
                     font-weight: bold;
                     padding: 0.75rem 1rem;
                     border-radius: 0.25rem;
