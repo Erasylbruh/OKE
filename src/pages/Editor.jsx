@@ -696,7 +696,6 @@ function Editor() {
                             display: 'flex', // Overridden by mobile-hidden class on mobile
                             alignItems: 'center',
                             justifyContent: 'center',
-                            backgroundColor: '#121212',
                             position: 'relative',
                             height: '100%'
                         }}>
@@ -711,7 +710,6 @@ function Editor() {
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            backgroundColor: '#121212',
                             position: 'relative',
                             height: '100%'
                         }}>

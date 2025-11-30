@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 
 function Preview({ lyrics, styles, resetTrigger, audioUrl, backgroundImageUrl, projectName }) {
     const [currentTime, setCurrentTime] = useState(0);
-    const [isPlaying, setIsPlaying] = useState(false);
+    const [Playing, setIsPlaying] = useState(false);
 
     // Refs
     const scrollContainerRef = useRef(null);
