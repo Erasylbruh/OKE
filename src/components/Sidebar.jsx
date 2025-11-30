@@ -127,6 +127,7 @@ function Sidebar() {
                     color: #d1d5db;
                     font-size: .875em;
                     padding: 0.75rem 1rem;
+                    flex-direction: row;
                 }
 
                 .nav-item span {
