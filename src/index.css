@@ -183,7 +183,7 @@ textarea:focus {
   }
 
   .bottom-nav {
-    display: flex;
+    display: flex !important;
   }
 
   .main-content {
