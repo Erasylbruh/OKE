@@ -409,7 +409,6 @@ function Editor() {
 
     return (
         <div className="editor-container" style={{
-            height: '100vh',
             width: '100%',
             display: 'flex',
             flexDirection: 'column',
