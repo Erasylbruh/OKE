@@ -38,8 +38,9 @@ function Sidebar() {
                     </NavLink>
                 </nav>
 
+                <div className="separator"></div>
+
                 <div className="sidebar-footer">
-                    <div className="separator"></div>
                     {isAdmin && (
                         <NavLink
                             to="/admin"
@@ -108,14 +109,15 @@ function Sidebar() {
                 .sidebar-nav {
                     flex: 1;
                     gap: 0.5rem;
+                    padding: 0 0 0 10px;
                 }
 
                 .nav-item {
                     display: flex;
-                    align-items: center;
+                    align-items: flex-start;
                     justify-content: center;
                     border-radius: 0.25rem;
-                    font-weight: 500;
+                    font-weight: 700;
                     text-decoration: none;
                     transition: background-color 0.2s, color 0.2s;
                     color: #d1d5db;
@@ -138,7 +140,7 @@ function Sidebar() {
 
                 .sidebar-footer {
                     margin-top: auto;
-                    padding-top: 1rem;
+                    padding: 0 10px 10px 10px;
                 }
 
                 .separator {
@@ -150,14 +152,15 @@ function Sidebar() {
 
                 .logout-btn {
                     background-color: transparent;
-                    border: 2px solid #e1101;
-                    color: #e1101;
+                    border: 2px solid #bb0000;
+                    color: #bb0000;
                     font-weight: bold;
                     padding: 0.75rem 1rem;
                     border-radius: 0.25rem;
                     transition: border-color 0.2s, color 0.2s;
                     cursor: pointer;
                     box-sizing: border-box;
+                    width: 100%;
                 }
 
                 .logout-btn:hover {

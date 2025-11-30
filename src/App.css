@@ -201,6 +201,7 @@ button.danger:hover {
   height: 2.5em;
   justify-content: center;
   align-items: flex-start;
+  font-size: .875em;
 }
 
 .nav-item.active {
