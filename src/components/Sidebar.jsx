@@ -128,10 +128,13 @@ function Sidebar() {
                     font-size: .875em;
                     padding: 0.75rem 1rem;
                     flex-direction: row;
+                    height: 2em ;
                 }
 
                 .sidebar .nav-item span {
                     margin-left: 12px;
+                    display: flex;
+                    align-items: center;
                 }
 
                 .sidebar .nav-item:hover {
