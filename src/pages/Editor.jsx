@@ -423,7 +423,7 @@ function Editor() {
                     margin: 0,
                     borderBottom: '1px solid #333',
                     background: '#181818',
-                    padding: '15px 0'
+                    padding: '50px 0 15px'
                 }}>
                     <div className={`phase-step ${activePhase === 1 ? 'active' : ''}`} onClick={() => setActivePhase(1)}>
                         1. {t('lyrics_and_audio')}

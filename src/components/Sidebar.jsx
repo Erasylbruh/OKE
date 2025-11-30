@@ -49,7 +49,6 @@ function Sidebar() {
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                width: '100%',
                                 backgroundColor: '#134e28',
                                 color: 'white',
                                 fontWeight: 'bold',
