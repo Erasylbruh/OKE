@@ -314,6 +314,13 @@ button.danger:hover {
   scrollbar-width: none;
 }
 
+/* Container Layouts */
+.viewer-desktop-container,
+.editor-desktop-container {
+  height: 100%;
+  width: 100%;
+}
+
 /* Desktop Layouts */
 @media (min-width: 769px) {
   .viewer-desktop-container {
