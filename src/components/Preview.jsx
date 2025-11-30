@@ -358,7 +358,7 @@ function Preview({ lyrics, styles, resetTrigger, audioUrl, backgroundImageUrl, p
                             }
                         `}
                     </style>
-                    <div style={{ position: 'relative', height: '4px', width: '100%', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '2px', marginBottom: '8px 0' }}>
+                    <div style={{ position: 'relative', height: '4px', width: '100%', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '2px', margin: '8px 0' }}>
                         {/* Filled portion of the bar */}
                         <div style={{
                             position: 'absolute',
