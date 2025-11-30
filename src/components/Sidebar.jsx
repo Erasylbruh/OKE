@@ -116,7 +116,7 @@ function Sidebar() {
                     padding: 0 10px;
                 }
 
-                .nav-item {
+                .sidebar .nav-item {
                     display: flex;
                     align-items: center;
                     justify-content: flex-start;
@@ -130,21 +130,21 @@ function Sidebar() {
                     flex-direction: row;
                 }
 
-                .nav-item span {
+                .sidebar .nav-item span {
                     margin-left: 12px;
                 }
 
-                .nav-item:hover {
+                .sidebar .nav-item:hover {
                     color: white;
                     background-color: rgba(255, 255, 255, 0.05);
                 }
 
-                .nav-item.active {
+                .sidebar .nav-item.active {
                     background-color: #1a2e22;
                     color: #2ebd65;
                 }
 
-                .nav-item.active:hover {
+                .sidebar .nav-item.active:hover {
                     background-color: #1f3a2b;
                 }
 

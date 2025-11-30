@@ -9,7 +9,6 @@
   --text-muted: #B3B3B3;
   --border-color: #333333;
   --sidebar-width: 250px;
-  /* Updated to 280px */
 }
 
 body {
@@ -33,7 +32,8 @@ body {
 .main-content {
   flex: 1;
   padding: 2rem;
-  max-width: calc(100vw - 280px);
+  margin-left: 250px;
+  max-width: calc(100% - 250px);
   box-sizing: border-box;
 }
 
@@ -48,12 +48,12 @@ body {
   width: 100%;
 }
 
-/* ... (rest of the file) */
-
 /* Desktop Main Content Adjustment */
 @media (min-width: 769px) {
   .main-content {
     padding: 20px;
+    margin-left: 250px;
+    max-width: calc(100% - 250px);
   }
 }
 
@@ -168,13 +168,6 @@ button.danger:hover {
   }
 }
 
-/* Desktop Main Content Adjustment */
-@media (min-width: 769px) {
-  .main-content {
-    padding: 20px;
-  }
-}
-
 /* Mobile Bottom Navigation */
 .bottom-nav {
   display: none;
@@ -191,7 +184,7 @@ button.danger:hover {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
-.nav-item {
+.bottom-nav .nav-item {
   display: flex;
   border-radius: 0.25rem;
   font-weight: 700;
@@ -204,11 +197,11 @@ button.danger:hover {
   font-size: .875em;
 }
 
-.nav-item.active {
+.bottom-nav .nav-item.active {
   color: white;
 }
 
-.nav-item span {
+.bottom-nav .nav-item span {
   margin-top: 4px;
 }
 
@@ -221,7 +214,6 @@ button.danger:hover {
 /* Trending Section */
 .trending-card {
   min-width: 350px;
-  /* Wider cards for trending */
   flex-shrink: 0;
 }
 
@@ -231,7 +223,6 @@ button.danger:hover {
   overflow-x: auto;
   padding-bottom: 20px;
   scrollbar-width: thin;
-  /* Firefox */
   scrollbar-color: var(--primary) var(--bg-body);
 }
 
@@ -320,9 +311,7 @@ button.danger:hover {
 
 .center-panel {
   -ms-overflow-style: none;
-  /* IE and Edge */
   scrollbar-width: none;
-  /* Firefox */
 }
 
 /* Desktop Layouts */
@@ -330,14 +319,12 @@ button.danger:hover {
   .viewer-desktop-container {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    /* Side by side 1:1 */
     height: 100%;
     width: 100%;
   }
 
   .viewer-desktop-container .editor-panel {
     min-width: 0;
-    /* Allow shrinking if needed to maintain grid */
     width: 100% !important;
   }
 
@@ -352,16 +339,13 @@ button.danger:hover {
   .editor-desktop-container .editor-panel.right-panel {
     flex: 7;
     min-width: 350px;
-    /* Ensure it doesn't get too narrow */
     max-width: 450px;
-    /* Optional: prevent it from getting too wide if desired, but user asked to keep width */
     width: auto !important;
   }
 
   .editor-desktop-container .editor-panel.center-panel {
     flex: 13;
     min-width: 400px;
-    /* Ensure preview has space */
     width: auto !important;
   }
 }
@@ -378,7 +362,6 @@ button.danger:hover {
   border-top: 1px solid #333;
   z-index: 1000;
   display: flex;
-  /* Overridden by media query */
 }
 
 .mobile-nav-editor {
@@ -392,7 +375,6 @@ button.danger:hover {
   border-top: 1px solid #333;
   z-index: 1000;
   display: flex;
-  /* Overridden by media query */
 }
 
 @media (min-width: 769px) {
@@ -412,7 +394,6 @@ button.danger:hover {
 
   .editor-container {
     padding-bottom: 60px;
-    /* Space for bottom nav */
   }
 }
 
