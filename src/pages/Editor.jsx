@@ -438,7 +438,7 @@ function Editor() {
             )}
 
             {/* Main Content */}
-            <div style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
+            <div style={{ flex: 1, overflow: 'hidden', position: 'relative', padding: '25px' }}>
 
                 {isOwner ? (
                     /* --- EDITOR MODE --- */
