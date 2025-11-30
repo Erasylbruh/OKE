@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
+import { FiHome, FiUser, FiHeart, FiSettings } from 'react-icons/fi';
 
 function Sidebar() {
     const { t } = useLanguage();
@@ -25,16 +26,20 @@ function Sidebar() {
 
                 <nav className="sidebar-nav">
                     <NavLink to="/" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-                        {t('main') || 'Main'}
+                        <FiHome size={20} />
+                        <span>{t('main') || 'Main'}</span>
                     </NavLink>
                     <NavLink to={`/user/${user.username}`} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-                        {t('profile') || 'Profile'}
+                        <FiUser size={20} />
+                        <span>{t('profile') || 'Profile'}</span>
                     </NavLink>
                     <NavLink to="/liked-projects" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-                        {t('liked_projects')}
+                        <FiHeart size={20} />
+                        <span>{t('liked_projects')}</span>
                     </NavLink>
                     <NavLink to="/settings" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-                        {t('settings')}
+                        <FiSettings size={20} />
+                        <span>{t('settings')}</span>
                     </NavLink>
                 </nav>
 
@@ -108,19 +113,24 @@ function Sidebar() {
                 .sidebar-nav {
                     flex: 1;
                     gap: 0.5rem;
-                    padding: 0 0 0 10px;
+                    padding: 0 10px;
                 }
 
                 .nav-item {
                     display: flex;
-                    align-items: flex-start;
-                    justify-content: center;
+                    align-items: center;
+                    justify-content: flex-start;
                     border-radius: 0.25rem;
                     font-weight: 700;
                     text-decoration: none;
                     transition: background-color 0.2s, color 0.2s;
                     color: #d1d5db;
                     font-size: .875em;
+                    padding: 0.75rem 1rem;
+                }
+
+                .nav-item span {
+                    margin-left: 12px;
                 }
 
                 .nav-item:hover {
