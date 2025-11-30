@@ -674,7 +674,29 @@ function Editor() {
 
                                 {/* Visibility & Save */}
                                 <div style={{ display: 'flex', gap: '10px', marginTop: '30px' }}>
-                                    {/* Public/Private Toggle Removed */}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', backgroundColor: '#282828', padding: '10px 15px', borderRadius: '25px' }}>
+                                        <span style={{ fontSize: '0.9rem', color: isPublic ? '#1db954' : '#b3b3b3', fontWeight: 'bold' }}>
+                                            {isPublic ? t('public') : t('private')}
+                                        </span>
+                                        <label className="switch" style={{ position: 'relative', display: 'inline-block', width: '40px', height: '20px' }}>
+                                            <input
+                                                type="checkbox"
+                                                checked={isPublic}
+                                                onChange={(e) => setIsPublic(e.target.checked)}
+                                                style={{ opacity: 0, width: 0, height: 0 }}
+                                            />
+                                            <span className="slider round" style={{
+                                                position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0,
+                                                backgroundColor: isPublic ? '#1db954' : '#555', transition: '.4s', borderRadius: '20px'
+                                            }}>
+                                                <span style={{
+                                                    position: 'absolute', content: '""', height: '16px', width: '16px',
+                                                    left: isPublic ? '22px' : '2px', bottom: '2px', backgroundColor: 'white',
+                                                    transition: '.4s', borderRadius: '50%'
+                                                }}></span>
+                                            </span>
+                                        </label>
+                                    </div>
 
                                     <button
                                         id="save-btn"
