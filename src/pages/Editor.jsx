@@ -767,14 +767,13 @@ function Editor() {
                                             {projectOwner.avatar_url ? (
                                                 <img src={projectOwner.avatar_url} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                             ) : (
-                                                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
-                                                    {projectOwner.username?.[0]?.toUpperCase()}
+                                                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '1.2rem', fontWeight: 'bold' }}>
+                                                    {(projectOwner.nickname || projectOwner.username || '?')[0].toUpperCase()}
                                                 </div>
                                             )}
                                         </div>
                                         <div>
-                                            <div style={{ fontWeight: 'bold' }}>{projectOwner.nickname || projectOwner.username}</div>
-                                            <div style={{ fontSize: '0.8rem', color: '#888' }}>@{projectOwner.username}</div>
+                                            <div style={{ fontWeight: 'bold', fontSize: '1rem' }}>{projectOwner.nickname || projectOwner.username}</div>
                                         </div>
                                     </div>
                                 )}

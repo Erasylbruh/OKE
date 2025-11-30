@@ -322,7 +322,7 @@ textarea:focus {
 
 .trending-card {
   min-width: 250px;
-  width: 250px;
+  width: 350px;
   flex-shrink: 0;
 }
 
@@ -338,7 +338,7 @@ textarea:focus {
 
   .trending-card {
     min-width: 200px;
-    width: 200px;
+    width: 350px;
   }
 }
 
