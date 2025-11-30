@@ -5,20 +5,34 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 /**
  * LyricsDisplay Component
  * Handles rendering of lyrics lines and auto-scrolling.
+ * Includes defensive checks for lyrics data.
  */
 const LyricsDisplay = ({ lyrics = [], currentTime = 0, styles = {}, activeLineIndex = -1 }) => {
     const scrollContainerRef = useRef(null);
     const lineRefs = useRef([]);
 
+    // Validate lyrics prop
+    const safeLyrics = useMemo(() => {
+        if (!Array.isArray(lyrics)) return [];
+        return lyrics.filter(l => l && typeof l.start === 'number' && typeof l.end === 'number' && typeof l.text === 'string');
+    }, [lyrics]);
+
     // Smart Auto-Scroll: Only scroll when the active line changes
     useEffect(() => {
         if (activeLineIndex !== -1 && lineRefs.current[activeLineIndex]) {
-            lineRefs.current[activeLineIndex].scrollIntoView({
-                behavior: 'smooth',
-                block: 'center'
-            });
+            try {
+                lineRefs.current[activeLineIndex].scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+            } catch (e) {
+                // Ignore scroll errors (e.g., element not visible)
+            }
         }
     }, [activeLineIndex]);
+
+    // Safe style access
+    const getStyle = (key, fallback) => styles && styles[key] ? styles[key] : fallback;
 
     return (
         <div
@@ -42,7 +56,7 @@ const LyricsDisplay = ({ lyrics = [], currentTime = 0, styles = {}, activeLineIn
                 paddingLeft: '50px'
             }}
         >
-            {lyrics.map((line, index) => {
+            {safeLyrics.map((line, index) => {
                 const isActive = index === activeLineIndex;
                 const isPast = activeLineIndex > index || (currentTime > line.end);
 
@@ -68,8 +82,8 @@ const LyricsDisplay = ({ lyrics = [], currentTime = 0, styles = {}, activeLineIn
                             display: 'block',
                             width: 'fit-content',
                             textAlign: 'left',
-                            fontSize: isActive ? `${styles.activeFontSize || 24}px` : `${styles.fontSize || 18}px`,
-                            fontFamily: styles.fontFamily || 'Inter, sans-serif',
+                            fontSize: isActive ? `${getStyle('activeFontSize', 24)}px` : `${getStyle('fontSize', 18)}px`,
+                            fontFamily: getStyle('fontFamily', 'Inter, sans-serif'),
                             fontWeight: 'bold',
                             transition: 'transform 0.3s ease-out, opacity 0.3s ease-out',
                             whiteSpace: 'nowrap',
@@ -81,7 +95,7 @@ const LyricsDisplay = ({ lyrics = [], currentTime = 0, styles = {}, activeLineIn
                         }}
                     >
                         {/* Background Layer (Inactive Color) */}
-                        <div style={{ color: styles.color || '#ffffff' }}>
+                        <div style={{ color: getStyle('color', '#ffffff') }}>
                             {line.text}
                         </div>
 
@@ -97,7 +111,7 @@ const LyricsDisplay = ({ lyrics = [], currentTime = 0, styles = {}, activeLineIn
                             whiteSpace: 'nowrap'
                         }}>
                             <div style={{
-                                color: styles.fillColor || '#1db954',
+                                color: getStyle('fillColor', '#1db954'),
                                 position: 'absolute',
                                 left: 0,
                                 top: 0,
@@ -109,8 +123,8 @@ const LyricsDisplay = ({ lyrics = [], currentTime = 0, styles = {}, activeLineIn
                     </div>
                 );
             })}
-            {lyrics.length === 0 && (
-                <div style={{ opacity: 0.5, fontWeight: 'bold', padding: '20px', color: styles.color }}>
+            {safeLyrics.length === 0 && (
+                <div style={{ opacity: 0.5, fontWeight: 'bold', padding: '20px', color: getStyle('color', '#ffffff') }}>
                     Lyrics will appear here...
                 </div>
             )}
@@ -133,9 +147,17 @@ const PlayerControls = ({
     projectName
 }) => {
     const formatTime = (t) => {
-        if (!t && t !== 0) return "0.0s";
-        return t.toFixed(1) + 's';
+        if (typeof t !== 'number' || isNaN(t)) return "0.0s";
+        return Math.max(0, t).toFixed(1) + 's';
     };
+
+    const getStyle = (key, fallback) => styles && styles[key] ? styles[key] : fallback;
+    const fillColor = getStyle('fillColor', '#1db954');
+
+    // Clamp progress for display
+    const safeCurrentTime = Math.max(0, currentTime);
+    const safeMaxTime = Math.max(0.1, maxTime || 1); // Avoid division by zero
+    const progressPercent = Math.min(100, Math.max(0, (safeCurrentTime / safeMaxTime) * 100));
 
     return (
         <div style={{
@@ -174,6 +196,7 @@ const PlayerControls = ({
                             src={backgroundImageUrl}
                             alt="Vinyl"
                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            onError={(e) => e.target.style.display = 'none'} // Hide broken images
                         />
                     )}
                     <div style={{
@@ -235,17 +258,17 @@ const PlayerControls = ({
                         input[type=range].custom-range { -webkit-appearance: none; width: 100%; background: transparent; cursor: pointer; height: 20px; margin: 0; }
                         input[type=range].custom-range:focus { outline: none; }
                         input[type=range].custom-range::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: rgba(255,255,255,0.2); border-radius: 2px; }
-                        input[type=range].custom-range::-webkit-slider-thumb { height: 12px; width: 12px; border-radius: 50%; background: ${styles.fillColor || '#1db954'}; cursor: pointer; -webkit-appearance: none; margin-top: -4px; }
+                        input[type=range].custom-range::-webkit-slider-thumb { height: 12px; width: 12px; border-radius: 50%; background: ${fillColor}; cursor: pointer; -webkit-appearance: none; margin-top: -4px; }
                         input[type=range].custom-range::-moz-range-track { width: 100%; height: 4px; cursor: pointer; background: rgba(255,255,255,0.2); border-radius: 2px; }
-                        input[type=range].custom-range::-moz-range-thumb { height: 12px; width: 12px; border: none; border-radius: 50%; background: ${styles.fillColor || '#1db954'}; cursor: pointer; }
+                        input[type=range].custom-range::-moz-range-thumb { height: 12px; width: 12px; border: none; border-radius: 50%; background: ${fillColor}; cursor: pointer; }
                     `}
                 </style>
                 <div style={{ position: 'relative', height: '4px', width: '100%', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '2px', margin: '8px 0' }}>
                     <div style={{
                         position: 'absolute',
                         left: 0, top: 0, height: '100%',
-                        width: `${(currentTime / (maxTime || 1)) * 100}%`,
-                        backgroundColor: styles.fillColor || '#1db954',
+                        width: `${progressPercent}%`,
+                        backgroundColor: fillColor,
                         borderRadius: '2px',
                         pointerEvents: 'none'
                     }} />
@@ -253,9 +276,9 @@ const PlayerControls = ({
                         type="range"
                         className="custom-range"
                         min="0"
-                        max={maxTime || 10}
+                        max={safeMaxTime}
                         step="0.01"
-                        value={currentTime}
+                        value={safeCurrentTime}
                         onChange={handleSeek}
                         style={{
                             position: 'absolute', top: '-8px', left: 0,
@@ -264,9 +287,9 @@ const PlayerControls = ({
                     />
                     <div style={{
                         position: 'absolute',
-                        left: `${(currentTime / (maxTime || 1)) * 100}%`,
+                        left: `${progressPercent}%`,
                         top: '-4px', width: '12px', height: '12px',
-                        backgroundColor: styles.fillColor || '#1db954',
+                        backgroundColor: fillColor,
                         borderRadius: '50%',
                         transform: 'translateX(-50%)',
                         pointerEvents: 'none', zIndex: 1
@@ -274,7 +297,7 @@ const PlayerControls = ({
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#ccc', marginTop: '0px' }}>
-                    <span>{formatTime(currentTime)}</span>
+                    <span>{formatTime(safeCurrentTime)}</span>
                     <span>{formatTime(maxTime)}</span>
                 </div>
             </div>
@@ -291,20 +314,30 @@ function Preview({ lyrics = [], styles = {}, resetTrigger, audioUrl, backgroundI
     const audioRef = useRef(null);
     const requestRef = useRef(null);
     const startTimeRef = useRef(0);
-    const lyricsRef = useRef(lyrics); // Keep latest lyrics for animation loop
+    const lyricsRef = useRef(lyrics);
+    const isPlayingRef = useRef(isPlaying); // Track playing state in ref for loops
 
-    // Update lyrics ref when props change
+    // Update refs when props/state change
     useEffect(() => {
-        lyricsRef.current = lyrics;
+        lyricsRef.current = Array.isArray(lyrics) ? lyrics : [];
     }, [lyrics]);
+
+    useEffect(() => {
+        isPlayingRef.current = isPlaying;
+    }, [isPlaying]);
 
     // Derived State
     const activeLineIndex = useMemo(() => {
-        return lyrics.findIndex(line => currentTime >= line.start && currentTime <= line.end);
+        if (!Array.isArray(lyrics)) return -1;
+        return lyrics.findIndex(line =>
+            line && typeof line.start === 'number' && typeof line.end === 'number' &&
+            currentTime >= line.start && currentTime <= line.end
+        );
     }, [lyrics, currentTime]);
 
     const lastEnd = useMemo(() => {
-        return lyrics.length > 0 ? Math.max(...lyrics.map(l => l.end)) : 0;
+        if (!Array.isArray(lyrics) || lyrics.length === 0) return 0;
+        return Math.max(...lyrics.map(l => (l && typeof l.end === 'number') ? l.end : 0));
     }, [lyrics]);
 
     const maxTime = (audioRef.current?.duration) || (lastEnd + 2);
@@ -335,52 +368,79 @@ function Preview({ lyrics = [], styles = {}, resetTrigger, audioUrl, backgroundI
             const time = (now - startTimeRef.current) / 1000;
             setCurrentTime(time);
 
-            // Check end condition using ref to avoid stale closure
-            const currentLastEnd = lyricsRef.current.length > 0 ? Math.max(...lyricsRef.current.map(l => l.end)) : 0;
+            // Check end condition
+            const currentLastEnd = lyricsRef.current.length > 0 ?
+                Math.max(...lyricsRef.current.map(l => (l && typeof l.end === 'number') ? l.end : 0)) : 0;
+
             if (time > currentLastEnd + 2) {
                 setIsPlaying(false);
                 setCurrentTime(0);
                 return;
             }
         }
-        requestRef.current = requestAnimationFrame(animate);
+
+        // Only continue if still playing
+        if (isPlayingRef.current) {
+            requestRef.current = requestAnimationFrame(animate);
+        }
     }, [audioUrl]);
 
     // Handle Play/Pause Effect
     useEffect(() => {
-        if (isPlaying) {
-            if (audioUrl && audioRef.current) {
-                audioRef.current.play().catch(e => console.error("Audio play error:", e));
+        const handleAudioPlay = async () => {
+            if (isPlaying) {
+                if (audioUrl && audioRef.current) {
+                    try {
+                        await audioRef.current.play();
+                    } catch (e) {
+                        console.warn("Audio playback interrupted or failed:", e);
+                        setIsPlaying(false); // Revert state if play fails
+                        return;
+                    }
+                } else {
+                    // Initialize timer start time based on current progress
+                    startTimeRef.current = Date.now() - (currentTime * 1000);
+                }
+
+                // Start animation loop
+                if (requestRef.current) cancelAnimationFrame(requestRef.current);
+                requestRef.current = requestAnimationFrame(animate);
             } else {
-                // Initialize timer start time based on current progress
-                startTimeRef.current = Date.now() - (currentTime * 1000);
+                if (audioUrl && audioRef.current) {
+                    audioRef.current.pause();
+                }
+                if (requestRef.current) cancelAnimationFrame(requestRef.current);
             }
-            requestRef.current = requestAnimationFrame(animate);
-        } else {
-            if (audioUrl && audioRef.current) {
-                audioRef.current.pause();
-            }
-            if (requestRef.current) cancelAnimationFrame(requestRef.current);
-        }
+        };
+
+        handleAudioPlay();
 
         return () => {
             if (requestRef.current) cancelAnimationFrame(requestRef.current);
         };
-    }, [isPlaying, audioUrl, animate]); // Added animate dependency, but it's stable via useCallback
+    }, [isPlaying, audioUrl, animate, currentTime]);
 
     const togglePlay = () => setIsPlaying(prev => !prev);
 
     const handleSeek = (e) => {
-        const newTime = parseFloat(e.target.value);
+        const val = parseFloat(e.target.value);
+        const newTime = isNaN(val) ? 0 : val;
+
         setCurrentTime(newTime);
 
         if (audioRef.current) {
-            audioRef.current.currentTime = newTime;
+            // Check if audio is ready
+            if (Number.isFinite(audioRef.current.duration)) {
+                audioRef.current.currentTime = newTime;
+            }
         } else {
             // Update timer reference
             startTimeRef.current = Date.now() - (newTime * 1000);
         }
     };
+
+    // Safe style access
+    const getStyle = (key, fallback) => styles && styles[key] ? styles[key] : fallback;
 
     return (
         <div className="preview-container" style={{
@@ -388,13 +448,23 @@ function Preview({ lyrics = [], styles = {}, resetTrigger, audioUrl, backgroundI
             width: '100%',
             display: 'flex',
             flexDirection: 'column',
-            backgroundColor: styles.backgroundColor || '#121212',
-            color: styles.color || '#ffffff',
-            fontFamily: styles.fontFamily || 'Inter, sans-serif',
+            backgroundColor: getStyle('backgroundColor', '#121212'),
+            color: getStyle('color', '#ffffff'),
+            fontFamily: getStyle('fontFamily', 'Inter, sans-serif'),
             borderRadius: '12px',
-            position: 'relative'
+            position: 'relative',
+            overflow: 'hidden'
         }}>
-            {audioUrl && <audio ref={audioRef} src={audioUrl} />}
+            {audioUrl && (
+                <audio
+                    ref={audioRef}
+                    src={audioUrl}
+                    onError={(e) => {
+                        console.error("Audio load error", e);
+                        setIsPlaying(false);
+                    }}
+                />
+            )}
 
             <LyricsDisplay
                 lyrics={lyrics}
