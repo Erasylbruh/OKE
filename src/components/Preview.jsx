@@ -1,20 +1,11 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 function Preview({ lyrics, styles, resetTrigger, audioUrl, backgroundImageUrl, projectName }) {
     const [currentTime, setCurrentTime] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
-
-    // Refs
+    const activeLineRef = useRef(null);
     const scrollContainerRef = useRef(null);
     const audioRef = useRef(null);
-    const lineRefs = useRef([]); // Store refs for all lines
-    const requestRef = useRef(); // For requestAnimationFrame
-    const startTimeRef = useRef(0); // For timer logic without audio
-
-    // Derived state: Find the index of the currently active line
-    const activeLineIndex = useMemo(() => {
-        return lyrics.findIndex(line => currentTime >= line.start && currentTime <= line.end);
-    }, [lyrics, currentTime]);
 
     // Reset when trigger changes
     useEffect(() => {
@@ -24,67 +15,53 @@ function Preview({ lyrics, styles, resetTrigger, audioUrl, backgroundImageUrl, p
             audioRef.current.pause();
             audioRef.current.currentTime = 0;
         }
-        if (requestRef.current) cancelAnimationFrame(requestRef.current);
     }, [resetTrigger, audioUrl]);
 
-    // Animation Loop Logic
-    const animate = () => {
-        if (audioUrl && audioRef.current) {
-            // SYNC WITH AUDIO
-            setCurrentTime(audioRef.current.currentTime);
-            if (audioRef.current.ended) {
-                setIsPlaying(false);
-                return; // Stop loop
-            }
-        } else {
-            // SYNC WITH TIMER (No Audio)
-            const now = Date.now();
-            const time = (now - startTimeRef.current) / 1000;
-            setCurrentTime(time);
-
-            const lastEnd = lyrics.length > 0 ? Math.max(...lyrics.map(l => l.end)) : 0;
-            if (time > lastEnd + 2) {
-                setIsPlaying(false);
-                setCurrentTime(0);
-                return; // Stop loop
-            }
-        }
-        // Continue loop
-        requestRef.current = requestAnimationFrame(animate);
-    };
-
-    // Toggle Play/Pause Effect
+    // Player logic
     useEffect(() => {
+        let interval;
         if (isPlaying) {
-            if (audioUrl && audioRef.current) {
+            if (audioRef.current && audioUrl) {
                 audioRef.current.play().catch(e => console.error("Audio play error:", e));
-            } else {
-                // If no audio, calculate where start time should be relative to current progress
-                startTimeRef.current = Date.now() - (currentTime * 1000);
             }
-            requestRef.current = requestAnimationFrame(animate);
+
+            // If audio is present, use audio time. Otherwise use timer.
+            if (audioUrl) {
+                interval = setInterval(() => {
+                    if (audioRef.current) {
+                        setCurrentTime(audioRef.current.currentTime);
+                        if (audioRef.current.ended) {
+                            setIsPlaying(false);
+                        }
+                    }
+                }, 16);
+            } else {
+                const start = Date.now() - currentTime * 1000;
+                interval = setInterval(() => {
+                    const time = (Date.now() - start) / 1000;
+                    setCurrentTime(time);
+
+                    const lastEnd = lyrics.length > 0 ? Math.max(...lyrics.map(l => l.end)) : 0;
+                    if (time > lastEnd + 2) { // Stop 2s after last end
+                        setIsPlaying(false);
+                        setCurrentTime(0);
+                    }
+                }, 16); // ~60fps
+            }
         } else {
-            if (audioUrl && audioRef.current) {
+            if (audioRef.current) {
                 audioRef.current.pause();
             }
-            if (requestRef.current) cancelAnimationFrame(requestRef.current);
         }
+        return () => clearInterval(interval);
+    }, [isPlaying, lyrics, audioUrl]); // eslint-disable-line react-hooks/exhaustive-deps
 
-        return () => {
-            if (requestRef.current) cancelAnimationFrame(requestRef.current);
-        };
-    }, [isPlaying, audioUrl]); // eslint-disable-line react-hooks/exhaustive-deps
-
-    // --- SMART AUTO-SCROLL LOGIC ---
+    // Auto-scroll logic
     useEffect(() => {
-        // Only scroll if we have a valid active line index
-        if (activeLineIndex !== -1 && lineRefs.current[activeLineIndex]) {
-            lineRefs.current[activeLineIndex].scrollIntoView({
-                behavior: 'smooth',
-                block: 'center'
-            });
+        if (activeLineRef.current) {
+            activeLineRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
-    }, [activeLineIndex]); // <--- Only triggers when the LINE changes, not every millisecond
+    }, [currentTime]);
 
     const togglePlay = () => {
         setIsPlaying(!isPlaying);
@@ -93,18 +70,25 @@ function Preview({ lyrics, styles, resetTrigger, audioUrl, backgroundImageUrl, p
     const handleSeek = (e) => {
         const newTime = parseFloat(e.target.value);
         setCurrentTime(newTime);
-
         if (audioRef.current) {
             audioRef.current.currentTime = newTime;
-        } else {
-            // Update the reference start time so the timer resumes from the new seek point
-            startTimeRef.current = Date.now() - (newTime * 1000);
+        }
+
+        if (isPlaying) {
+            // If using timer (no audio), we need to reset start time in effect, 
+            // but since effect depends on isPlaying, toggling it is easiest way to reset if not using audio.
+            // With audio, setting currentTime is enough.
+            if (!audioUrl) {
+                setIsPlaying(false);
+                setTimeout(() => setIsPlaying(true), 10);
+            }
         }
     };
 
     const lastEnd = lyrics.length > 0 ? Math.max(...lyrics.map(l => l.end)) : 0;
     const maxTime = audioRef.current?.duration || lastEnd + 2;
 
+    // Format time for display
     const formatTimeSimple = (t) => {
         if (!t && t !== 0) return "0.0s";
         return t.toFixed(1) + 's';
@@ -147,25 +131,23 @@ function Preview({ lyrics, styles, resetTrigger, audioUrl, backgroundImageUrl, p
                 }}
             >
                 {lyrics.map((line, index) => {
-                    const isActive = index === activeLineIndex;
-                    const isPast = activeLineIndex > index || (currentTime > line.end);
+                    const isActive = currentTime >= line.start && currentTime <= line.end;
+                    const isPast = currentTime > line.end;
 
                     let fillPercentage = 0;
-                    if (isPast && !isActive) {
+                    if (isPast) {
                         fillPercentage = 100;
                     } else if (isActive) {
                         const duration = line.end - line.start;
                         if (duration > 0) {
                             fillPercentage = ((currentTime - line.start) / duration) * 100;
-                            // Clamp percentage
-                            fillPercentage = Math.min(100, Math.max(0, fillPercentage));
                         }
                     }
 
                     return (
                         <div
                             key={index}
-                            ref={el => lineRefs.current[index] = el} // Store ref by index
+                            ref={isActive ? activeLineRef : null}
                             style={{
                                 marginBottom: '30px',
                                 position: 'relative',
@@ -175,7 +157,7 @@ function Preview({ lyrics, styles, resetTrigger, audioUrl, backgroundImageUrl, p
                                 fontSize: isActive ? `${styles.activeFontSize}px` : `${styles.fontSize}px`,
                                 fontFamily: styles.fontFamily,
                                 fontWeight: 'bold',
-                                transition: 'transform 0.3s ease-out, opacity 0.3s ease-out', // Smooth transition
+                                transition: 'all 0.3s ease-out',
                                 whiteSpace: 'nowrap',
                                 opacity: isActive ? 1 : 0.3,
                                 transform: isActive ? 'scale(1.05)' : 'scale(1)',
@@ -198,8 +180,7 @@ function Preview({ lyrics, styles, resetTrigger, audioUrl, backgroundImageUrl, p
                                 width: `${fillPercentage}%`,
                                 overflow: 'hidden',
                                 pointerEvents: 'none',
-                                whiteSpace: 'nowrap',
-                                transition: 'width 0.1s linear' // Slight smoothing on the fill width
+                                whiteSpace: 'nowrap'
                             }}>
                                 <div style={{
                                     color: styles.fillColor,
