@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import LikeButton from './LikeButton';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -7,7 +7,10 @@ const ProjectCard = ({ project, onClick, isOwner, onToggleVisibility, onDelete }
     const [isPlaying, setIsPlaying] = useState(false);
     const audioRef = useRef(null);
     const navigate = useNavigate();
+    const location = useLocation();
     const { t } = useLanguage();
+
+    const showVisibilityStatus = location.pathname === '/dashboard' || location.pathname === '/admin';
 
     useEffect(() => {
         return () => {
@@ -187,9 +190,20 @@ const ProjectCard = ({ project, onClick, isOwner, onToggleVisibility, onDelete }
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div style={{ fontSize: '0.8rem', color: project.is_public ? '#1db954' : '#888' }}>
-                        {project.is_public ? t('public') : t('private')}
-                    </div>
+                    {showVisibilityStatus && (
+                        <div
+                            onClick={(e) => onToggleVisibility && onToggleVisibility(e, project)}
+                            style={{
+                                fontSize: '0.8rem',
+                                color: project.is_public ? '#1db954' : '#888',
+                                cursor: onToggleVisibility ? 'pointer' : 'default',
+                                userSelect: 'none'
+                            }}
+                            title={onToggleVisibility ? "Click to toggle visibility" : ""}
+                        >
+                            {project.is_public ? t('public') : t('private')}
+                        </div>
+                    )}
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                         <div onClick={(e) => e.stopPropagation()}>
