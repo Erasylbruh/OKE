@@ -752,10 +752,15 @@ app.delete('/api/projects/:id', authenticateToken, async (req, res) => {
 app.patch('/api/projects/:id/visibility', authenticateToken, async (req, res) => {
     const { is_public } = req.body;
     try {
-        const [result] = await db.execute(
-            'UPDATE projects SET is_public = ? WHERE id = ? AND user_id = ?',
-            [is_public, req.params.id, req.user.id]
-        );
+        let query = 'UPDATE projects SET is_public = ? WHERE id = ?';
+        let params = [is_public, req.params.id];
+
+        if (!req.user.is_admin) {
+            query += ' AND user_id = ?';
+            params.push(req.user.id);
+        }
+
+        const [result] = await db.execute(query, params);
         if (result.affectedRows === 0) return res.status(404).send('Project not found or unauthorized');
         res.json({ message: 'Visibility updated' });
     } catch (err) {
@@ -972,7 +977,8 @@ app.get('/api/admin/projects', authenticateAdmin, async (req, res) => {
     const { search } = req.query;
     try {
         let query = `
-            SELECT p.id, p.name, p.preview_url, p.preview_urls, p.created_at, p.updated_at, p.is_public, u.username, u.nickname, u.avatar_url 
+            SELECT p.id, p.name, p.preview_url, p.preview_urls, p.created_at, p.updated_at, p.is_public, u.username, u.nickname, u.avatar_url,
+            (SELECT COUNT(*) FROM likes l WHERE l.project_id = p.id) as likes_count
             FROM projects p 
             JOIN users u ON p.user_id = u.id
         `;
