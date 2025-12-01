@@ -158,11 +158,34 @@ function Settings() {
 
                 {message && <div style={{ color: '#1db954', textAlign: 'center', marginBottom: '20px' }}>{message}</div>}
 
+                {/* Admin Dashboard - Mobile Only */}
+                <div className="mobile-visible" style={{ marginBottom: '20px' }}>
+                    <button
+                        onClick={() => navigate('/admin')}
+                        style={{
+                            background: 'linear-gradient(45deg, #FF512F, #DD2476)',
+                            border: 'none',
+                            color: 'white',
+                            padding: '12px',
+                            borderRadius: '8px',
+                            width: '100%',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '10px'
+                        }}
+                    >
+                        Admin Dashboard
+                    </button>
+                </div>
+
                 {/* Danger Zone */}
                 <div style={{ marginTop: '40px', paddingTop: '20px', borderTop: '1px solid #333' }}>
-                    <h3 style={{ color: '#ff5555', marginTop: 0 }}>Danger Zone</h3>
+                    <h3 style={{ color: '#ff5555', marginTop: 0 }}>{t('danger_zone') || 'Danger Zone'}</h3>
                     <p style={{ color: '#888', fontSize: '0.9rem', marginBottom: '15px' }}>
-                        Once you delete your account, there is no going back. Please be certain.
+                        {t('delete_account_warning') || 'Once you delete your account, there is no going back. Please be certain.'}
                     </p>
                     <button
                         onClick={handleDeleteAccount}
@@ -174,7 +197,7 @@ function Settings() {
                             borderRadius: '5px'
                         }}
                     >
-                        Delete Account
+                        {t('delete_account') || 'Delete Account'}
                     </button>
                 </div>
             </div>
