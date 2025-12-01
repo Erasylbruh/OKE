@@ -177,7 +177,7 @@ function Settings() {
                             gap: '10px'
                         }}
                     >
-                        Admin Dashboard
+                        {t('admin_dashboard') || 'Admin Dashboard'}
                     </button>
                 </div>
 
