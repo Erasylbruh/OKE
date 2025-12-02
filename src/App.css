@@ -272,7 +272,7 @@ button.danger:hover {
 .viewer-desktop-container,
 .editor-desktop-container {
   height: 100%;
-  width: 100%;
+  max-width: 100%;
 }
 
 /* Desktop Layouts */
@@ -281,7 +281,8 @@ button.danger:hover {
     display: grid;
     grid-template-columns: 1fr 1fr;
     height: 100%;
-    width: 100%;
+    max-width: calc(100% - 30%);
+    margin: auto;
   }
 
   .viewer-desktop-container .editor-panel {
