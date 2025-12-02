@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import API_URL from '../config';
 
 function LikeButton({ projectId, initialLiked = false, initialCount = 0 }) {
@@ -95,11 +96,13 @@ function LikeButton({ projectId, initialLiked = false, initialCount = 0 }) {
             title={liked ? "Unlike" : "Like"}
         >
             <span style={{
-                fontSize: '20px',
-                color: liked ? '#e91e63' : '#ccc',
-                filter: liked ? 'drop-shadow(0 0 2px #e91e63)' : 'none'
+                fontSize: '18px',
+                color: liked ? '#E53935' : '#B3B3B3',
+                display: 'flex',
+                alignItems: 'center',
+                transition: 'color 0.2s'
             }}>
-                {liked ? '❤️' : '🤍'}
+                {liked ? <FaHeart /> : <FaRegHeart />}
             </span>
             <span style={{ color: '#ccc', fontSize: '0.9em' }}>{count}</span>
         </button>
