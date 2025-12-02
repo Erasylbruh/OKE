@@ -19,15 +19,22 @@ const LyricsDisplay = ({ lyrics = [], currentTime = 0, styles = {}, activeLineIn
 
     // Smart Auto-Scroll: Only scroll when the active line changes
     useEffect(() => {
-        if (activeLineIndex !== -1 && lineRefs.current[activeLineIndex]) {
-            try {
-                lineRefs.current[activeLineIndex].scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'center'
-                });
-            } catch (e) {
-                // Ignore scroll errors (e.g., element not visible)
-            }
+        if (activeLineIndex !== -1 && lineRefs.current[activeLineIndex] && scrollContainerRef.current) {
+            const container = scrollContainerRef.current;
+            const line = lineRefs.current[activeLineIndex];
+
+            // Calculate center position
+            const containerHeight = container.clientHeight;
+            const lineHeight = line.clientHeight;
+            const lineOffset = line.offsetTop;
+
+            // Target scroll position to center the line
+            const targetScroll = lineOffset - (containerHeight / 2) + (lineHeight / 2);
+
+            container.scrollTo({
+                top: targetScroll,
+                behavior: 'smooth'
+            });
         }
     }, [activeLineIndex]);
 
