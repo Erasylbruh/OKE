@@ -9,6 +9,8 @@ function Sidebar() {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     const isAdmin = user.is_admin === 1;
 
+    const isLoggedIn = !!localStorage.getItem('token');
+
     const handleLogout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
@@ -29,24 +31,28 @@ function Sidebar() {
                         <FiHome size={20} />
                         <span>{t('main') || 'Main'}</span>
                     </NavLink>
-                    <NavLink to={`/user/${user.username}`} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-                        <FiUser size={20} />
-                        <span>{t('profile') || 'Profile'}</span>
-                    </NavLink>
-                    <NavLink to="/liked-projects" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-                        <FiHeart size={20} />
-                        <span>{t('liked_projects')}</span>
-                    </NavLink>
-                    <NavLink to="/settings" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-                        <FiSettings size={20} />
-                        <span>{t('settings')}</span>
-                    </NavLink>
+                    {isLoggedIn && (
+                        <>
+                            <NavLink to={`/user/${user.username}`} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+                                <FiUser size={20} />
+                                <span>{t('profile') || 'Profile'}</span>
+                            </NavLink>
+                            <NavLink to="/liked-projects" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+                                <FiHeart size={20} />
+                                <span>{t('liked_projects')}</span>
+                            </NavLink>
+                            <NavLink to="/settings" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+                                <FiSettings size={20} />
+                                <span>{t('settings')}</span>
+                            </NavLink>
+                        </>
+                    )}
                 </nav>
 
                 <div className="separator"></div>
 
                 <div className="sidebar-footer">
-                    {isAdmin && (
+                    {isAdmin && isLoggedIn && (
                         <NavLink
                             to="/admin"
                             className="admin-btn"
@@ -69,9 +75,15 @@ function Sidebar() {
                             {t('admin_dashboard')}
                         </NavLink>
                     )}
-                    <button onClick={handleLogout} className="logout-btn">
-                        {t('logout')}
-                    </button>
+                    {isLoggedIn ? (
+                        <button onClick={handleLogout} className="logout-btn">
+                            {t('logout')}
+                        </button>
+                    ) : (
+                        <button onClick={() => navigate('/auth')} className="login-btn">
+                            {t('login')}
+                        </button>
+                    )}
                 </div>
             </aside>
 
@@ -179,6 +191,23 @@ function Sidebar() {
                 .logout-btn:hover {
                     border-color: #d1d5db;
                     color: white;
+                }
+
+                .login-btn {
+                    background-color: #1db954;
+                    border: none;
+                    color: white;
+                    font-weight: bold;
+                    padding: 0.75rem 1rem;
+                    border-radius: 0.25rem;
+                    transition: background-color 0.2s;
+                    cursor: pointer;
+                    box-sizing: border-box;
+                    width: 100%;
+                }
+
+                .login-btn:hover {
+                    background-color: #1ed760;
                 }
 
                 @media (max-width: 768px) {
