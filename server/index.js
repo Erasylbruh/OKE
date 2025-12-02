@@ -352,6 +352,25 @@ app.put('/api/users/profile', authenticateToken, uploadAvatar.single('avatar'), 
     }
 });
 
+app.delete('/api/users/:id', authenticateToken, async (req, res) => {
+    try {
+        if (parseInt(req.params.id) !== req.user.id && !req.user.is_admin) {
+            return res.status(403).send('Unauthorized');
+        }
+
+        // Delete user's projects
+        await db.execute('DELETE FROM projects WHERE user_id = ?', [req.params.id]);
+
+        // Delete user
+        const [result] = await db.execute('DELETE FROM users WHERE id = ?', [req.params.id]);
+
+        if (result.affectedRows === 0) return res.status(404).send('User not found');
+        res.json({ message: 'User deleted' });
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
 // Likes Route (Must be before /api/users/:username)
 app.get('/api/users/likes', authenticateToken, async (req, res) => {
     try {
