@@ -409,12 +409,17 @@ function Editor() {
 
     return (
         <div className="editor-container" style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
             width: '100%',
+            height: '100dvh',
             display: 'flex',
             flexDirection: 'column',
             backgroundColor: '#121212',
             color: 'white',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            zIndex: 2000 // Ensure it sits on top of everything
         }}>
             {/* Phase Navigation (Owner Only) - Desktop Only */}
             {isOwner && (
