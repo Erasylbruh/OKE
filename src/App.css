@@ -438,5 +438,6 @@ button.danger:hover {
 
   .mobile-visible {
     display: flex !important;
+    max-height: calc(100% - 10px);
   }
 }
