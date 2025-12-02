@@ -7,6 +7,7 @@ import StyleControls from '../components/StyleControls';
 import Preview from '../components/Preview';
 import CommentsSection from '../components/CommentsSection';
 import LikeButton from '../components/LikeButton';
+import ProjectCard from '../components/ProjectCard';
 import API_URL from '../config';
 import { useLanguage } from '../context/LanguageContext';
 import '../App.css';
@@ -755,33 +756,25 @@ function Editor() {
                                     &larr; {t('back') || 'Back'}
                                 </button>
 
-                                {/* Project Name Marquee */}
-                                <div className="marquee-container" style={{ marginBottom: '20px', overflow: 'hidden', whiteSpace: 'nowrap' }}>
-                                    <h1 className="project-title-marquee" style={{ fontSize: '2rem', margin: 0, display: 'inline-block' }}>
-                                        {projectName}
-                                    </h1>
+                                {/* Project Card Header */}
+                                <div style={{ marginBottom: '20px' }}>
+                                    <ProjectCard
+                                        project={{
+                                            id: id,
+                                            name: projectName,
+                                            username: projectOwner?.username,
+                                            nickname: projectOwner?.nickname,
+                                            avatar_url: projectOwner?.avatar_url,
+                                            preview_url: previewUrls[0],
+                                            audio_url: audioUrl,
+                                            likes_count: likesCount,
+                                            is_public: isPublic
+                                        }}
+                                        onClick={() => { }} // Disable navigation
+                                        isOwner={false} // Hide delete button
+                                        onToggleVisibility={null} // Hide visibility toggle if not owner/admin context
+                                    />
                                 </div>
-
-                                {/* User Profile (Author) */}
-                                {projectOwner && (
-                                    <div
-                                        style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', cursor: 'pointer' }}
-                                        onClick={() => navigate(`/user/${projectOwner.username}`)}
-                                    >
-                                        <div style={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', backgroundColor: '#333' }}>
-                                            {projectOwner.avatar_url ? (
-                                                <img src={projectOwner.avatar_url} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                            ) : (
-                                                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '1.2rem', fontWeight: 'bold' }}>
-                                                    {(projectOwner.nickname || projectOwner.username || '?')[0].toUpperCase()}
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div>
-                                            <div style={{ fontWeight: 'bold', fontSize: '1rem' }}>{projectOwner.nickname || projectOwner.username}</div>
-                                        </div>
-                                    </div>
-                                )}
 
                                 {/* Description */}
                                 <div className={`description-expander ${isDescriptionExpanded ? 'expanded' : ''}`} style={{ maxHeight: isDescriptionExpanded ? 'none' : '100px', marginBottom: '20px' }}>
@@ -793,11 +786,6 @@ function Editor() {
                                         {isDescriptionExpanded ? t('show_less') : t('show_more')}
                                     </button>
                                 )}
-
-                                {/* Likes */}
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '30px' }}>
-                                    <LikeButton projectId={id} initialCount={likesCount} />
-                                </div>
 
                                 <CommentsSection projectId={id} projectOwnerId={projectOwnerId} />
                             </div>
