@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
-import API_URL from '../config';
+import client from '../api/client';
 import { useLanguage } from '../context/LanguageContext';
 
 function Auth() {
@@ -13,198 +13,93 @@ function Auth() {
     const navigate = useNavigate();
     const { t } = useLanguage();
 
-    // Validation Logic
-    const hasLength = password.length >= 8;
-    const hasUpper = /[A-Z]/.test(password);
-    const hasNum = /\d/.test(password);
-    const hasSpecial = /[!@#$%&]/.test(password);
-
-    const isPasswordValid = hasLength && hasUpper && hasNum && hasSpecial;
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
 
-        if (!isLogin) {
-            // Username validation: 6+ chars, lowercase, letters (numbers optional)
-            const usernameRegex = /^[a-z0-9]{6,}$/;
-            if (!usernameRegex.test(username)) {
-                setError('Username must be 6+ chars, lowercase letters & numbers (optional)');
-                return;
-            }
-
-            if (!isPasswordValid) {
-                setError('Password does not meet requirements');
-                return;
-            }
-        }
-
-        const endpoint = isLogin ? `${API_URL}/api/auth/login` : `${API_URL}/api/auth/register`;
-
+        const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
+        
         try {
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password }),
-            });
-
-            if (!response.ok) {
-                const msg = await response.text();
-                throw new Error(msg);
-            }
-
-            if (isLogin) {
-                const data = await response.json();
-                localStorage.setItem('token', data.token);
-                localStorage.setItem('user', JSON.stringify(data.user));
-                navigate('/dashboard');
-            } else {
-                // Auto-login after register
-                const loginRes = await fetch(`${API_URL}/api/auth/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password }),
-                });
-
-                if (loginRes.ok) {
-                    const data = await loginRes.json();
+            const data = await client.post(endpoint, { username, password });
+            
+            if (data) {
+                if (isLogin) {
                     localStorage.setItem('token', data.token);
                     localStorage.setItem('user', JSON.stringify(data.user));
                     navigate('/dashboard');
                 } else {
-                    setIsLogin(true);
-                    alert('Registration successful! Please login.');
+                    // Auto-login after register
+                    const loginData = await client.post('/api/auth/login', { username, password });
+                    if (loginData) {
+                        localStorage.setItem('token', loginData.token);
+                        localStorage.setItem('user', JSON.stringify(loginData.user));
+                        navigate('/dashboard');
+                    } else {
+                        setIsLogin(true);
+                        alert('Registration successful! Please login.');
+                    }
                 }
             }
         } catch (err) {
-            console.error('Auth error:', err);
-            setError(err.message || 'Failed to connect to server');
+            setError(err.message || 'Authentication failed');
         }
     };
 
     return (
-        <div className="card" style={{
-            width: '400px',
-            position: 'relative',
-            boxShadow: '0 4px 30px rgba(0, 0, 0, 0.5)',
-            padding: '40px'
-        }}>
-            {/* Close Button */}
-            <button
-                onClick={() => navigate('/')}
-                style={{
-                    position: 'absolute',
-                    top: '15px',
-                    right: '15px',
-                    background: 'none',
-                    border: 'none',
-                    color: '#888',
-                    fontSize: '24px',
-                    cursor: 'pointer',
-                    padding: '5px'
-                }}
-            >
-                &times;
-            </button>
-
+        <div className="card" style={{ width: '400px', maxWidth: '90%', margin: '0 auto' }}>
             <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-                <h1 style={{ margin: 0, fontFamily: 'Quicksand, sans-serif', fontSize: '2rem', color: 'white' }}>
+                <h1 style={{ margin: 0, fontSize: '2rem', color: 'white' }}>
                     <span style={{ color: '#1db954' }}>Q</span>ara<span style={{ color: '#1db954' }}>O</span>ke
                 </h1>
                 <p style={{ color: '#888', marginTop: '5px' }}>
-                    {isLogin ? 'Welcome back' : 'Create your account'}
+                    {isLogin ? t('login') : t('register')}
                 </p>
             </div>
 
             {error && (
-                <div style={{
-                    backgroundColor: 'rgba(229, 57, 53, 0.1)',
-                    color: '#E53935',
-                    padding: '10px',
-                    borderRadius: '8px',
-                    marginBottom: '20px',
-                    fontSize: '14px',
-                    textAlign: 'center'
-                }}>
+                <div style={{ backgroundColor: 'rgba(229, 57, 53, 0.1)', color: '#E53935', padding: '10px', borderRadius: '8px', marginBottom: '20px', textAlign: 'center' }}>
                     {error}
                 </div>
             )}
 
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <div>
-                    <label style={{ display: 'block', color: '#888', marginBottom: '8px', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                    <label style={{ display: 'block', color: '#888', marginBottom: '8px', fontSize: '12px', textTransform: 'uppercase' }}>
                         {t('username')}
                     </label>
                     <input
                         type="text"
+                        className="dark-input"
                         value={username}
                         onChange={(e) => setUsername(e.target.value.toLowerCase())}
                         required
-                        style={{ height: '48px', backgroundColor: '#121212' }}
                     />
                 </div>
 
                 <div>
-                    <label style={{ display: 'block', color: '#888', marginBottom: '8px', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                    <label style={{ display: 'block', color: '#888', marginBottom: '8px', fontSize: '12px', textTransform: 'uppercase' }}>
                         {t('password')}
                     </label>
                     <div style={{ position: 'relative' }}>
                         <input
                             type={showPassword ? "text" : "password"}
+                            className="dark-input"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
-                            style={{ height: '48px', backgroundColor: '#121212', paddingRight: '40px' }}
+                            style={{ paddingRight: '40px' }}
                         />
                         <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            style={{
-                                position: 'absolute',
-                                right: '10px',
-                                top: '50%',
-                                transform: 'translateY(-50%)',
-                                background: 'none',
-                                border: 'none',
-                                color: '#888',
-                                cursor: 'pointer',
-                                padding: 0,
-                                display: 'flex',
-                                alignItems: 'center'
-                            }}
+                            style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#888', cursor: 'pointer' }}
                         >
                             {showPassword ? <FaEyeSlash /> : <FaEye />}
                         </button>
                     </div>
-
-                    {!isLogin && (
-                        <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                            <div style={{ fontSize: '12px', color: hasLength ? '#1db954' : '#ff5555', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                {hasLength ? '✓' : '○'} At least 8 characters
-                            </div>
-                            <div style={{ fontSize: '12px', color: hasUpper ? '#1db954' : '#ff5555', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                {hasUpper ? '✓' : '○'} At least one capital letter
-                            </div>
-                            <div style={{ fontSize: '12px', color: hasNum ? '#1db954' : '#ff5555', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                {hasNum ? '✓' : '○'} At least one number
-                            </div>
-                            <div style={{ fontSize: '12px', color: hasSpecial ? '#1db954' : '#ff5555', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                {hasSpecial ? '✓' : '○'} At least one special character (!,@,#,$,%,&)
-                            </div>
-                        </div>
-                    )}
                 </div>
 
-                <button
-                    type="submit"
-                    className="primary"
-                    style={{
-                        height: '48px',
-                        fontSize: '16px',
-                        marginTop: '10px',
-                        opacity: (!isLogin && !isPasswordValid) ? 0.7 : 1
-                    }}
-                >
+                <button type="submit" className="primary" style={{ marginTop: '10px', width: '100%', borderRadius: '25px' }}>
                     {isLogin ? t('login') : t('register')}
                 </button>
             </form>
@@ -215,15 +110,7 @@ function Auth() {
                 </span>
                 <button
                     onClick={() => { setIsLogin(!isLogin); setError(''); }}
-                    style={{
-                        background: 'none',
-                        border: 'none',
-                        color: 'var(--primary)',
-                        cursor: 'pointer',
-                        fontWeight: 'bold',
-                        padding: 0,
-                        marginLeft: '5px'
-                    }}
+                    style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', fontWeight: 'bold' }}
                 >
                     {isLogin ? t('register') : t('login')}
                 </button>

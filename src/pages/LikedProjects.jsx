@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import ProjectCard from '../components/ProjectCard';
-import API_URL from '../config';
+import ProjectCard from '../components/features/ProjectCard';
+import client from '../api/client';
 import { useLanguage } from '../context/LanguageContext';
 
 function LikedProjects() {
@@ -13,32 +13,17 @@ function LikedProjects() {
 
     useEffect(() => {
         const fetchLikedProjects = async () => {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                navigate('/auth');
-                return;
-            }
-
             try {
-                const res = await fetch(`${API_URL}/api/users/likes`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (res.ok) {
-                    const data = await res.json();
-                    setProjects(data);
-                } else {
-                    setError('Failed to fetch liked projects');
-                }
+                const data = await client.get('/api/users/likes');
+                if (data) setProjects(data);
             } catch (err) {
-                console.error('Error fetching liked projects:', err);
-                setError('Error connecting to server');
+                setError('Failed to fetch liked projects');
             } finally {
                 setLoading(false);
             }
         };
-
         fetchLikedProjects();
-    }, [navigate]);
+    }, []);
 
     if (loading) return <div style={{ padding: '20px', color: 'white' }}>Loading...</div>;
 
@@ -52,7 +37,7 @@ function LikedProjects() {
                 paddingBottom: '20px',
                 borderBottom: '1px solid var(--border-color)'
             }}>
-                <h1 style={{ margin: 0 }}>{t('liked_projects') || 'Liked Projects'}</h1>
+                <h1 style={{ margin: 0 }}>{t('liked_projects')}</h1>
             </div>
 
             {error && (
@@ -64,23 +49,23 @@ function LikedProjects() {
             {projects.length === 0 && !error ? (
                 <div style={{ textAlign: 'center', color: 'var(--text-muted)', marginTop: '80px' }}>
                     <div style={{ fontSize: '4rem', marginBottom: '20px', opacity: 0.5 }}>❤️</div>
-                    <h2 style={{ color: 'white', marginBottom: '10px' }}>{t('no_likes_yet') || 'No liked projects yet'}</h2>
-                    <p style={{ marginBottom: '30px' }}>{t('no_likes_desc') || 'Projects you like will appear here.'}</p>
+                    <h2 style={{ color: 'white', marginBottom: '10px' }}>{t('no_likes_yet')}</h2>
+                    <p style={{ marginBottom: '30px' }}>Projects you like will appear here.</p>
                     <button
                         onClick={() => navigate('/foryou')}
                         className="primary"
-                        style={{ padding: '12px 30px', borderRadius: '30px', fontSize: '1.1rem' }}
+                        style={{ padding: '12px 30px', borderRadius: '30px' }}
                     >
-                        {t('explore_projects') || 'Explore Projects'}
+                        Explore Projects
                     </button>
                 </div>
             ) : (
-                <div className="grid-3">
+                <div className="grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
                     {projects.map(project => (
                         <ProjectCard
                             key={project.id}
                             project={project}
-                            onClick={() => navigate(`/editor/${project.id}`, { state: { from: 'main' } })}
+                            onClick={() => navigate(`/editor/${project.id}`)}
                             isOwner={false}
                         />
                     ))}
