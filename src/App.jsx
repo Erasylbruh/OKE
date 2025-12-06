@@ -14,10 +14,7 @@ import AdminLoginModal from './components/AdminLoginModal';
 import Sidebar from './components/Sidebar';
 import BottomNav from './components/BottomNav';
 import { LanguageProvider } from './context/LanguageContext';
-<<<<<<< HEAD
 import { AudioProvider } from './context/AudioContext';
-=======
->>>>>>> 79d52c792460071028c6ce6892c6a03c21402ae7
 
 const Layout = ({ children }) => {
   const location = useLocation();
@@ -76,7 +73,6 @@ function App() {
 
   return (
     <LanguageProvider>
-<<<<<<< HEAD
       <AudioProvider>
         <Router>
           {showAdminLogin && <AdminLoginModal onClose={() => setShowAdminLogin(false)} />}
@@ -97,26 +93,6 @@ function App() {
           </Layout>
         </Router>
       </AudioProvider>
-=======
-      <Router>
-        {showAdminLogin && <AdminLoginModal onClose={() => setShowAdminLogin(false)} />}
-        <Layout>
-          <Routes>
-            <Route path="/" element={<ForYou />} />
-            <Route path="/foryou" element={<ForYou />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/settings/profile" element={<EditProfile />} />
-            <Route path="/user/:username" element={<UserProfile />} />
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/editor/:id?" element={<Editor />} />
-            <Route path="/liked-projects" element={<LikedProjects />} />
-            <Route path="/following" element={<Following />} />
-          </Routes>
-        </Layout>
-      </Router>
->>>>>>> 79d52c792460071028c6ce6892c6a03c21402ae7
     </LanguageProvider>
   );
 }
