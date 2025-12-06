@@ -29,6 +29,7 @@ app.use('/api/comments', commentRoutes);
 app.use(errorHandler);
 
 const PORT = config.port;
+
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
