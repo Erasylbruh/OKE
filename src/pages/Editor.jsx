@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { FaTimes } from 'react-icons/fa';
 import LyricInput from '../components/features/LyricInput';
 import TimingEditor from '../components/features/TimingEditor';
@@ -8,20 +8,18 @@ import Preview from '../components/features/Preview';
 import CommentsSection from '../components/features/CommentsSection';
 import ProjectCard from '../components/features/ProjectCard';
 import client from '../api/client';
-import { useLanguage } from '../context/LanguageContext';
+
 import { useAudioPlayer } from '../context/AudioPlayerContext';
 
 function Editor() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const location = useLocation();
-    const { t } = useLanguage();
     const { stop } = useAudioPlayer(); // Глобальный плеер
 
     // State
     const [lyrics, setLyrics] = useState([]);
     const [styles, setStyles] = useState({
-        fontSize: 24, activeFontSize: 32, color: '#ffffff', fillColor: '#1db954', 
+        fontSize: 24, activeFontSize: 32, color: '#ffffff', fillColor: '#1db954',
         backgroundColor: '#121212', fontFamily: 'Inter, sans-serif', fontUrl: '', headerText: ''
     });
     const [projectName, setProjectName] = useState('');
@@ -33,11 +31,11 @@ function Editor() {
     const [activePhase, setActivePhase] = useState(1);
     const [resetTrigger, setResetTrigger] = useState(0);
     const [isSaving, setIsSaving] = useState(false);
-    
+
     // Stop global player on mount
     useEffect(() => {
         stop();
-    }, []);
+    }, [stop]);
 
     // Load Project
     useEffect(() => {
@@ -50,7 +48,7 @@ function Editor() {
                 setProjectName(project.name);
                 setIsPublic(!!project.is_public);
                 setAudioUrl(project.audio_url);
-                
+
                 const urls = project.preview_urls || [];
                 while (urls.length < 3) urls.push(null);
                 setPreviewUrls(urls);
@@ -60,7 +58,7 @@ function Editor() {
 
                 let data = project.data || {};
                 if (typeof data === 'string') data = JSON.parse(data);
-                
+
                 setLyrics(data.lyrics || []);
                 setStyles(prev => ({ ...prev, ...(data.styles || {}) }));
                 setDescription(data.description || '');
@@ -80,11 +78,12 @@ function Editor() {
         if (!file) return;
         const formData = new FormData();
         formData.append('audio', file);
-        
+
         try {
             const res = await client.upload(`/api/projects/${id}/audio`, formData);
             if (res) setAudioUrl(res.audio_url);
         } catch (err) {
+            console.error(err);
             alert('Audio upload failed');
         }
     };
@@ -99,6 +98,7 @@ function Editor() {
             });
             alert('Saved!');
         } catch (err) {
+            console.error(err);
             alert('Save failed');
         } finally {
             setIsSaving(false);
@@ -114,7 +114,7 @@ function Editor() {
             const newUrls = [...previewUrls];
             newUrls[slot] = res.preview_urls[slot]; // Assuming API returns updated list
             // For simplicity, reload or update state correctly based on API response structure
-            window.location.reload(); 
+            window.location.reload();
         }
     };
 
@@ -126,8 +126,8 @@ function Editor() {
                     {/* Phase Navigation */}
                     <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
                         {[1, 2, 3].map(p => (
-                            <button 
-                                key={p} 
+                            <button
+                                key={p}
                                 onClick={() => setActivePhase(p)}
                                 className={`phase-btn ${activePhase === p ? 'active' : ''}`}
                                 style={{ flex: 1, padding: '8px', backgroundColor: activePhase === p ? '#1db954' : '#333', border: 'none', borderRadius: '4px', color: 'white', cursor: 'pointer' }}
@@ -163,7 +163,7 @@ function Editor() {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                             <input className="dark-input" value={projectName} onChange={e => setProjectName(e.target.value)} placeholder="Project Name" />
                             <textarea className="dark-input" value={description} onChange={e => setDescription(e.target.value)} placeholder="Description" rows={4} style={{ height: 'auto' }} />
-                            
+
                             <div style={{ display: 'flex', gap: '10px' }}>
                                 {previewUrls.map((url, i) => (
                                     <label key={i} style={{ flex: 1, aspectRatio: '1', border: '1px solid #333', borderRadius: '8px', overflow: 'hidden', cursor: 'pointer', position: 'relative' }}>
@@ -187,12 +187,12 @@ function Editor() {
             )}
 
             <div className="preview-area" style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#000' }}>
-                <Preview 
-                    lyrics={lyrics} 
-                    styles={styles} 
-                    resetTrigger={resetTrigger} 
-                    audioUrl={audioUrl} 
-                    backgroundImageUrl={previewUrls[0]} 
+                <Preview
+                    lyrics={lyrics}
+                    styles={styles}
+                    resetTrigger={resetTrigger}
+                    audioUrl={audioUrl}
+                    backgroundImageUrl={previewUrls[0]}
                     projectName={projectName}
                 />
             </div>

@@ -17,6 +17,7 @@ function LikedProjects() {
                 const data = await client.get('/api/users/likes');
                 if (data) setProjects(data);
             } catch (err) {
+                console.error(err);
                 setError('Failed to fetch liked projects');
             } finally {
                 setLoading(false);

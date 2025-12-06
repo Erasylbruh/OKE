@@ -25,6 +25,7 @@ function EditProfile() {
                     setAvatarUrl(data.avatar_url || '');
                 }
             } catch (err) {
+                console.error(err);
                 setError('Failed to load profile');
             }
         };
@@ -36,7 +37,7 @@ function EditProfile() {
         if (!file) return;
 
         // Предварительно показываем превью (опционально)
-        setAvatarUrl(URL.createObjectURL(file)); 
+        setAvatarUrl(URL.createObjectURL(file));
         // Но реально грузить будем при сохранении, или можно сразу
         // В текущей логике контроллера updateProfile принимает и файл и поля
     };
@@ -49,7 +50,7 @@ function EditProfile() {
 
         const formData = new FormData();
         formData.append('nickname', nickname);
-        
+
         // Получаем файл из инпута, если он был выбран
         const fileInput = document.getElementById('avatar-upload');
         if (fileInput && fileInput.files[0]) {
@@ -58,7 +59,7 @@ function EditProfile() {
         // Если файл не выбран, аватар не меняется (или можно отправить старый URL, но контроллер ждет файл)
         // В текущем контроллере updateProfile, если файла нет, он берет req.body.avatar_url.
         if (!fileInput?.files[0]) {
-             formData.append('avatar_url', avatarUrl);
+            formData.append('avatar_url', avatarUrl);
         }
 
         try {

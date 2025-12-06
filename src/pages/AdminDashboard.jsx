@@ -41,6 +41,7 @@ function AdminDashboard() {
             await client.delete(`/api/admin/users/${userId}`);
             setUsers(users.filter(u => u.id !== userId));
         } catch (err) {
+            console.error(err);
             alert('Failed to delete user');
         }
     };
@@ -51,6 +52,7 @@ function AdminDashboard() {
             await client.delete(`/api/projects/${projectId}`);
             setProjects(projects.filter(p => p.id !== projectId));
         } catch (err) {
+            console.error(err);
             alert('Failed to delete project');
         }
     };
@@ -61,6 +63,7 @@ function AdminDashboard() {
             await client.patch(`/api/projects/${project.id}/visibility`, { is_public: !project.is_public });
             setProjects(projects.map(p => p.id === project.id ? { ...p, is_public: !project.is_public } : p));
         } catch (err) {
+            console.error(err);
             alert('Failed to update visibility');
         }
     };

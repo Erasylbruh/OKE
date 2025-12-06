@@ -32,7 +32,9 @@ function UserProfile() {
             if (isFollowing) await client.delete(endpoint);
             else await client.post(endpoint);
             setIsFollowing(!isFollowing);
-        } catch (e) {}
+        } catch (e) {
+            console.error(e);
+        }
     };
 
     if (!user) return <div>Loading...</div>;

@@ -27,9 +27,9 @@ function Settings() {
 
     const handleSave = async () => {
         try {
-            await client.put('/api/users/settings', { 
-                password: password || undefined, 
-                language 
+            await client.put('/api/users/settings', {
+                password: password || undefined,
+                language
             });
             setMessage(t('settings_updated') || 'Settings updated');
             setPassword('');
@@ -48,6 +48,7 @@ function Settings() {
             localStorage.removeItem('user');
             navigate('/auth');
         } catch (err) {
+            console.error(err);
             alert('Failed to delete account');
         }
     };
@@ -109,7 +110,7 @@ function Settings() {
                 {/* Password Change */}
                 <div style={{ marginBottom: '20px' }}>
                     <label style={{ display: 'block', marginBottom: '10px', color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase' }}>{t('change_password')}</label>
-                    <input 
+                    <input
                         type="password"
                         placeholder={t('new_password')}
                         value={password}

@@ -43,11 +43,12 @@ function Dashboard() {
     const handleDelete = async (e, project) => {
         e.stopPropagation();
         if (!window.confirm(t('delete_confirm'))) return;
-        
+
         try {
             await client.delete(`/api/projects/${project.id}`);
             setProjects(projects.filter(p => p.id !== project.id));
         } catch (err) {
+            console.error(err);
             alert('Failed to delete project');
         }
     };
@@ -58,6 +59,7 @@ function Dashboard() {
             await client.patch(`/api/projects/${project.id}/visibility`, { is_public: !project.is_public });
             setProjects(projects.map(p => p.id === project.id ? { ...p, is_public: !p.is_public } : p));
         } catch (err) {
+            console.error(err);
             alert('Failed to update visibility');
         }
     };
@@ -114,7 +116,7 @@ function Dashboard() {
                     />
                 ))}
             </div>
-            
+
             {projects.length === 0 && <div style={{ textAlign: 'center', color: '#888', marginTop: '50px' }}>{t('no_projects')}</div>}
         </div>
     );
