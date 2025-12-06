@@ -83,56 +83,33 @@ function Auth() {
     };
 
     return (
-        <div className="card" style={{
-            width: '400px',
-            position: 'relative',
-            boxShadow: '0 4px 30px rgba(0, 0, 0, 0.5)',
-            padding: '40px'
-        }}>
+        <div className="bg-[#1E1E1E] border border-[#333] rounded-2xl p-10 shadow-2xl relative w-[400px]">
             {/* Close Button */}
             <button
                 onClick={() => navigate('/')}
-                style={{
-                    position: 'absolute',
-                    top: '15px',
-                    right: '15px',
-                    background: 'none',
-                    border: 'none',
-                    color: '#888',
-                    fontSize: '24px',
-                    cursor: 'pointer',
-                    padding: '5px'
-                }}
+                className="absolute top-4 right-4 text-neutral-500 hover:text-white text-2xl p-1 transition-colors bg-transparent border-none cursor-pointer"
             >
                 &times;
             </button>
 
-            <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-                <h1 style={{ margin: 0, fontFamily: 'Quicksand, sans-serif', fontSize: '2rem', color: 'white' }}>
-                    <span style={{ color: '#1db954' }}>Q</span>ara<span style={{ color: '#1db954' }}>O</span>ke
+            <div className="text-center mb-8">
+                <h1 className="m-0 font-quicksand text-3xl text-white font-bold">
+                    <span className="text-[#1db954]">Q</span>ara<span className="text-[#1db954]">O</span>ke
                 </h1>
-                <p style={{ color: '#888', marginTop: '5px' }}>
+                <p className="text-[#888] mt-1">
                     {isLogin ? 'Welcome back' : 'Create your account'}
                 </p>
             </div>
 
             {error && (
-                <div style={{
-                    backgroundColor: 'rgba(229, 57, 53, 0.1)',
-                    color: '#E53935',
-                    padding: '10px',
-                    borderRadius: '8px',
-                    marginBottom: '20px',
-                    fontSize: '14px',
-                    textAlign: 'center'
-                }}>
+                <div className="bg-red-500/10 text-red-500 p-3 rounded-lg mb-5 text-sm text-center">
                     {error}
                 </div>
             )}
 
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-5">
                 <div>
-                    <label style={{ display: 'block', color: '#888', marginBottom: '8px', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                    <label className="block text-[#888] mb-2 text-xs uppercase tracking-wider">
                         {t('username')}
                     </label>
                     <input
@@ -140,55 +117,43 @@ function Auth() {
                         value={username}
                         onChange={(e) => setUsername(e.target.value.toLowerCase())}
                         required
-                        style={{ height: '48px', backgroundColor: '#121212' }}
+                        className="h-12 bg-[#121212] border border-[#333] rounded-lg px-4 text-white w-full focus:outline-none focus:border-[#1DB954] transition-colors"
                     />
                 </div>
 
                 <div>
-                    <label style={{ display: 'block', color: '#888', marginBottom: '8px', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                    <label className="block text-[#888] mb-2 text-xs uppercase tracking-wider">
                         {t('password')}
                     </label>
-                    <div style={{ position: 'relative' }}>
+                    <div className="relative">
                         <input
                             type={showPassword ? "text" : "password"}
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
-                            style={{ height: '48px', backgroundColor: '#121212', paddingRight: '40px' }}
+                            className="h-12 bg-[#121212] border border-[#333] rounded-lg pl-4 pr-10 text-white w-full focus:outline-none focus:border-[#1DB954] transition-colors"
                         />
                         <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            style={{
-                                position: 'absolute',
-                                right: '10px',
-                                top: '50%',
-                                transform: 'translateY(-50%)',
-                                background: 'none',
-                                border: 'none',
-                                color: '#888',
-                                cursor: 'pointer',
-                                padding: 0,
-                                display: 'flex',
-                                alignItems: 'center'
-                            }}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 bg-transparent border-none text-[#888] cursor-pointer p-0 flex items-center hover:text-white"
                         >
                             {showPassword ? <FaEyeSlash /> : <FaEye />}
                         </button>
                     </div>
 
                     {!isLogin && (
-                        <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                            <div style={{ fontSize: '12px', color: hasLength ? '#1db954' : '#ff5555', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                        <div className="mt-2 flex flex-col gap-1">
+                            <div className={`text-xs flex items-center gap-1 ${hasLength ? 'text-[#1db954]' : 'text-[#ff5555]'}`}>
                                 {hasLength ? '✓' : '○'} At least 8 characters
                             </div>
-                            <div style={{ fontSize: '12px', color: hasUpper ? '#1db954' : '#ff5555', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                            <div className={`text-xs flex items-center gap-1 ${hasUpper ? 'text-[#1db954]' : 'text-[#ff5555]'}`}>
                                 {hasUpper ? '✓' : '○'} At least one capital letter
                             </div>
-                            <div style={{ fontSize: '12px', color: hasNum ? '#1db954' : '#ff5555', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                            <div className={`text-xs flex items-center gap-1 ${hasNum ? 'text-[#1db954]' : 'text-[#ff5555]'}`}>
                                 {hasNum ? '✓' : '○'} At least one number
                             </div>
-                            <div style={{ fontSize: '12px', color: hasSpecial ? '#1db954' : '#ff5555', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                            <div className={`text-xs flex items-center gap-1 ${hasSpecial ? 'text-[#1db954]' : 'text-[#ff5555]'}`}>
                                 {hasSpecial ? '✓' : '○'} At least one special character (!,@,#,$,%,&)
                             </div>
                         </div>
@@ -197,33 +162,19 @@ function Auth() {
 
                 <button
                     type="submit"
-                    className="primary"
-                    style={{
-                        height: '48px',
-                        fontSize: '16px',
-                        marginTop: '10px',
-                        opacity: (!isLogin && !isPasswordValid) ? 0.7 : 1
-                    }}
+                    className={`bg-[#1DB954] text-white border-none py-2 px-5 hover:bg-[#1ed760] transition-colors rounded-lg h-12 text-base font-bold mt-2 ${(!isLogin && !isPasswordValid) ? 'opacity-70 cursor-not-allowed' : ''}`}
                 >
                     {isLogin ? t('login') : t('register')}
                 </button>
             </form>
 
-            <div style={{ textAlign: 'center', marginTop: '20px' }}>
-                <span style={{ color: '#888' }}>
+            <div className="text-center mt-5">
+                <span className="text-[#888]">
                     {isLogin ? t('dont_have_account') : t('already_have_account')}{' '}
                 </span>
                 <button
                     onClick={() => { setIsLogin(!isLogin); setError(''); }}
-                    style={{
-                        background: 'none',
-                        border: 'none',
-                        color: 'var(--primary)',
-                        cursor: 'pointer',
-                        fontWeight: 'bold',
-                        padding: 0,
-                        marginLeft: '5px'
-                    }}
+                    className="bg-transparent border-none text-[#1DB954] cursor-pointer font-bold p-0 ml-1 hover:underline"
                 >
                     {isLogin ? t('register') : t('login')}
                 </button>

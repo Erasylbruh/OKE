@@ -35,19 +35,17 @@ function AdminLoginModal({ onClose }) {
     };
 
     return (
-        <div style={{
-            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
-        }}>
-            <div style={{ backgroundColor: '#1e1e1e', padding: '30px', borderRadius: '12px', width: '300px', border: '1px solid #333' }}>
-                <h2 style={{ color: '#fff', marginBottom: '20px', textAlign: 'center' }}>Admin Access</h2>
-                <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[9999]">
+            <div className="bg-[#1e1e1e] p-8 rounded-xl w-[300px] border border-[#333]">
+                <h2 className="text-white mb-5 text-center text-xl font-bold">Admin Access</h2>
+                <form onSubmit={handleLogin} className="flex flex-col gap-4">
                     <input
                         type="text"
                         placeholder="ID"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
-                        style={{ padding: '10px', backgroundColor: '#333', border: 'none', color: '#fff', borderRadius: '4px' }}
+                        className="p-3 bg-[#333] border-none text-white rounded w-full focus:outline-none focus:ring-2 focus:ring-[#e91e63]"
                         autoFocus
                     />
                     <input
@@ -55,17 +53,29 @@ function AdminLoginModal({ onClose }) {
                         placeholder="Password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        style={{ padding: '10px', backgroundColor: '#333', border: 'none', color: '#fff', borderRadius: '4px' }}
+                        className="p-3 bg-[#333] border-none text-white rounded w-full focus:outline-none focus:ring-2 focus:ring-[#e91e63]"
                     />
-                    {error && <p style={{ color: '#ff4444', fontSize: '0.9em', textAlign: 'center' }}>{error}</p>}
-                    <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                        <button type="button" onClick={onClose} style={{ flex: 1, padding: '10px', backgroundColor: 'transparent', border: '1px solid #555', color: '#ccc', borderRadius: '4px', cursor: 'pointer' }}>Cancel</button>
-                        <button type="submit" style={{ flex: 1, padding: '10px', backgroundColor: '#e91e63', border: 'none', color: '#fff', borderRadius: '4px', cursor: 'pointer' }}>Login</button>
+                    {error && <p className="text-[#ff4444] text-sm text-center">{error}</p>}
+                    <div className="flex gap-3 mt-2">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="flex-1 p-2 bg-transparent border border-[#555] text-[#ccc] rounded hover:bg-[#333] transition-colors cursor-pointer"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            className="flex-1 p-2 bg-[#e91e63] border-none text-white rounded hover:bg-[#d81b60] transition-colors cursor-pointer font-bold"
+                        >
+                            Login
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
     );
+
 }
 
 export default AdminLoginModal;

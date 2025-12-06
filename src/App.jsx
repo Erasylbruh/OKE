@@ -21,7 +21,7 @@ const Layout = ({ children }) => {
   const path = location.pathname;
 
   if (path === '/auth') {
-    return <div className="auth-layout">{children}</div>;
+    return <div className="min-h-screen flex items-center justify-center bg-black">{children}</div>;
   }
 
   // Editor takes full width without sidebar or bottom nav
@@ -35,7 +35,7 @@ const Layout = ({ children }) => {
   return (
     <>
       <Sidebar />
-      <div className="main-content">
+      <div className="md:ml-[250px] min-h-screen bg-black text-white pb-24 md:pb-0 transition-all duration-300">
         {children}
       </div>
       <BottomNav />
