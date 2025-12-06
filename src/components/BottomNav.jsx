@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useLanguage } from '../../context/LanguageContext';
+import { useLanguage } from '../context/LanguageContext';
 import { FiHome, FiHeart, FiUser, FiSettings } from 'react-icons/fi';
 
 const BottomNav = () => {
@@ -14,11 +14,11 @@ const BottomNav = () => {
     return (
         <div className="bottom-nav">
             <button
-                className={`nav-item ${isActive('/') ? 'active' : ''}`}
-                onClick={() => navigate('/')}
+                className={`nav-item ${isActive('/') && (!location.state?.tab || location.state?.tab === 'foryou') ? 'active' : ''}`}
+                onClick={() => navigate('/', { state: { tab: 'foryou' } })}
             >
                 <FiHome size={20} />
-                <span>{t('home')}</span>
+                <span>{t('home') || 'home'}</span>
             </button>
 
             <button
@@ -26,7 +26,7 @@ const BottomNav = () => {
                 onClick={() => navigate('/liked-projects')}
             >
                 <FiHeart size={20} />
-                <span>{t('liked')}</span>
+                <span>{t('liked') || 'liked'}</span>
             </button>
 
             <button
@@ -34,7 +34,7 @@ const BottomNav = () => {
                 onClick={() => navigate(currentUser.username ? `/user/${currentUser.username}` : '/auth')}
             >
                 <FiUser size={20} />
-                <span>{t('profile')}</span>
+                <span>{t('profile') || 'profile'}</span>
             </button>
 
             <button
@@ -42,7 +42,7 @@ const BottomNav = () => {
                 onClick={() => navigate('/settings')}
             >
                 <FiSettings size={20} />
-                <span>{t('settings')}</span>
+                <span>{t('settings') || 'settings'}</span>
             </button>
         </div>
     );

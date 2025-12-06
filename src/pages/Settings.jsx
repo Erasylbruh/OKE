@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import client from '../api/client';
+import API_URL from '../config';
 import { useLanguage } from '../context/LanguageContext';
 
 function Settings() {
@@ -12,51 +12,76 @@ function Settings() {
 
     useEffect(() => {
         const fetchSettings = async () => {
+            const token = localStorage.getItem('token');
+            if (!token) return navigate('/auth');
+
             try {
-                const data = await client.get('/api/users/settings');
-                if (data) {
+                const res = await fetch(`${API_URL}/api/users/settings`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
                     setUser(data);
-                    if (data.language) setLanguage(data.language);
+                    if (data.language) {
+                        setLanguage(data.language);
+                    }
+                } else {
+                    navigate('/auth');
                 }
             } catch (err) {
                 console.error(err);
             }
         };
         fetchSettings();
-    }, [setLanguage]);
+    }, [navigate, setLanguage]);
 
     const handleSave = async () => {
+        const token = localStorage.getItem('token');
         try {
-            await client.put('/api/users/settings', {
-                password: password || undefined,
-                language
+            const res = await fetch(`${API_URL}/api/users/settings`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ password: password || undefined, language })
             });
-            setMessage(t('settings_updated') || 'Settings updated');
-            setPassword('');
-            setTimeout(() => setMessage(''), 3000);
+
+            if (res.ok) {
+                setMessage(t('settings_updated') || 'Settings updated successfully');
+                setPassword('');
+                setTimeout(() => setMessage(''), 3000);
+            } else {
+                const msg = await res.text();
+                setMessage(`Error: ${msg}`);
+            }
         } catch (err) {
-            setMessage(`Error: ${err.message}`);
+            console.error(err);
+            setMessage('Error updating settings');
         }
     };
 
     const handleDeleteAccount = async () => {
         if (!window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) return;
 
+        const token = localStorage.getItem('token');
         try {
-            await client.delete(`/api/users/${user.id}`);
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            navigate('/auth');
+            const res = await fetch(`${API_URL}/api/users/${user.id}`, { // Assuming self-delete endpoint exists or admin endpoint works for self if authorized
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (res.ok) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                navigate('/auth');
+            } else {
+                alert('Failed to delete account');
+            }
         } catch (err) {
             console.error(err);
-            alert('Failed to delete account');
+            alert('Error deleting account');
         }
-    };
-
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        navigate('/auth');
     };
 
     if (!user) return <div style={{ padding: '20px', color: 'white' }}>Loading...</div>;
@@ -72,18 +97,34 @@ function Settings() {
                         <h3 style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase' }}>{t('profile')}</h3>
                         <button
                             onClick={() => navigate('/settings/profile')}
-                            style={{ background: '#333', border: 'none', color: 'white', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer' }}
+                            style={{
+                                background: '#333',
+                                border: 'none',
+                                color: 'white',
+                                padding: '6px 12px',
+                                borderRadius: '4px',
+                                fontSize: '0.8rem',
+                                cursor: 'pointer'
+                            }}
                         >
-                            {t('edit_profile') || 'Edit'}
+                            Edit Profile
                         </button>
                     </div>
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                        <div className="user-avatar" style={{ width: '60px', height: '60px', fontSize: '1.5rem' }}>
+                        <div style={{
+                            width: '60px',
+                            height: '60px',
+                            borderRadius: '50%',
+                            overflow: 'hidden',
+                            backgroundColor: '#333'
+                        }}>
                             {user.avatar_url ? (
-                                <img src={user.avatar_url} alt="avatar" />
+                                <img src={user.avatar_url} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                             ) : (
-                                (user.nickname?.[0] || user.username?.[0] || '?').toUpperCase()
+                                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '1.5rem' }}>
+                                    {user.username?.[0]?.toUpperCase()}
+                                </div>
                             )}
                         </div>
                         <div>
@@ -99,7 +140,7 @@ function Settings() {
                     <select
                         value={language}
                         onChange={(e) => setLanguage(e.target.value)}
-                        className="dark-input"
+                        style={{ backgroundColor: '#121212' }}
                     >
                         <option value="en">English</option>
                         <option value="kk">Қазақша</option>
@@ -107,37 +148,71 @@ function Settings() {
                     </select>
                 </div>
 
-                {/* Password Change */}
-                <div style={{ marginBottom: '20px' }}>
-                    <label style={{ display: 'block', marginBottom: '10px', color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase' }}>{t('change_password')}</label>
-                    <input
-                        type="password"
-                        placeholder={t('new_password')}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="dark-input"
-                    />
-                </div>
-
-                <button onClick={handleSave} className="primary" style={{ width: '100%', marginBottom: '20px' }}>
-                    {t('save_changes')}
+                <button
+                    onClick={handleSave}
+                    className="primary"
+                    style={{ width: '100%', padding: '12px', marginBottom: '20px' }}
+                >
+                    {t('save_changes') || 'Save Changes'}
                 </button>
 
                 {message && <div style={{ color: '#1db954', textAlign: 'center', marginBottom: '20px' }}>{message}</div>}
 
+                {/* Admin Dashboard - Mobile Only */}
+                <div className="mobile-visible" style={{ marginBottom: '20px' }}>
+                    <button
+                        onClick={() => navigate('/admin')}
+                        style={{
+                            background: 'linear-gradient(45deg, #FF512F, #DD2476)',
+                            border: 'none',
+                            color: 'white',
+                            padding: '12px',
+                            borderRadius: '8px',
+                            width: '100%',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '10px'
+                        }}
+                    >
+                        {t('admin_dashboard') || 'Admin Dashboard'}
+                    </button>
+                </div>
+
                 {/* Danger Zone */}
                 <div style={{ marginTop: '40px', paddingTop: '20px', borderTop: '1px solid #333' }}>
-                    <h3 style={{ color: '#ff5555', marginTop: 0 }}>{t('danger_zone')}</h3>
-                    <p style={{ color: '#888', fontSize: '0.9rem', marginBottom: '15px' }}>{t('delete_account_warning')}</p>
-                    <button onClick={handleDeleteAccount} className="delete-btn" style={{ border: '1px solid #ff5555', color: '#ff5555', padding: '10px 20px', borderRadius: '5px', opacity: 1 }}>
-                        {t('delete_account')}
+                    <h3 style={{ color: '#ff5555', marginTop: 0 }}>{t('danger_zone') || 'Danger Zone'}</h3>
+                    <p style={{ color: '#888', fontSize: '0.9rem', marginBottom: '15px' }}>
+                        {t('delete_account_warning') || 'Once you delete your account, there is no going back. Please be certain.'}
+                    </p>
+                    <button
+                        onClick={handleDeleteAccount}
+                        style={{
+                            backgroundColor: 'transparent',
+                            border: '1px solid #ff5555',
+                            color: '#ff5555',
+                            padding: '10px 20px',
+                            borderRadius: '5px'
+                        }}
+                    >
+                        {t('delete_account') || 'Delete Account'}
                     </button>
                 </div>
             </div>
 
+            {/* Logout Button */}
             <div style={{ textAlign: 'center', marginTop: '30px' }}>
-                <button onClick={handleLogout} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', textDecoration: 'underline' }}>
-                    {t('logout')}
+                <button
+                    onClick={() => {
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user');
+                        navigate('/auth');
+                    }}
+                    style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', textDecoration: 'underline' }}
+                >
+                    {t('logout') || 'Log Out'}
                 </button>
             </div>
         </div>
