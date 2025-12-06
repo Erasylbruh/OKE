@@ -36,8 +36,13 @@ const Editor = () => {
         let initializedLyrics;
         if (parsedInput.length > 0 && typeof parsedInput[0] === 'object') {
             initializedLyrics = parsedInput.map((item, index) => {
-                const nextItem = parsedInput[index + 1];
-                const endTime = nextItem ? nextItem.start : (item.start + 2);
+                // If 'end' is provided (from JSON/Whisper), use it. 
+                // Otherwise calculate based on next start or default duration.
+                let endTime = item.end;
+                if (endTime === undefined || endTime === null) {
+                    const nextItem = parsedInput[index + 1];
+                    endTime = nextItem ? nextItem.start : (item.start + 2);
+                }
                 return { id: index, text: item.text, start: item.start, end: endTime };
             });
         } else {

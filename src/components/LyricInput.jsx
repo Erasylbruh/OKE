@@ -10,7 +10,27 @@ function LyricInput({ onParse }) {
     const parseText = (inputText) => {
         if (!inputText.trim()) return;
 
-        // Check if text looks like LRC format
+        // 1. Try to parse as JSON first (for precise timestamps from Whisper/External)
+        try {
+            if (inputText.trim().startsWith('[') || inputText.trim().startsWith('{')) {
+                const json = JSON.parse(inputText);
+                if (Array.isArray(json)) {
+                    // Validate basic structure
+                    const validItems = json.filter(item => typeof item.text === 'string' && typeof item.start === 'number');
+                    if (validItems.length > 0) {
+                        onParse(validItems);
+                        // Make pretty for textarea
+                        setText(JSON.stringify(validItems, null, 2));
+                        return;
+                    }
+                }
+            }
+        } catch (e) {
+            // Not valid JSON, continue to LRC/Text parsing
+            console.log("Input is not valid JSON, trying LRC...", e);
+        }
+
+        // 2. Check if text looks like LRC format
         const hasTimestamps = /\[\d{2}:\d{2}\.\d{2,3}\]/.test(inputText);
 
         if (hasTimestamps) {
@@ -23,10 +43,12 @@ function LyricInput({ onParse }) {
                 if (match) {
                     const minutes = parseInt(match[1]);
                     const seconds = parseFloat(match[2]);
-                    const startTime = minutes * 60 + seconds;
-                    const content = match[3].trim();
-                    parsedLyrics.push({ text: content, start: startTime });
-                    cleanLines.push(line);
+                    const time = minutes * 60 + seconds;
+                    const text = match[3].trim();
+                    if (text) {
+                        parsedLyrics.push({ start: time, text });
+                        cleanLines.push(line);
+                    }
                 } else if (line.trim() !== '' && !line.trim().startsWith('[')) {
                     cleanLines.push(line);
                 }
@@ -40,7 +62,8 @@ function LyricInput({ onParse }) {
                 onParse(lines);
             }
         } else {
-            const lines = inputText.split(',').filter(line => line.trim() !== '');
+            // 3. Fallback to basic comma/newline separated text
+            const lines = inputText.split(/[\n,]/).filter(line => line.trim() !== '').map(l => l.trim());
             onParse(lines);
         }
     };
