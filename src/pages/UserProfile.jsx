@@ -66,40 +66,25 @@ function UserProfile() {
     if (!user) return <div style={{ color: 'white', padding: '20px' }}>{t('user_not_found')}</div>;
 
     return (
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        <div className="p-6 md:p-10 max-w-7xl mx-auto min-h-screen pb-24 md:pb-10">
             {/* Hero Section */}
-            <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                marginBottom: '40px',
-                paddingBottom: '20px',
-                borderBottom: '1px solid var(--border-color)'
-            }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                    <div style={{
-                        width: '80px',
-                        height: '80px',
-                        borderRadius: '50%',
-                        backgroundColor: '#333',
-                        backgroundImage: user.avatar_url ? `url(${user.avatar_url})` : 'none',
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '2rem',
-                        color: '#888'
-                    }}>
+            <div className="flex items-center justify-between mb-10 pb-6 border-b border-neutral-800">
+                <div className="flex items-center gap-6">
+                    <div
+                        className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-[#333] bg-cover bg-center flex items-center justify-center text-3xl md:text-4xl text-[#888] font-bold shadow-xl border-2 border-neutral-800"
+                        style={{
+                            backgroundImage: user.avatar_url ? `url(${user.avatar_url})` : 'none',
+                        }}
+                    >
                         {!user.avatar_url && (user.nickname?.[0] || user.username?.[0] || '?').toUpperCase()}
                     </div>
                     <div>
-                        <h1 style={{ margin: 0, fontSize: '2rem' }}>{user.nickname || user.username}</h1>
-                        <p style={{ color: 'var(--text-muted)', margin: '5px 0 0 0' }}>@{user.username}</p>
-                        <div style={{ display: 'flex', gap: '15px', marginTop: '10px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-                            <span><strong style={{ color: 'var(--text-main)' }}>{followersCount}</strong> {t('followers')}</span>
-                            <span><strong style={{ color: 'var(--text-main)' }}>{followingCount}</strong> {t('following')}</span>
-                            <span><strong style={{ color: 'var(--text-main)' }}>{projects.length}</strong> {t('projects')}</span>
+                        <h1 className="m-0 text-3xl md:text-4xl font-black text-white">{user.nickname || user.username}</h1>
+                        <p className="text-neutral-400 mt-1">@{user.username}</p>
+                        <div className="flex gap-6 mt-3 text-sm text-neutral-400">
+                            <span><strong className="text-white">{followersCount}</strong> {t('followers')}</span>
+                            <span><strong className="text-white">{followingCount}</strong> {t('following')}</span>
+                            <span><strong className="text-white">{projects.length}</strong> {t('projects')}</span>
                         </div>
                     </div>
                 </div>
@@ -107,23 +92,21 @@ function UserProfile() {
                 {currentUser.id !== user.id ? (
                     <button
                         onClick={handleFollow}
-                        className={isFollowing ? 'danger' : 'primary'}
-                        style={{ borderRadius: '20px', padding: '8px 24px' }}
+                        className={`rounded-full px-6 py-2 font-bold transition-colors border-none ${isFollowing ? 'bg-transparent border border-[#ff4444] text-[#ff4444] hover:bg-[#ff4444]/10' : 'bg-[#1DB954] text-white hover:bg-[#1ed760]'}`}
                     >
                         {isFollowing ? t('unfollow') : t('follow')}
                     </button>
                 ) : (
                     <button
                         onClick={() => navigate('/dashboard')}
-                        className="primary"
-                        style={{ borderRadius: '20px', padding: '8px 24px' }}
+                        className="bg-[#1DB954] text-white font-bold rounded-full px-6 py-2 hover:bg-[#1ed760] transition-colors border-none"
                     >
                         {t('my_dashboard')}
                     </button>
                 )}
             </div>
 
-            <div className="grid-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {projects.map((project) => (
                     <ProjectCard
                         key={project.id}
@@ -135,7 +118,7 @@ function UserProfile() {
             </div>
 
             {projects.length === 0 && (
-                <div style={{ textAlign: 'center', color: 'var(--text-muted)', marginTop: '50px' }}>
+                <div className="text-center text-neutral-500 mt-20">
                     <p>{t('no_public_projects')}</p>
                 </div>
             )}

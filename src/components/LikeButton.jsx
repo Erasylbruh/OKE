@@ -81,30 +81,13 @@ function LikeButton({ projectId, initialLiked = false, initialCount = 0 }) {
     return (
         <button
             onClick={handleToggleLike}
-            style={{
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                padding: '5px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '5px',
-                transition: 'transform 0.2s',
-                transform: liked ? 'scale(1.1)' : 'scale(1)'
-            }}
+            className={`bg-transparent border-none cursor-pointer p-1 flex items-center justify-center gap-1 transition-transform duration-200 ${liked ? 'scale-110' : 'scale-100'}`}
             title={liked ? "Unlike" : "Like"}
         >
-            <span style={{
-                fontSize: '18px',
-                color: liked ? '#E53935' : '#B3B3B3',
-                display: 'flex',
-                alignItems: 'center',
-                transition: 'color 0.2s'
-            }}>
+            <span className={`text-lg flex items-center transition-colors duration-200 ${liked ? 'text-[#E53935]' : 'text-[#B3B3B3]'}`}>
                 {liked ? <FaHeart /> : <FaRegHeart />}
             </span>
-            <span style={{ color: '#ccc', fontSize: '0.9em' }}>{count}</span>
+            <span className="text-[#ccc] text-sm">{count}</span>
         </button>
     );
 }

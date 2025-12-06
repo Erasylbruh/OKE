@@ -82,41 +82,40 @@ function ForYou() {
     const recentProjects = publicProjects;
 
     return (
-        <div className="foryou-container" style={{ paddingBottom: '80px', maxWidth: 'calc(100% - 30%)', margin: 'auto' }}>
+        <div className="p-6 md:p-8 max-w-[1400px] mx-auto pb-24 md:pb-10 min-h-screen">
             {/* Hero Section */}
-            <div className="hero-section">
-                <h1>{t('welcome_message')}</h1>
-                <p>{t('hero_subtitle')}</p>
-                {!token && (
-                    <button
-                        onClick={() => navigate('/auth')}
-                        style={{
-                            marginTop: '20px',
-                            backgroundColor: 'white',
-                            color: 'black',
-                            fontWeight: 'bold',
-                            padding: '12px 30px',
-                            borderRadius: '30px',
-                            border: 'none'
-                        }}
-                    >
-                        {t('get_started') || 'Get Started'}
-                    </button>
-                )}
+            <div className="bg-gradient-to-r from-[#134e28] to-[#121212] p-10 rounded-3xl mb-10 shadow-lg border border-white/5 relative overflow-hidden">
+                <div className="relative z-10">
+                    <h1 className="text-4xl md:text-6xl font-black text-white mb-4 tracking-tight drop-shadow-md">
+                        {t('welcome_message')}
+                    </h1>
+                    <p className="text-neutral-300 text-lg md:text-xl max-w-2xl font-medium">
+                        {t('hero_subtitle')}
+                    </p>
+                    {!token && (
+                        <button
+                            onClick={() => navigate('/auth')}
+                            className="mt-8 bg-white text-black font-bold py-3 px-8 rounded-full hover:scale-105 transition-transform shadow-xl"
+                        >
+                            {t('get_started') || 'Get Started'}
+                        </button>
+                    )}
+                </div>
             </div>
 
-            <div style={{ maxWidth: '1537px', margin: '0 auto' }}>
+            <div className="w-full">
 
                 {/* Tab Switcher */}
-                <div className="tab-switcher">
+                {/* Tab Switcher */}
+                <div className="flex gap-8 mb-8 border-b border-neutral-800">
                     <button
-                        className={`tab-button ${activeTab === 'foryou' ? 'active' : ''}`}
+                        className={`pb-4 px-2 text-sm font-bold tracking-wide transition-all border-b-2 ${activeTab === 'foryou' ? 'border-[#1db954] text-white' : 'border-transparent text-neutral-400 hover:text-white'}`}
                         onClick={() => setActiveTab('foryou')}
                     >
                         {t('for_you') || 'For You'}
                     </button>
                     <button
-                        className={`tab-button ${activeTab === 'following' ? 'active' : ''}`}
+                        className={`pb-4 px-2 text-sm font-bold tracking-wide transition-all border-b-2 ${activeTab === 'following' ? 'border-[#1db954] text-white' : 'border-transparent text-neutral-400 hover:text-white'}`}
                         onClick={() => setActiveTab('following')}
                     >
                         {t('following') || 'Following'}
@@ -128,14 +127,14 @@ function ForYou() {
                     <>
                         {/* Trending Section */}
                         {trendingProjects.length > 0 && (
-                            <section>
-                                <div className="section-title">
-                                    <i className="fas fa-fire" style={{ color: '#ff5500' }}></i>
+                            <section className="mb-12">
+                                <div className="text-xl font-bold mb-6 flex items-center gap-2 text-white">
+                                    <i className="fas fa-fire text-[#ff5500]"></i>
                                     {t('trending')}
                                 </div>
-                                <div className="trending-scroll-container">
+                                <div className="flex gap-6 overflow-x-auto pb-8 snap-x scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-transparent">
                                     {trendingProjects.map((project) => (
-                                        <div key={project.id} className="trending-card">
+                                        <div key={project.id} className="min-w-[300px] md:min-w-[350px] snap-center">
                                             <ProjectCard
                                                 project={project}
                                                 onClick={() => navigate(`/editor/${project.id}`, { state: { from: 'main' } })}
@@ -148,12 +147,12 @@ function ForYou() {
                         )}
 
                         {/* Recent Projects Section */}
-                        <section>
-                            <div className="section-title">
-                                <i className="fas fa-clock" style={{ color: '#1db954' }}></i>
+                        <section className="mb-12">
+                            <div className="text-xl font-bold mb-6 flex items-center gap-2 text-white">
+                                <i className="fas fa-clock text-[#1db954]"></i>
                                 {t('recent_projects')}
                             </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                            <div className="flex flex-col gap-4">
                                 {recentProjects.map((project) => (
                                     <ProjectCard
                                         key={project.id}
@@ -162,7 +161,7 @@ function ForYou() {
                                         isOwner={false}
                                     />
                                 ))}
-                                {recentProjects.length === 0 && <p className="no-content-message">{t('no_public_projects')}</p>}
+                                {recentProjects.length === 0 && <p className="text-center text-neutral-500 py-10">{t('no_public_projects')}</p>}
                             </div>
                         </section>
                     </>
@@ -170,43 +169,43 @@ function ForYou() {
                     /* Following Tab Content */
                     <>
                         {!token ? (
-                            <div className="no-content-message">
-                                <p>{t('login_to_see_following')}</p>
+                            <div className="text-center py-20 bg-neutral-900/30 rounded-2xl border border-neutral-800">
+                                <p className="text-neutral-400 mb-4">{t('login_to_see_following')}</p>
                                 <button
                                     onClick={() => navigate('/auth')}
-                                    style={{ marginTop: '10px', padding: '10px 20px' }}
+                                    className="px-6 py-2 bg-[#1DB954] text-white font-bold rounded-full hover:bg-[#1ed760] transition-colors"
                                 >
                                     {t('login')}
                                 </button>
                             </div>
                         ) : loading ? (
-                            <div className="no-content-message">Loading...</div>
+                            <div className="text-center py-20 text-neutral-500">Loading...</div>
                         ) : (
                             <>
                                 {/* Followed Users (Horizontal Scroll) */}
                                 {followedUsers.length > 0 && (
-                                    <section>
-                                        <div className="section-title">
-                                            <i className="fas fa-user-friends" style={{ color: '#1db954' }}></i>
+                                    <section className="mb-10">
+                                        <div className="text-lg font-bold mb-4 flex items-center gap-2 text-white">
+                                            <i className="fas fa-user-friends text-[#1db954]"></i>
                                             {t('creators_you_follow')}
                                         </div>
-                                        <div className="profiles-scroll-container">
+                                        <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
                                             {followedUsers.map(user => (
                                                 <div
                                                     key={user.id}
                                                     onClick={() => navigate(`/user/${user.username}`)}
-                                                    className="profile-item"
+                                                    className="flex flex-col items-center gap-2 min-w-[80px] cursor-pointer group"
                                                 >
                                                     <div
-                                                        className="profile-avatar"
+                                                        className="w-16 h-16 rounded-full bg-neutral-800 flex items-center justify-center text-xl font-bold border-2 border-transparent group-hover:border-[#1db954] transition-all object-cover bg-cover bg-center shadow-md relative overflow-hidden"
                                                         style={{
                                                             backgroundImage: user.avatar_url ? `url(${user.avatar_url})` : 'none',
                                                         }}
                                                     >
                                                         {!user.avatar_url && (user.nickname?.[0] || user.username?.[0] || '?').toUpperCase()}
                                                     </div>
-                                                    <div className="profile-name-container">
-                                                        <p className="profile-name">
+                                                    <div className="w-full text-center">
+                                                        <p className="text-xs text-neutral-400 group-hover:text-white truncate max-w-[80px]">
                                                             {user.nickname || user.username}
                                                         </p>
                                                     </div>
@@ -218,11 +217,11 @@ function ForYou() {
 
                                 {/* Followed Projects List */}
                                 <section>
-                                    <div className="section-title">
-                                        <i className="fas fa-rss" style={{ color: '#1db954' }}></i>
+                                    <div className="text-lg font-bold mb-4 flex items-center gap-2 text-white">
+                                        <i className="fas fa-rss text-[#1db954]"></i>
                                         {t('latest_from_following')}
                                     </div>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                    <div className="flex flex-col gap-4">
                                         {followedProjects.map((project) => (
                                             <ProjectCard
                                                 key={project.id}
@@ -234,13 +233,13 @@ function ForYou() {
                                     </div>
 
                                     {followedUsers.length === 0 && (
-                                        <div className="no-content-message">
+                                        <div className="text-center py-20 text-neutral-500">
                                             {t('no_following')}
                                         </div>
                                     )}
 
                                     {followedUsers.length > 0 && followedProjects.length === 0 && (
-                                        <div className="no-content-message">
+                                        <div className="text-center py-20 text-neutral-500">
                                             {t('no_posts_yet')}
                                         </div>
                                     )}

@@ -87,60 +87,46 @@ function Settings() {
     if (!user) return <div style={{ padding: '20px', color: 'white' }}>Loading...</div>;
 
     return (
-        <div style={{ maxWidth: '600px', margin: '0 auto', paddingTop: '40px' }}>
-            <h1 style={{ marginBottom: '30px', textAlign: 'center' }}>{t('settings')}</h1>
+        <div className="max-w-[600px] mx-auto pt-10 px-4 pb-24 md:pb-10">
+            <h1 className="mb-8 text-center text-3xl font-bold text-white">{t('settings')}</h1>
 
-            <div className="card">
+            <div className="bg-[#1E1E1E] border border-[#333] rounded-2xl p-6 shadow-lg">
                 {/* Profile Info */}
-                <div style={{ marginBottom: '30px', paddingBottom: '20px', borderBottom: '1px solid var(--border-color)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                        <h3 style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase' }}>{t('profile')}</h3>
+                <div className="mb-8 pb-6 border-b border-[#333]">
+                    <div className="flex justify-between items-center mb-5">
+                        <h3 className="m-0 text-[#B3B3B3] text-sm uppercase tracking-wider">{t('profile')}</h3>
                         <button
                             onClick={() => navigate('/settings/profile')}
-                            style={{
-                                background: '#333',
-                                border: 'none',
-                                color: 'white',
-                                padding: '6px 12px',
-                                borderRadius: '4px',
-                                fontSize: '0.8rem',
-                                cursor: 'pointer'
-                            }}
+                            className="bg-[#333] border-none text-white py-1 px-3 rounded text-sm hover:bg-[#444] transition-colors"
                         >
                             Edit Profile
                         </button>
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                        <div style={{
-                            width: '60px',
-                            height: '60px',
-                            borderRadius: '50%',
-                            overflow: 'hidden',
-                            backgroundColor: '#333'
-                        }}>
+                    <div className="flex items-center gap-5">
+                        <div className="w-16 h-16 rounded-full overflow-hidden bg-[#333] flex items-center justify-center text-white text-2xl font-bold">
                             {user.avatar_url ? (
-                                <img src={user.avatar_url} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                <img src={user.avatar_url} alt="avatar" className="w-full h-full object-cover" />
                             ) : (
-                                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '1.5rem' }}>
+                                <div>
                                     {user.username?.[0]?.toUpperCase()}
                                 </div>
                             )}
                         </div>
                         <div>
-                            <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>{user.nickname || user.username}</div>
-                            <div style={{ color: 'var(--text-muted)' }}>@{user.username}</div>
+                            <div className="font-bold text-lg text-white">{user.nickname || user.username}</div>
+                            <div className="text-[#B3B3B3]">@{user.username}</div>
                         </div>
                     </div>
                 </div>
 
                 {/* Language Settings */}
-                <div style={{ marginBottom: '30px' }}>
-                    <label style={{ display: 'block', marginBottom: '10px', color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase' }}>{t('language')}</label>
+                <div className="mb-8">
+                    <label className="block mb-3 text-[#B3B3B3] text-sm uppercase tracking-wider">{t('language')}</label>
                     <select
                         value={language}
                         onChange={(e) => setLanguage(e.target.value)}
-                        style={{ backgroundColor: '#121212' }}
+                        className="bg-[#121212] w-full p-3 rounded border border-[#333] text-white focus:outline-none focus:border-[#1DB954]"
                     >
                         <option value="en">English</option>
                         <option value="kk">Қазақша</option>
@@ -150,8 +136,7 @@ function Settings() {
 
                 <button
                     onClick={handleSave}
-                    className="primary"
-                    style={{ width: '100%', padding: '12px', marginBottom: '20px' }}
+                    className="w-full py-3 bg-[#1DB954] text-white font-bold rounded hover:bg-[#1ed760] transition-colors mb-5 shadow-md border-none"
                 >
                     {t('save_changes') || 'Save Changes'}
                 </button>
@@ -159,43 +144,24 @@ function Settings() {
                 {message && <div style={{ color: '#1db954', textAlign: 'center', marginBottom: '20px' }}>{message}</div>}
 
                 {/* Admin Dashboard - Mobile Only */}
-                <div className="mobile-visible" style={{ marginBottom: '20px' }}>
+                <div className="md:hidden mb-5">
                     <button
                         onClick={() => navigate('/admin')}
-                        style={{
-                            background: 'linear-gradient(45deg, #FF512F, #DD2476)',
-                            border: 'none',
-                            color: 'white',
-                            padding: '12px',
-                            borderRadius: '8px',
-                            width: '100%',
-                            fontWeight: 'bold',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '10px'
-                        }}
+                        className="w-full py-3 bg-gradient-to-r from-[#FF512F] to-[#DD2476] text-white font-bold rounded flex items-center justify-center gap-2 shadow-md border-none"
                     >
                         {t('admin_dashboard') || 'Admin Dashboard'}
                     </button>
                 </div>
 
                 {/* Danger Zone */}
-                <div style={{ marginTop: '40px', paddingTop: '20px', borderTop: '1px solid #333' }}>
-                    <h3 style={{ color: '#ff5555', marginTop: 0 }}>{t('danger_zone') || 'Danger Zone'}</h3>
-                    <p style={{ color: '#888', fontSize: '0.9rem', marginBottom: '15px' }}>
+                <div className="mt-8 pt-6 border-t border-[#333]">
+                    <h3 className="text-[#ff5555] mt-0 mb-2 font-bold">{t('danger_zone') || 'Danger Zone'}</h3>
+                    <p className="text-[#888] text-sm mb-4">
                         {t('delete_account_warning') || 'Once you delete your account, there is no going back. Please be certain.'}
                     </p>
                     <button
                         onClick={handleDeleteAccount}
-                        style={{
-                            backgroundColor: 'transparent',
-                            border: '1px solid #ff5555',
-                            color: '#ff5555',
-                            padding: '10px 20px',
-                            borderRadius: '5px'
-                        }}
+                        className="bg-transparent border border-[#ff5555] text-[#ff5555] px-5 py-2 rounded hover:bg-[#ff5555]/10 transition-colors"
                     >
                         {t('delete_account') || 'Delete Account'}
                     </button>

@@ -43,16 +43,9 @@ function LikedProjects() {
     if (loading) return <div style={{ padding: '20px', color: 'white' }}>Loading...</div>;
 
     return (
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-            <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                marginBottom: '30px',
-                paddingBottom: '20px',
-                borderBottom: '1px solid var(--border-color)'
-            }}>
-                <h1 style={{ margin: 0 }}>{t('liked_projects') || 'Liked Projects'}</h1>
+        <div className="p-6 md:p-10 max-w-7xl mx-auto min-h-screen pb-24 md:pb-10">
+            <div className="flex items-center justify-between mb-8 pb-6 border-b border-neutral-800">
+                <h1 className="text-3xl font-bold text-white m-0">{t('liked_projects') || 'Liked Projects'}</h1>
             </div>
 
             {error && (
@@ -62,20 +55,19 @@ function LikedProjects() {
             )}
 
             {projects.length === 0 && !error ? (
-                <div style={{ textAlign: 'center', color: 'var(--text-muted)', marginTop: '80px' }}>
-                    <div style={{ fontSize: '4rem', marginBottom: '20px', opacity: 0.5 }}>❤️</div>
-                    <h2 style={{ color: 'white', marginBottom: '10px' }}>{t('no_likes_yet') || 'No liked projects yet'}</h2>
-                    <p style={{ marginBottom: '30px' }}>{t('no_likes_desc') || 'Projects you like will appear here.'}</p>
+                <div className="text-center text-neutral-500 mt-20">
+                    <div className="text-6xl mb-6 opacity-50">❤️</div>
+                    <h2 className="text-white text-2xl font-bold mb-3">{t('no_likes_yet') || 'No liked projects yet'}</h2>
+                    <p className="mb-8 text-neutral-400">{t('no_likes_desc') || 'Projects you like will appear here.'}</p>
                     <button
                         onClick={() => navigate('/foryou')}
-                        className="primary"
-                        style={{ padding: '12px 30px', borderRadius: '30px', fontSize: '1.1rem' }}
+                        className="bg-[#1DB954] text-white font-bold py-3 px-8 rounded-full hover:bg-[#1ed760] transition-colors text-lg"
                     >
                         {t('explore_projects') || 'Explore Projects'}
                     </button>
                 </div>
             ) : (
-                <div className="grid-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {projects.map(project => (
                         <ProjectCard
                             key={project.id}

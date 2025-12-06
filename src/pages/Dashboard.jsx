@@ -99,25 +99,32 @@ function Dashboard() {
     };
 
     return (
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        <div className="p-6 md:p-10 max-w-7xl mx-auto pb-24 md:pb-10 min-h-screen">
             {/* Create Modal */}
             {showCreateModal && (
-                <div style={{
-                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                    backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000
-                }}>
-                    <div className="card" style={{ width: '400px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                        <h2 style={{ margin: 0 }}>{t('create_new_project')}</h2>
+                <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[2000]">
+                    <div className="bg-[#1E1E1E] p-8 rounded-2xl w-[90%] max-w-[400px] flex flex-col gap-6 border border-[#333] shadow-2xl">
+                        <h2 className="m-0 text-xl font-bold text-white">{t('create_new_project')}</h2>
                         <input
                             type="text"
                             placeholder={t('project_name')}
                             value={newProjectName}
                             onChange={(e) => setNewProjectName(e.target.value)}
                             autoFocus
+                            className="bg-[#121212] border border-[#333] rounded-lg p-3 text-white focus:outline-none focus:border-[#1DB954] transition-colors"
                         />
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                            <button onClick={() => setShowCreateModal(false)} style={{ background: 'transparent', border: '1px solid #555', color: '#fff', padding: '8px 16px' }}>{t('cancel')}</button>
-                            <button onClick={handleCreateNew} disabled={isCreating} className="primary">
+                        <div className="flex justify-end gap-3">
+                            <button
+                                onClick={() => setShowCreateModal(false)}
+                                className="bg-transparent border border-[#555] text-white py-2 px-4 rounded hover:bg-[#333] transition-colors"
+                            >
+                                {t('cancel')}
+                            </button>
+                            <button
+                                onClick={handleCreateNew}
+                                disabled={isCreating}
+                                className="bg-[#1DB954] border-none text-white py-2 px-4 rounded font-bold hover:bg-[#1ed760] transition-colors disabled:opacity-50"
+                            >
                                 {isCreating ? 'Creating...' : t('create')}
                             </button>
                         </div>
@@ -126,61 +133,34 @@ function Dashboard() {
             )}
 
             {/* Hero Section */}
-            <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                marginBottom: '40px',
-                paddingBottom: '20px',
-                borderBottom: '1px solid var(--border-color)'
-            }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                    <div style={{
-                        width: '80px',
-                        height: '80px',
-                        borderRadius: '50%',
-                        backgroundColor: '#333',
-                        backgroundImage: user.avatar_url ? `url(${user.avatar_url})` : 'none',
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '2rem',
-                        color: '#888'
-                    }}>
+            <div className="flex items-end justify-between mb-10 pb-6 border-b border-neutral-800">
+                <div className="flex items-center gap-6">
+                    <div
+                        className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-[#333] bg-cover bg-center flex items-center justify-center text-3xl md:text-4xl text-[#888] font-bold shadow-xl border-2 border-neutral-800"
+                        style={{
+                            backgroundImage: user.avatar_url ? `url(${user.avatar_url})` : 'none',
+                        }}
+                    >
                         {!user.avatar_url && (user.nickname?.[0] || user.username?.[0] || '?').toUpperCase()}
                     </div>
                     <div>
-                        <h1 style={{ margin: 0, fontSize: '2rem' }}>{user.nickname || user.username}</h1>
-                        <p style={{ color: 'var(--text-muted)', margin: '5px 0 0 0' }}>
+                        <h1 className="m-0 text-3xl md:text-4xl font-black text-white">{user.nickname || user.username}</h1>
+                        <p className="text-neutral-400 mt-2 font-medium">
                             {projects.length} {t('projects')}
                         </p>
                     </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '10px' }}>
+                <div className="flex gap-3">
                     <button
                         onClick={() => navigate('/following')}
-                        style={{
-                            background: 'transparent',
-                            border: '1px solid var(--border-color)',
-                            color: 'var(--text-main)',
-                            padding: '8px 16px',
-                            borderRadius: '20px'
-                        }}
+                        className="bg-transparent border border-neutral-700 text-neutral-300 py-2 px-4 rounded-full text-sm font-bold hover:border-white hover:text-white transition-all"
                     >
                         {t('following') || 'Following'}
                     </button>
                     <button
                         onClick={() => navigate(`/user/${user.username}`)}
-                        style={{
-                            background: 'transparent',
-                            border: '1px solid var(--border-color)',
-                            color: 'var(--text-main)',
-                            padding: '8px 16px',
-                            borderRadius: '20px'
-                        }}
+                        className="bg-transparent border border-neutral-700 text-neutral-300 py-2 px-4 rounded-full text-sm font-bold hover:border-white hover:text-white transition-all"
                     >
                         {t('profile') || 'Profile'}
                     </button>
@@ -188,7 +168,7 @@ function Dashboard() {
             </div>
 
             {/* Projects Grid */}
-            <div className="grid-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {projects.map((project) => (
                     <ProjectCard
                         key={project.id}
@@ -221,7 +201,7 @@ function Dashboard() {
             </div>
 
             {projects.length === 0 && (
-                <div style={{ textAlign: 'center', color: 'var(--text-muted)', marginTop: '50px' }}>
+                <div className="text-center text-neutral-500 mt-20">
                     <p>{t('no_projects')}</p>
                 </div>
             )}
@@ -229,7 +209,7 @@ function Dashboard() {
             {/* FAB */}
             <button
                 onClick={() => setShowCreateModal(true)}
-                className="fab"
+                className="fixed bottom-24 right-5 md:bottom-10 md:right-10 w-14 h-14 bg-[#1DB954] rounded-full flex items-center justify-center text-3xl shadow-xl hover:scale-110 transition-transform text-black pb-1 z-50 cursor-pointer border-none"
             >
                 +
             </button>
