@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import QRCode from "react-qr-code";
 
 // --- Sub-Components ---
 
@@ -158,6 +159,47 @@ const LyricsDisplay = ({ lyrics = [], currentTime = 0, styles = {}, activeLineIn
                         Lyrics will appear here...
                     </div>
                 )}
+
+                {/* Project QR Code Watermark */
+                    safeLyrics.length > 0 && (
+                        <div style={{
+                            marginTop: '80px',
+                            marginBottom: '100px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center', // Center relative to container width?
+                            // Note: alignItems is 'flex-start' on the parent. 
+                            // To center this block, we might need alignSelf: center or width 100% + alignItems center.
+                            width: '100%',
+                            opacity: 0.8
+                        }}>
+                            <div style={{
+                                marginBottom: '10px',
+                                fontWeight: 'bold',
+                                color: getStyle('qrColor', '#ffffff'),
+                                fontSize: '14px',
+                                fontFamily: getStyle('fontFamily', 'Inter, sans-serif')
+                            }}>
+                                Made on QaraOke
+                            </div>
+                            <div style={{ padding: '8px', backgroundColor: 'white', borderRadius: '8px', display: 'inline-block' }}>
+                                <QRCode
+                                    value={window.location.href}
+                                    size={120}
+                                    fgColor={getStyle('qrColor', '#000000')}
+                                    bgColor="white"
+                                />
+                            </div>
+                            <div style={{
+                                marginTop: '5px',
+                                fontSize: '10px',
+                                color: getStyle('qrColor', '#ffffff'),
+                                textAlign: 'center'
+                            }}>
+                                Scan to play
+                            </div>
+                        </div>
+                    )}
             </div>
         </div>
     );

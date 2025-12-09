@@ -198,6 +198,18 @@ function StyleControls({ styles, onUpdate }) {
                         />
                     </div>
                 </div>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                    <span style={{ fontSize: '0.8rem', color: '#b3b3b3' }}>QR Color</span>
+                    <div style={{ height: '40px', borderRadius: '4px', overflow: 'hidden', border: '1px solid #333' }}>
+                        <input
+                            type="color"
+                            value={styles.qrColor || '#ffffff'}
+                            onChange={(e) => handleChange('qrColor', e.target.value)}
+                            style={{ width: '100%', height: '100%', padding: 0, border: 'none', cursor: 'pointer' }}
+                            title="QR Code Color"
+                        />
+                    </div>
+                </div>
             </div>
         </div>
     );
