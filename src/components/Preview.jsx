@@ -9,7 +9,9 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
  */
 const LyricsDisplay = ({ lyrics = [], currentTime = 0, styles = {}, activeLineIndex = -1 }) => {
     const scrollContainerRef = useRef(null);
+    const contentRef = useRef(null);
     const lineRefs = useRef([]);
+    const [translateY, setTranslateY] = useState(0);
 
     // Validate lyrics prop
     const safeLyrics = useMemo(() => {
@@ -17,26 +19,31 @@ const LyricsDisplay = ({ lyrics = [], currentTime = 0, styles = {}, activeLineIn
         return lyrics.filter(l => l && typeof l.start === 'number' && typeof l.end === 'number' && typeof l.text === 'string');
     }, [lyrics]);
 
-    // Smart Auto-Scroll: Only scroll when the active line changes
+    // Calculate vertical shift to center the active line
     useEffect(() => {
         if (activeLineIndex !== -1 && lineRefs.current[activeLineIndex] && scrollContainerRef.current) {
             const container = scrollContainerRef.current;
             const line = lineRefs.current[activeLineIndex];
 
-            // Calculate center position
+            // Dimensions and Positions
             const containerHeight = container.clientHeight;
+            const lineTop = line.offsetTop;
             const lineHeight = line.clientHeight;
-            const lineOffset = line.offsetTop;
 
-            // Target scroll position to center the line
-            const targetScroll = lineOffset - (containerHeight / 2) + (lineHeight / 2);
+            // Usage of the requested formula:
+            // Y = (CenterScreen) - (ActiveElementPosition + HalfHeightActive)
+            // CenterScreen = containerHeight / 2
+            // ActiveElementPosition = lineTop (relative to the content container)
+            // HalfHeightActive = lineHeight / 2
 
-            container.scrollTo({
-                top: targetScroll,
-                behavior: 'smooth'
-            });
+            const targetY = (containerHeight / 2) - (lineTop + lineHeight / 2);
+
+            setTranslateY(targetY);
+        } else if (activeLineIndex === -1) {
+            // Reset or default position (e.g. slight padding from top)
+            setTranslateY(200);
         }
-    }, [activeLineIndex]);
+    }, [activeLineIndex, safeLyrics]); // Re-run if lyrics list changes drastically
 
     // Safe style access
     const getStyle = (key, fallback) => styles && styles[key] ? styles[key] : fallback;
@@ -46,94 +53,103 @@ const LyricsDisplay = ({ lyrics = [], currentTime = 0, styles = {}, activeLineIn
             ref={scrollContainerRef}
             className="lyrics-display"
             style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
+                position: 'relative',
                 width: '100%',
                 height: '100%',
-                overflowY: 'auto',
-                padding: '0 40px',
-                display: 'flex',
-                flexDirection: 'column',
-                paddingTop: '140px',
-                paddingBottom: 'calc(50% - 20px)',
-                textAlign: 'left',
-                alignItems: 'flex-start',
-                zIndex: 1,
-                paddingLeft: '20px'
+                overflow: 'hidden', // Viewport behavior
+                backgroundColor: 'transparent'
             }}
         >
-            {safeLyrics.map((line, index) => {
-                const isActive = index === activeLineIndex;
-                const isPast = activeLineIndex > index || (currentTime > line.end);
+            <div
+                ref={contentRef}
+                style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    transform: `translateY(${translateY}px)`,
+                    willChange: 'transform',
+                    transition: 'transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)', // Smooth implementation
+                    padding: '0 40px', // Horizontal padding moved here
+                    paddingLeft: '20px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'flex-start',
+                }}
+            >
+                {safeLyrics.map((line, index) => {
+                    const isActive = index === activeLineIndex;
+                    const isPast = activeLineIndex > index || (currentTime > line.end);
 
-                // Calculate fill percentage for karaoke effect
-                let fillPercentage = 0;
-                if (isPast && !isActive) {
-                    fillPercentage = 100;
-                } else if (isActive) {
-                    const duration = line.end - line.start;
-                    if (duration > 0) {
-                        fillPercentage = ((currentTime - line.start) / duration) * 100;
-                        fillPercentage = Math.min(100, Math.max(0, fillPercentage));
+                    // Calculate fill percentage for karaoke effect
+                    let fillPercentage = 0;
+                    if (isPast && !isActive) {
+                        fillPercentage = 100;
+                    } else if (isActive) {
+                        const duration = line.end - line.start;
+                        if (duration > 0) {
+                            fillPercentage = ((currentTime - line.start) / duration) * 100;
+                            fillPercentage = Math.min(100, Math.max(0, fillPercentage));
+                        }
                     }
-                }
 
-                return (
-                    <div
-                        key={index}
-                        ref={el => lineRefs.current[index] = el}
-                        style={{
-                            position: 'relative',
-                            display: 'block',
-                            width: 'fit-content',
-                            textAlign: 'left',
-                            fontSize: isActive ? `${getStyle('activeFontSize', 24)}px` : `${getStyle('fontSize', 18)}px`,
-                            fontFamily: getStyle('fontFamily', 'Inter, sans-serif'),
-                            fontWeight: 'bold',
-                            transition: 'transform 0.3s ease-out, opacity 0.3s ease-out',
-                            whiteSpace: 'nowrap',
-                            opacity: isActive ? 1 : 0.3,
-                            transform: isActive ? 'scale(1.05)' : 'scale(1)',
-                            transformOrigin: 'left center',
-                            cursor: 'default',
-                            WebkitTextStroke: '0',
-                        }}
-                    >
-                        {/* Background Layer (Inactive Color) */}
-                        <div style={{ color: getStyle('color', '#ffffff') }}>
-                            {line.text}
-                        </div>
-
-                        {/* Foreground Layer (Active Fill Color) */}
-                        <div style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            height: '100%',
-                            width: `${fillPercentage}%`,
-                            overflow: 'hidden',
-                            pointerEvents: 'none',
-                            whiteSpace: 'nowrap'
-                        }}>
-                            <div style={{
-                                color: getStyle('fillColor', '#1db954'),
-                                position: 'absolute',
-                                left: 0,
-                                top: 0,
-                                WebkitTextStroke: '0px',
-                            }}>
+                    return (
+                        <div
+                            key={index}
+                            ref={el => lineRefs.current[index] = el}
+                            style={{
+                                marginBottom: '30px', // Re-added as per user previous structure, adjustable
+                                position: 'relative',
+                                display: 'block',
+                                width: 'fit-content',
+                                textAlign: 'left',
+                                fontSize: isActive ? `${getStyle('activeFontSize', 24)}px` : `${getStyle('fontSize', 18)}px`,
+                                fontFamily: getStyle('fontFamily', 'Inter, sans-serif'),
+                                fontWeight: 'bold',
+                                transition: 'transform 0.3s ease-out, opacity 0.3s ease-out',
+                                whiteSpace: 'nowrap',
+                                opacity: isActive ? 1 : 0.3,
+                                transform: isActive ? 'scale(1.05)' : 'scale(1)',
+                                transformOrigin: 'left center',
+                                cursor: 'default',
+                                WebkitTextStroke: '0',
+                            }}
+                        >
+                            {/* Background Layer (Inactive Color) */}
+                            <div style={{ color: getStyle('color', '#ffffff') }}>
                                 {line.text}
                             </div>
+
+                            {/* Foreground Layer (Active Fill Color) */}
+                            <div style={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                height: '100%',
+                                width: `${fillPercentage}%`,
+                                overflow: 'hidden',
+                                pointerEvents: 'none',
+                                whiteSpace: 'nowrap'
+                            }}>
+                                <div style={{
+                                    color: getStyle('fillColor', '#1db954'),
+                                    position: 'absolute',
+                                    left: 0,
+                                    top: 0,
+                                    WebkitTextStroke: '0px',
+                                }}>
+                                    {line.text}
+                                </div>
+                            </div>
                         </div>
+                    );
+                })}
+                {safeLyrics.length === 0 && (
+                    <div style={{ opacity: 0.5, fontWeight: 'bold', padding: '20px', color: getStyle('color', '#ffffff') }}>
+                        Lyrics will appear here...
                     </div>
-                );
-            })}
-            {safeLyrics.length === 0 && (
-                <div style={{ opacity: 0.5, fontWeight: 'bold', padding: '20px', color: getStyle('color', '#ffffff') }}>
-                    Lyrics will appear here...
-                </div>
-            )}
+                )}
+            </div>
         </div>
     );
 };
