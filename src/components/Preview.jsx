@@ -60,7 +60,7 @@ const LyricsDisplay = ({ lyrics = [], currentTime = 0, styles = {}, activeLineIn
                 textAlign: 'left',
                 alignItems: 'flex-start',
                 zIndex: 1,
-                paddingLeft: '50px'
+                paddingLeft: '20px'
             }}
         >
             {safeLyrics.map((line, index) => {
