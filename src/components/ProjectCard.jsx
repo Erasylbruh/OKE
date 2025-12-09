@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { FaTrash } from 'react-icons/fa';
 import LikeButton from './LikeButton';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -35,7 +36,9 @@ const ProjectCard = ({ project, onClick, isOwner, onToggleVisibility, onDelete }
 
     const handlePlayClick = (e) => {
         e.stopPropagation();
-        if (project.audio_url) {
+        const audioUrl = project.audio_url || project.audioUrl;
+
+        if (audioUrl) {
             if (isPlaying) {
                 if (audioRef.current) {
                     audioRef.current.pause();
@@ -46,13 +49,21 @@ const ProjectCard = ({ project, onClick, isOwner, onToggleVisibility, onDelete }
                 window.dispatchEvent(new CustomEvent('project-play-started', { detail: { id: project.id } }));
 
                 if (!audioRef.current) {
-                    audioRef.current = new Audio(project.audio_url);
+                    audioRef.current = new Audio(audioUrl);
                     audioRef.current.onended = () => setIsPlaying(false);
+                    audioRef.current.onerror = (err) => {
+                        console.error("Audio playback error:", err);
+                        setIsPlaying(false);
+                    };
                 }
-                audioRef.current.play().catch(e => console.error("Play error:", e));
+                audioRef.current.play().catch(e => {
+                    console.error("Play error:", e);
+                    setIsPlaying(false);
+                });
                 setIsPlaying(true);
             }
         } else {
+            console.warn("No audio URL found for project:", project);
             onClick();
         }
     };
@@ -225,10 +236,24 @@ const ProjectCard = ({ project, onClick, isOwner, onToggleVisibility, onDelete }
                         {isOwner && (
                             <button
                                 onClick={(e) => onDelete(e, project)}
-                                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', padding: 0, opacity: 0.7 }}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    fontSize: '1rem',
+                                    padding: '5px',
+                                    opacity: 0.7,
+                                    color: '#b3b3b3',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    transition: 'color 0.2s'
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.color = '#E53935'}
+                                onMouseLeave={(e) => e.currentTarget.style.color = '#b3b3b3'}
                                 title="Delete"
                             >
-                                🗑️
+                                <FaTrash />
                             </button>
                         )}
                     </div>
