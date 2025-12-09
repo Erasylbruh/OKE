@@ -82,7 +82,7 @@ function ForYou() {
     const recentProjects = publicProjects;
 
     return (
-        <div className="foryou-container" style={{ paddingBottom: '80px', maxWidth: 'calc(100% - 30%)', margin: 'auto' }}>
+        <div className="foryou-container" style={{ paddingBottom: '80px', maxWidth: '100%', margin: 'auto' }}>
             {/* Hero Section */}
             <div className="hero-section">
                 <h1>{t('welcome_message')}</h1>
