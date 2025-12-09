@@ -19,11 +19,27 @@ const LyricsDisplay = ({ lyrics = [], currentTime = 0, styles = {}, activeLineIn
         return lyrics.filter(l => l && typeof l.start === 'number' && typeof l.end === 'number' && typeof l.text === 'string');
     }, [lyrics]);
 
-    // Calculate vertical shift to center the active line
+    // Compute targetIndex for scrolling (active line or next line if in gap)
+    const targetIndex = useMemo(() => {
+        if (activeLineIndex !== -1) return activeLineIndex;
+
+        // If no active line, find the next upcoming line
+        const nextIndex = safeLyrics.findIndex(l => l.start > currentTime);
+        if (nextIndex !== -1) return nextIndex;
+
+        // If we heavily passed the last line, stay on the last line
+        if (safeLyrics.length > 0 && currentTime > safeLyrics[safeLyrics.length - 1].end) {
+            return safeLyrics.length - 1;
+        }
+
+        return 0; // Default to first line
+    }, [activeLineIndex, safeLyrics, currentTime]);
+
+    // Calculate vertical shift to center the target line
     useEffect(() => {
-        if (activeLineIndex !== -1 && lineRefs.current[activeLineIndex] && scrollContainerRef.current) {
+        if (targetIndex !== -1 && lineRefs.current[targetIndex] && scrollContainerRef.current) {
             const container = scrollContainerRef.current;
-            const line = lineRefs.current[activeLineIndex];
+            const line = lineRefs.current[targetIndex];
 
             // Dimensions and Positions
             const containerHeight = container.clientHeight;
@@ -32,18 +48,11 @@ const LyricsDisplay = ({ lyrics = [], currentTime = 0, styles = {}, activeLineIn
 
             // Usage of the requested formula:
             // Y = (CenterScreen) - (ActiveElementPosition + HalfHeightActive)
-            // CenterScreen = containerHeight / 2
-            // ActiveElementPosition = lineTop (relative to the content container)
-            // HalfHeightActive = lineHeight / 2
-
             const targetY = (containerHeight / 2) - (lineTop + lineHeight / 2);
 
             setTranslateY(targetY);
-        } else if (activeLineIndex === -1) {
-            // Reset or default position (e.g. slight padding from top)
-            setTranslateY(200);
         }
-    }, [activeLineIndex, safeLyrics]); // Re-run if lyrics list changes drastically
+    }, [targetIndex, safeLyrics]); // Re-run if target changes
 
     // Safe style access
     const getStyle = (key, fallback) => styles && styles[key] ? styles[key] : fallback;
@@ -98,7 +107,7 @@ const LyricsDisplay = ({ lyrics = [], currentTime = 0, styles = {}, activeLineIn
                             key={index}
                             ref={el => lineRefs.current[index] = el}
                             style={{
-                                marginBottom: '30px', // Re-added as per user previous structure, adjustable
+                                marginBottom: '5px',
                                 position: 'relative',
                                 display: 'block',
                                 width: 'fit-content',
