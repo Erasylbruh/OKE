@@ -84,7 +84,6 @@ const LyricsDisplay = ({ lyrics = [], currentTime = 0, styles = {}, activeLineIn
                         key={index}
                         ref={el => lineRefs.current[index] = el}
                         style={{
-                            marginBottom: '30px',
                             position: 'relative',
                             display: 'block',
                             width: 'fit-content',
