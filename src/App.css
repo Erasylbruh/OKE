@@ -294,6 +294,8 @@ button.danger:hover {
     display: flex;
     height: 100%;
     width: 100%;
+    max-width: 70%;
+    margin: 0 auto;
   }
 
   /* 7:13 Split for Editor */
@@ -301,13 +303,14 @@ button.danger:hover {
   .editor-desktop-container .editor-panel.right-panel {
     flex: 7;
     min-width: 350px;
-    max-width: 450px;
+    max-width: 50%;
     width: auto !important;
   }
 
   .editor-desktop-container .editor-panel.center-panel {
     flex: 13;
     min-width: 400px;
+    max-width: 50%;
     width: auto !important;
   }
 }
