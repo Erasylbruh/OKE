@@ -45,7 +45,7 @@
   background-color: #1ed760;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 877px) {
   .fab {
     bottom: 90px;
     /* Clear bottom nav */
@@ -109,7 +109,7 @@ textarea:focus {
   border-color: transparent;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 877px) {
   #root {
     padding: 1rem;
     padding-bottom: 80px;
@@ -177,7 +177,7 @@ textarea:focus {
   background-color: transparent;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 877px) {
   .sidebar {
     display: none;
   }
@@ -326,7 +326,7 @@ textarea:focus {
   flex-shrink: 0;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 877px) {
   .hero-section {
     padding: 20px;
     margin-bottom: 30px;
