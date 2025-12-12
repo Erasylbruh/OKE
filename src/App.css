@@ -160,7 +160,123 @@ button.danger:hover {
     max-width: 100%;
     padding: 1rem;
     padding-bottom: 80px;
-    /* Space for mobile nav if needed */
+  }
+}
+
+/* Tablet Portrait (768px - 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .main-content {
+    padding: 1.5rem;
+  }
+
+  .grid-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .editor-desktop-container {
+    max-width: 90%;
+  }
+
+  .viewer-desktop-container {
+    max-width: 85%;
+  }
+}
+
+/* Small Desktop (1024px - 1439px) */
+@media (min-width: 1024px) and (max-width: 1439px) {
+  .main-content {
+    padding: 2rem;
+  }
+
+  .grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .editor-desktop-container {
+    max-width: 80%;
+  }
+
+  .viewer-desktop-container {
+    max-width: 75%;
+  }
+}
+
+/* Desktop (1440px - 1535px) */
+@media (min-width: 1440px) and (max-width: 1535px) {
+  .main-content {
+    padding: 2.5rem;
+  }
+
+  .grid-3 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .card {
+    padding: 28px;
+  }
+}
+
+/* Large Desktop (1536px - 1919px) */
+@media (min-width: 1536px) and (max-width: 1919px) {
+  .main-content {
+    padding: 3rem;
+    max-width: 1600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .grid-3 {
+    grid-template-columns: repeat(5, 1fr);
+  }
+
+  .card {
+    padding: 32px;
+  }
+
+  input,
+  select,
+  textarea {
+    font-size: 1.05rem;
+    padding: 14px 18px;
+  }
+}
+
+/* Ultra-wide (1920px+) */
+@media (min-width: 1920px) {
+  .main-content {
+    padding: 3.5rem;
+    max-width: 1800px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .grid-3 {
+    grid-template-columns: repeat(6, 1fr);
+  }
+
+  .card {
+    padding: 36px;
+    border-radius: 20px;
+  }
+
+  input,
+  select,
+  textarea {
+    font-size: 1.1rem;
+    padding: 16px 20px;
+  }
+
+  button.primary {
+    padding: 12px 24px;
+    font-size: 1.05rem;
+  }
+
+  .editor-desktop-container {
+    max-width: 75%;
+  }
+
+  .viewer-desktop-container {
+    max-width: 70%;
   }
 }
 
@@ -312,6 +428,25 @@ button.danger:hover {
     min-width: 400px;
     max-width: 50%;
     width: auto !important;
+  }
+}
+
+/* Editor Panel Adjustments for Larger Screens */
+@media (min-width: 1440px) {
+  .editor-desktop-container .editor-panel.center-panel {
+    min-width: 500px;
+  }
+}
+
+@media (min-width: 1920px) {
+
+  .editor-desktop-container .editor-panel.left-panel,
+  .editor-desktop-container .editor-panel.right-panel {
+    min-width: 400px;
+  }
+
+  .editor-desktop-container .editor-panel.center-panel {
+    min-width: 600px;
   }
 }
 
