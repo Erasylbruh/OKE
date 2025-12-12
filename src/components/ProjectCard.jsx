@@ -29,6 +29,8 @@ const ProjectCard = ({ project, onClick, isOwner, onToggleVisibility, onDelete }
             window.removeEventListener('project-play-started', handleOtherPlay);
             if (audioRef.current) {
                 audioRef.current.pause();
+                audioRef.current.src = '';  // Release media resources
+                audioRef.current.load();     // Reset the audio element
                 audioRef.current = null;
             }
         };

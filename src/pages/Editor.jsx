@@ -100,7 +100,6 @@ function Editor() {
                     setLyrics(data.lyrics || []);
                     setStyles(prev => data.styles || prev);
                     setDescription(data.description || '');
-                    setDescription(data.description || '');
                     setAudioUrl(project.audio_url);
                     setLikesCount(project.likes_count || 0);
                 } else {

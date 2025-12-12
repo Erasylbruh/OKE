@@ -10,12 +10,14 @@ function LikeButton({ projectId, initialLiked = false, initialCount = 0 }) {
     if (!projectId) return null;
 
     useEffect(() => {
-        // If initialLiked/Count changes from parent (e.g. refresh), update state
-        setLiked(initialLiked);
-        setCount(initialCount);
-    }, [initialLiked, initialCount]);
+        // Only fetch from server if we don't have initial values
+        if (initialLiked !== undefined && initialCount !== undefined) {
+            setLiked(initialLiked);
+            setCount(initialCount);
+            return;
+        }
 
-    useEffect(() => {
+        // Otherwise, check with the server
         const checkLikeStatus = async () => {
             const token = localStorage.getItem('token');
             if (!token) return;
@@ -27,14 +29,13 @@ function LikeButton({ projectId, initialLiked = false, initialCount = 0 }) {
                 if (res.ok) {
                     const data = await res.json();
                     setLiked(data.liked);
-                    // Note: We don't fetch count here separately usually, assuming parent passed correct initialCount
                 }
             } catch (err) {
                 console.error('Error checking like status:', err);
             }
         };
         checkLikeStatus();
-    }, [projectId]);
+    }, [projectId, initialLiked, initialCount]);
 
     const handleToggleLike = async (e) => {
         e.stopPropagation(); // Prevent triggering parent click events

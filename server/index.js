@@ -1,6 +1,5 @@
 import express from 'express';
 import cors from 'cors';
-import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
@@ -10,33 +9,38 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { v2 as cloudinary } from 'cloudinary';
 import { CloudinaryStorage } from 'multer-storage-cloudinary';
+import rateLimit from 'express-rate-limit';
+import db from './db.js';
 
 dotenv.config();
 
 const app = express();
-app.use(cors());
+
+// CORS Configuration
+const allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : ['http://localhost:5173'];
+app.use(cors({
+    origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps or curl)
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true
+}));
+
 app.use(express.json());
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const dbConfig = {
-    host: process.env.DB_HOST || 'localhost',
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD !== undefined ? (process.env.DB_PASSWORD === '' ? undefined : process.env.DB_PASSWORD) : 'password',
-    database: process.env.DB_NAME || 'karaoke_animator',
-    port: process.env.DB_PORT || 3306,
-    ...(process.env.DB_SSL === 'true' && {
-        ssl: {
-            rejectUnauthorized: false
-        }
-    })
-};
-console.log('Server DB Config:', { ...dbConfig, password: dbConfig.password ? (dbConfig.password === '' ? 'EMPTY_STRING' : 'SET') : 'UNDEFINED' });
-
-const db = mysql.createPool(dbConfig);
-
-const SECRET_KEY = process.env.JWT_SECRET || 'your_secret_key';
+// JWT Secret - REQUIRED
+if (!process.env.JWT_SECRET) {
+    console.error('FATAL ERROR: JWT_SECRET is not defined in environment variables.');
+    process.exit(1);
+}
+const SECRET_KEY = process.env.JWT_SECRET;
 
 // Init DB
 const initDb = async () => {
@@ -164,22 +168,41 @@ const initDb = async () => {
         `);
         console.log('Database initialized');
 
-        // Seed Admin User
-        const adminUsername = '060101551275';
-        const [admins] = await db.query('SELECT id FROM users WHERE username = ?', [adminUsername]);
-        if (admins.length === 0) {
-            const hashedPassword = await bcrypt.hash('6973990306', 10);
-            await db.query(
-                'INSERT INTO users (username, password_hash, nickname, is_admin) VALUES (?, ?, ?, ?)',
-                [adminUsername, hashedPassword, 'Super Admin', true]
-            );
-            console.log('Admin user seeded');
+        // Seed Admin User from environment variables
+        if (process.env.ADMIN_USERNAME && process.env.ADMIN_PASSWORD) {
+            const adminUsername = process.env.ADMIN_USERNAME;
+            const [admins] = await db.query('SELECT id FROM users WHERE username = ?', [adminUsername]);
+            if (admins.length === 0) {
+                const hashedPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD, 10);
+                await db.query(
+                    'INSERT INTO users (username, password_hash, nickname, is_admin) VALUES (?, ?, ?, ?)',
+                    [adminUsername, hashedPassword, 'Super Admin', true]
+                );
+                console.log('Admin user seeded successfully');
+            }
+        } else {
+            console.warn('WARNING: ADMIN_USERNAME and ADMIN_PASSWORD not set. Admin user not seeded.');
         }
     } catch (err) {
         console.error('Error initializing database:', err);
     }
 };
 initDb();
+
+// Helper function for safe JSON parsing
+const parseJSONField = (field, fallback = []) => {
+    if (!field) return fallback;
+    if (Array.isArray(field)) return field;
+    if (typeof field === 'string') {
+        try {
+            const parsed = JSON.parse(field);
+            return Array.isArray(parsed) ? parsed : fallback;
+        } catch (e) {
+            return fallback;
+        }
+    }
+    return fallback;
+};
 
 // Middleware
 const authenticateToken = (req, res, next) => {
@@ -208,6 +231,22 @@ const authenticateAdmin = (req, res, next) => {
     });
 };
 
+// Rate Limiting
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 10, // Limit each IP to 10 requests per windowMs
+    message: 'Too many authentication attempts, please try again later.'
+});
+
+const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // Limit each IP to 100 requests per windowMs
+    message: 'Too many requests, please try again later.'
+});
+
+// Apply general API rate limiting
+app.use('/api/', apiLimiter);
+
 // Cloudinary Config
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -226,7 +265,10 @@ const avatarStorage = new CloudinaryStorage({
         transformation: [{ width: 200, height: 200, crop: 'fill' }]
     }
 });
-const uploadAvatar = multer({ storage: avatarStorage });
+const uploadAvatar = multer({
+    storage: avatarStorage,
+    limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+});
 
 // Preview Storage (Resized to 400x400)
 const previewStorage = new CloudinaryStorage({
@@ -237,7 +279,10 @@ const previewStorage = new CloudinaryStorage({
         transformation: [{ width: 400, height: 400, crop: 'fill' }]
     }
 });
-const uploadPreview = multer({ storage: previewStorage });
+const uploadPreview = multer({
+    storage: previewStorage,
+    limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
+});
 
 // Audio Storage
 const audioStorage = new CloudinaryStorage({
@@ -258,7 +303,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Routes
 
 // Auth
-app.post('/api/auth/register', async (req, res) => {
+app.post('/api/auth/register', authLimiter, async (req, res) => {
     let { username, password } = req.body;
     username = username.toLowerCase();
 
@@ -285,7 +330,7 @@ app.post('/api/auth/register', async (req, res) => {
     }
 });
 
-app.post('/api/auth/login', async (req, res) => {
+app.post('/api/auth/login', authLimiter, async (req, res) => {
     const { username, password } = req.body;
     try {
         const [users] = await db.execute('SELECT * FROM users WHERE username = ?', [username]);
@@ -514,9 +559,7 @@ app.post('/api/projects/:id/preview', authenticateToken, uploadPreview.single('p
 
         if (projects.length === 0) return res.status(404).send('Project not found or unauthorized');
 
-        let previewUrls = projects[0].preview_urls || [];
-        // Ensure it's an array (handle legacy null or invalid JSON)
-        if (!Array.isArray(previewUrls)) previewUrls = [];
+        let previewUrls = parseJSONField(projects[0].preview_urls, []);
 
         // Update specific slot
         previewUrls[slot] = preview_url;
@@ -594,8 +637,7 @@ app.delete('/api/projects/:id/preview/:slot', authenticateToken, async (req, res
 
         if (projects.length === 0) return res.status(404).send('Project not found or unauthorized');
 
-        let previewUrls = projects[0].preview_urls || [];
-        if (!Array.isArray(previewUrls)) previewUrls = [];
+        let previewUrls = parseJSONField(projects[0].preview_urls, []);
 
         // Remove the item at the slot (set to null)
         previewUrls[slot] = null;
@@ -628,8 +670,7 @@ app.put('/api/projects/:id/preview/main', authenticateToken, async (req, res) =>
 
         if (projects.length === 0) return res.status(404).send('Project not found or unauthorized');
 
-        let previewUrls = projects[0].preview_urls || [];
-        if (!Array.isArray(previewUrls)) previewUrls = [];
+        let previewUrls = parseJSONField(projects[0].preview_urls, []);
 
         // Swap slot with 0
         const temp = previewUrls[0];
