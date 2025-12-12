@@ -31,6 +31,8 @@ body {
 /* Main Content Area */
 .main-content {
   flex: 1;
+  margin-left: var(--sidebar-width);
+  /* Add margin to avoid sidebar overlap */
   padding: 2rem;
   box-sizing: border-box;
 }
