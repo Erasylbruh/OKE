@@ -210,7 +210,7 @@ function Sidebar() {
                     background-color: #1ed760;
                 }
 
-                @media (max-width: 768px) {
+                @media (max-width: 877px) {
                     .sidebar {
                         display: none;
                     }
