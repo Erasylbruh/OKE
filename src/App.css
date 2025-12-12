@@ -26,6 +26,9 @@ body {
   width: 100%;
   padding: 0;
   text-align: left;
+  max-width: 1640px;
+  min-width: 512px;
+  margin-left: var(--sidebar-width);
 }
 
 /* Main Content Area */
