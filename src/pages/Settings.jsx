@@ -65,8 +65,16 @@ function Settings() {
         if (!window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) return;
 
         const token = localStorage.getItem('token');
+        const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+        const userId = storedUser.id || user?.id;
+
+        if (!userId) {
+            alert('Cannot determine user ID');
+            return;
+        }
+
         try {
-            const res = await fetch(`${API_URL}/api/users/${user.id}`, { // Assuming self-delete endpoint exists or admin endpoint works for self if authorized
+            const res = await fetch(`${API_URL}/api/users/${userId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });

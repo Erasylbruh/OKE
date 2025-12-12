@@ -66,10 +66,20 @@ const LyricsDisplay = ({ lyrics = [], currentTime = 0, styles = {}, activeLineIn
                 position: 'relative',
                 width: '100%',
                 height: '100%',
-                overflow: 'hidden', // Viewport behavior
-                backgroundColor: 'transparent'
+                overflow: 'auto', // Enable scrolling
+                backgroundColor: 'transparent',
+                // Hide scrollbar for all browsers
+                msOverflowStyle: 'none',  // IE and Edge
+                scrollbarWidth: 'none',   // Firefox
             }}
         >
+            <style>
+                {`
+                    .lyrics-display::-webkit-scrollbar {
+                        display: none; /* Chrome, Safari, Edge */
+                    }
+                `}
+            </style>
             <div
                 ref={contentRef}
                 style={{
