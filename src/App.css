@@ -52,8 +52,6 @@ body {
 /* Desktop Main Content Adjustment */
 @media (min-width: 769px) {
   .main-content {
-    margin-left: var(--sidebar-width);
-    /* Account for fixed sidebar */
     padding: 20px;
   }
 }
