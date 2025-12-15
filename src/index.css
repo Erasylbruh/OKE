@@ -8,6 +8,8 @@
 
   --border-color: #27272a;
   /* Dark Zinc */
+  --bg-glass: rgba(24, 24, 27, 0.75);
+
 
   --text-primary: #fafafa;
   /* Almost White */
@@ -46,6 +48,8 @@
 
   --border-color: #e2e8f0;
   /* Slate-200, subtle */
+  --bg-glass: rgba(255, 255, 255, 0.75);
+
 
   --text-primary: #1e293b;
   /* Slate-800, dark asphalt */

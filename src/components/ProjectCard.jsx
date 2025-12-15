@@ -7,6 +7,9 @@ import { useLanguage } from '../context/LanguageContext';
 const ProjectCard = ({ project, onClick, isOwner, onToggleVisibility, onDelete }) => {
     const [isPlaying, setIsPlaying] = useState(false);
     const audioRef = useRef(null);
+    const divRef = useRef(null);
+    const [position, setPosition] = useState({ x: 0, y: 0 });
+    const [opacity, setOpacity] = useState(0);
     const navigate = useNavigate();
     const location = useLocation();
     const { t } = useLanguage();
@@ -59,8 +62,10 @@ const ProjectCard = ({ project, onClick, isOwner, onToggleVisibility, onDelete }
                     };
                 }
                 audioRef.current.play().catch(e => {
-                    console.error("Play error:", e);
-                    setIsPlaying(false);
+                    if (e.name !== 'AbortError') {
+                        console.error("Play error:", e);
+                        setIsPlaying(false);
+                    }
                 });
                 setIsPlaying(true);
             }
@@ -72,11 +77,31 @@ const ProjectCard = ({ project, onClick, isOwner, onToggleVisibility, onDelete }
 
     const previewUrl = project.preview_urls?.[0] || project.preview_url;
 
+    const handleMouseMove = (e) => {
+        if (!divRef.current) return;
+        const rect = divRef.current.getBoundingClientRect();
+        setPosition({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+    };
+
+    const handleMouseEnter = (e) => {
+        setOpacity(1);
+        e.currentTarget.style.backgroundColor = 'var(--bg-main)';
+    };
+
+    const handleMouseLeave = (e) => {
+        setOpacity(0);
+        e.currentTarget.style.backgroundColor = 'var(--bg-surface)';
+    };
     return (
         <div
+            ref={divRef}
             className="card hover-scale card-premium-border"
             onClick={onClick}
+            onMouseMove={handleMouseMove}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
             style={{
+                position: 'relative', // Ensure relative positioning for overlay
                 padding: '10px 20px',
                 cursor: 'pointer',
                 display: 'flex',
@@ -88,11 +113,27 @@ const ProjectCard = ({ project, onClick, isOwner, onToggleVisibility, onDelete }
                 backgroundColor: 'var(--bg-surface)', // Very dark background
                 borderRadius: '8px',
                 border: '1px solid var(--border-color)',
-                overflow: 'visible'
+                overflow: 'visible' // Reverted to visible for vinyl
             }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-main)'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-surface)'}
         >
+            {/* Spotlight Overlay */}
+            <div
+                style={{
+                    pointerEvents: 'none',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    borderRadius: 'inherit',
+                    opacity: opacity,
+                    background: `radial-gradient(600px circle at ${position.x}px ${position.y}px, rgba(255,255,255,0.06), transparent 40%)`,
+                    transition: 'opacity 0.3s',
+                    zIndex: 0 // Behind content but in front of bg? Needs checking. 
+                    // Actually card content is z-index auto.
+                    // Let's rely on DOM order. This is first child.
+                }}
+            />
             {/* Vinyl Section */}
             <div style={{ position: 'relative', width: '100px', height: '100px', flexShrink: 0 }}>
                 {/* Vinyl Disc */}

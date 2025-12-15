@@ -120,7 +120,9 @@ function Sidebar() {
                 .sidebar {
                     width: 250px;
                     height: 100vh;
-                    background-color: var(--bg-surface);
+                    background-color: var(--bg-glass);
+                    backdrop-filter: blur(12px);
+                    -webkit-backdrop-filter: blur(12px);
                     color: var(--text-primary);
                     display: flex;
                     flex-direction: column;
