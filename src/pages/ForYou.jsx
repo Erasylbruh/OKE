@@ -105,12 +105,12 @@ function ForYou() {
                 }
 
                 .hero-section {
-                    background: linear-gradient(135deg, var(--brand-primary) 0%, #000000 100%);
+                    background: linear-gradient(135deg, var(--brand-primary) 0%, var(--bg-main) 100%);
                     border-radius: 16px;
                     padding: 40px;
                     margin-bottom: 40px;
                     text-align: left;
-                    color: white;
+                    color: var(--text-primary);
                     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
                     position: relative;
                     overflow: hidden;

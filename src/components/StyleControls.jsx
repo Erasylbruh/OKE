@@ -60,9 +60,9 @@ function StyleControls({ styles, onUpdate }) {
         marginTop: '4px',
         padding: '0 12px', // Horizontal padding
         height: '40px', // Requested h40
-        backgroundColor: '#282828', // Reverted to dark
-        color: 'white',
-        border: '1px solid #333',
+        backgroundColor: 'var(--bg-input)',
+        color: 'var(--text-primary)',
+        border: '1px solid var(--border-color)',
         borderRadius: '4px',
         fontSize: '14px',
         boxSizing: 'border-box'
@@ -146,25 +146,13 @@ function StyleControls({ styles, onUpdate }) {
                 </label>
             </div>
 
-            {/* Static Header Text Input */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <label>
-                    Header Text
-                    <input
-                        type="text"
-                        value={styles.headerText || ''}
-                        onChange={(e) => handleChange('headerText', e.target.value)}
-                        placeholder="Enter header text..."
-                        style={inputStyle}
-                    />
-                </label>
-            </div>
+
 
             {/* Colors Section - Bar Layout */}
             <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                    <span style={{ fontSize: '0.8rem', color: '#b3b3b3' }}>Text</span>
-                    <div style={{ height: '40px', borderRadius: '4px', overflow: 'hidden', border: '1px solid #333' }}>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Text</span>
+                    <div style={{ height: '40px', borderRadius: '4px', overflow: 'hidden', border: '1px solid var(--border-color)' }}>
                         <input
                             type="color"
                             value={styles.color}
@@ -175,8 +163,8 @@ function StyleControls({ styles, onUpdate }) {
                     </div>
                 </div>
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                    <span style={{ fontSize: '0.8rem', color: '#b3b3b3' }}>Fill</span>
-                    <div style={{ height: '40px', borderRadius: '4px', overflow: 'hidden', border: '1px solid #333' }}>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Fill</span>
+                    <div style={{ height: '40px', borderRadius: '4px', overflow: 'hidden', border: '1px solid var(--border-color)' }}>
                         <input
                             type="color"
                             value={styles.fillColor}
@@ -187,8 +175,8 @@ function StyleControls({ styles, onUpdate }) {
                     </div>
                 </div>
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                    <span style={{ fontSize: '0.8rem', color: '#b3b3b3' }}>Background</span>
-                    <div style={{ height: '40px', borderRadius: '4px', overflow: 'hidden', border: '1px solid #333' }}>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Background</span>
+                    <div style={{ height: '40px', borderRadius: '4px', overflow: 'hidden', border: '1px solid var(--border-color)' }}>
                         <input
                             type="color"
                             value={styles.backgroundColor}
@@ -199,8 +187,8 @@ function StyleControls({ styles, onUpdate }) {
                     </div>
                 </div>
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                    <span style={{ fontSize: '0.8rem', color: '#b3b3b3' }}>QR Color</span>
-                    <div style={{ height: '40px', borderRadius: '4px', overflow: 'hidden', border: '1px solid #333' }}>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>QR Color</span>
+                    <div style={{ height: '40px', borderRadius: '4px', overflow: 'hidden', border: '1px solid var(--border-color)' }}>
                         <input
                             type="color"
                             value={styles.qrColor || '#ffffff'}

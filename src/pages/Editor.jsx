@@ -431,7 +431,7 @@ function Editor() {
                 <div className="phase-nav mobile-hidden" style={{
                     margin: 0,
                     borderBottom: '1px solid var(--border-color)',
-                    background: '#181818',
+                    background: 'var(--bg-surface)',
                     padding: '50px 0 15px'
                 }}>
                     <div className={`phase-step ${activePhase === 1 ? 'active' : ''}`} onClick={() => setActivePhase(1)}>
@@ -469,8 +469,8 @@ function Editor() {
                                             width: '120px',
                                             height: '120px',
                                             borderRadius: '50%',
-                                            backgroundColor: '#111',
-                                            border: '2px solid #333',
+                                            backgroundColor: 'var(--bg-surface)',
+                                            border: '2px solid var(--border-color)',
                                             margin: '0 auto 15px',
                                             display: 'flex',
                                             alignItems: 'center',
@@ -484,7 +484,7 @@ function Editor() {
                                         {/* Vinyl Grooves */}
                                         <div style={{
                                             position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
-                                            background: 'repeating-radial-gradient(#111 0, #111 2px, #222 3px, #222 4px)',
+                                            background: 'repeating-radial-gradient(var(--bg-surface) 0, var(--bg-surface) 2px, var(--bg-input) 3px, var(--bg-input) 4px)',
                                             borderRadius: '50%'
                                         }} />
 
@@ -582,7 +582,7 @@ function Editor() {
                                         type="text"
                                         value={projectName}
                                         onChange={(e) => setProjectName(e.target.value)}
-                                        style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid var(--border-color)', background: '#222', color: 'var(--text-primary)' }}
+                                        style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid var(--border-color)', background: 'var(--bg-input)', color: 'var(--text-primary)' }}
                                     />
                                 </div>
 
@@ -593,7 +593,7 @@ function Editor() {
                                         value={description}
                                         onChange={(e) => setDescription(e.target.value)}
                                         rows={5}
-                                        style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid var(--border-color)', background: '#222', color: 'var(--text-primary)', resize: 'vertical' }}
+                                        style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid var(--border-color)', background: 'var(--bg-input)', color: 'var(--text-primary)', resize: 'vertical' }}
                                     />
                                 </div>
 
@@ -609,9 +609,9 @@ function Editor() {
                                                     aspectRatio: '1',
                                                     borderRadius: '50%',
                                                     overflow: 'hidden',
-                                                    border: index === 0 ? '2px solid #1db954' : '1px solid #333',
+                                                    border: index === 0 ? '2px solid var(--brand-primary)' : '1px solid var(--border-color)',
                                                     cursor: 'pointer',
-                                                    backgroundColor: '#282828',
+                                                    backgroundColor: 'var(--bg-input)',
                                                     boxShadow: '0 4px 8px rgba(0,0,0,0.5)'
                                                 }}
                                                 onDragOver={(e) => e.preventDefault()}
@@ -684,7 +684,7 @@ function Editor() {
 
                                 {/* Visibility & Save */}
                                 <div style={{ display: 'flex', gap: '10px', marginTop: '30px' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', backgroundColor: '#282828', padding: '10px 15px', borderRadius: '25px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', backgroundColor: 'var(--bg-input)', padding: '10px 15px', borderRadius: '25px' }}>
                                         <span style={{ fontSize: '0.9rem', color: isPublic ? '#1db954' : '#b3b3b3', fontWeight: 'bold' }}>
                                             {isPublic ? t('public') : t('private')}
                                         </span>

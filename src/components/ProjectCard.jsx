@@ -187,7 +187,7 @@ const ProjectCard = ({ project, onClick, isOwner, onToggleVisibility, onDelete }
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
-                    color: 'white'
+                    color: 'var(--text-primary)'
                 }}>
                     {project.name}
                 </h3>
@@ -196,20 +196,20 @@ const ProjectCard = ({ project, onClick, isOwner, onToggleVisibility, onDelete }
                     <div
                         onClick={(e) => { e.stopPropagation(); navigate(`/user/${project.username}`); }}
                         style={{
-                            width: '20px', height: '20px', borderRadius: '50%', overflow: 'hidden', backgroundColor: '#555', cursor: 'pointer'
+                            width: '20px', height: '20px', borderRadius: '50%', overflow: 'hidden', backgroundColor: 'var(--bg-hover)', cursor: 'pointer'
                         }}
                     >
                         {project.avatar_url ? (
                             <img src={project.avatar_url} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         ) : (
-                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: 'white' }}>
+                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: 'var(--text-primary)' }}>
                                 {project.username?.[0]?.toUpperCase()}
                             </div>
                         )}
                     </div>
                     <span
                         onClick={(e) => { e.stopPropagation(); navigate(`/user/${project.username}`); }}
-                        style={{ fontSize: '0.9rem', color: '#b3b3b3', cursor: 'pointer' }}
+                        style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', cursor: 'pointer' }}
                     >
                         {project.nickname || project.username}
                     </span>
@@ -221,7 +221,7 @@ const ProjectCard = ({ project, onClick, isOwner, onToggleVisibility, onDelete }
                             onClick={(e) => onToggleVisibility && onToggleVisibility(e, project)}
                             style={{
                                 fontSize: '0.8rem',
-                                color: project.is_public ? '#1db954' : '#888',
+                                color: project.is_public ? 'var(--brand-primary)' : 'var(--text-secondary)',
                                 cursor: onToggleVisibility ? 'pointer' : 'default',
                                 userSelect: 'none'
                             }}
@@ -245,14 +245,14 @@ const ProjectCard = ({ project, onClick, isOwner, onToggleVisibility, onDelete }
                                     fontSize: '1rem',
                                     padding: '5px',
                                     opacity: 0.7,
-                                    color: '#b3b3b3',
+                                    color: 'var(--text-secondary)',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                     transition: 'color 0.2s'
                                 }}
                                 onMouseEnter={(e) => e.currentTarget.style.color = '#E53935'}
-                                onMouseLeave={(e) => e.currentTarget.style.color = '#b3b3b3'}
+                                onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}
                                 title="Delete"
                             >
                                 <FaTrash />

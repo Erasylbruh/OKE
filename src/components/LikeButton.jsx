@@ -98,14 +98,14 @@ function LikeButton({ projectId, initialLiked = false, initialCount = 0 }) {
         >
             <span style={{
                 fontSize: '18px',
-                color: liked ? '#E53935' : '#B3B3B3',
+                color: liked ? '#E53935' : 'var(--text-secondary)',
                 display: 'flex',
                 alignItems: 'center',
                 transition: 'color 0.2s'
             }}>
                 {liked ? <FaHeart /> : <FaRegHeart />}
             </span>
-            <span style={{ color: '#ccc', fontSize: '0.9em' }}>{count}</span>
+            <span style={{ color: 'var(--text-secondary)', fontSize: '0.9em' }}>{count}</span>
         </button>
     );
 }

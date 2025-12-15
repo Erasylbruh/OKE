@@ -126,7 +126,7 @@ function CommentsSection({ projectId, projectOwnerId }) {
     const renderComment = (comment, isReply = false) => (
         <div key={comment.id} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', marginLeft: isReply ? '40px' : '0', marginBottom: '15px', position: 'relative' }}>
             {/* Avatar */}
-            <div style={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', backgroundColor: '#444', flexShrink: 0, cursor: 'pointer' }} onClick={() => window.location.href = `/user/${comment.username}`}>
+            <div style={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', backgroundColor: 'var(--bg-hover)', flexShrink: 0, cursor: 'pointer' }} onClick={() => window.location.href = `/user/${comment.username}`}>
                 {comment.avatar_url ? (
                     <img src={comment.avatar_url} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 ) : (
@@ -138,21 +138,21 @@ function CommentsSection({ projectId, projectOwnerId }) {
 
             <div style={{ flex: 1 }}>
                 {/* Header */}
-                <div style={{ fontSize: '0.9em', fontWeight: 'bold', color: '#ccc', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ fontSize: '0.9em', fontWeight: 'bold', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <span onClick={() => window.location.href = `/user/${comment.username}`} style={{ cursor: 'pointer' }}>
                         {comment.nickname || comment.username}
                     </span>
-                    <span style={{ fontSize: '0.8em', color: '#666', fontWeight: 'normal' }}>
+                    <span style={{ fontSize: '0.8em', color: 'var(--text-secondary)', fontWeight: 'normal' }}>
                         {new Date(comment.created_at).toLocaleDateString()}
                     </span>
                     {comment.is_pinned && <span style={{ fontSize: '0.8em', color: '#1db954' }}>📌 {t('pinned_by_author')}</span>}
                 </div>
 
                 {/* Content */}
-                <div style={{ marginTop: '5px', color: '#eee' }}>{comment.content}</div>
+                <div style={{ marginTop: '5px', color: 'var(--text-primary)' }}>{comment.content}</div>
 
                 {/* Actions */}
-                <div style={{ display: 'flex', gap: '15px', marginTop: '5px', fontSize: '0.8em', color: '#888' }}>
+                <div style={{ display: 'flex', gap: '15px', marginTop: '5px', fontSize: '0.8em', color: 'var(--text-secondary)' }}>
                     <span style={{ cursor: 'pointer', color: comment.is_liked ? '#e91e63' : '#888' }} onClick={() => handleLike(comment.id)}>
                         {comment.is_liked ? '❤️' : '🤍'} {comment.likes_count || 0}
                     </span>
@@ -178,7 +178,7 @@ function CommentsSection({ projectId, projectOwnerId }) {
                             value={replyContent}
                             onChange={e => setReplyContent(e.target.value)}
                             placeholder={`${t('reply')} @${comment.username}...`}
-                            style={{ flex: 1, padding: '8px', borderRadius: '15px', border: 'none', backgroundColor: '#333', color: 'white', fontSize: '0.9em' }}
+                            style={{ flex: 1, padding: '8px', borderRadius: '15px', border: 'none', backgroundColor: 'var(--bg-input)', color: 'var(--text-primary)', fontSize: '0.9em' }}
                             autoFocus
                         />
                         <button type="submit" style={{ padding: '5px 15px', borderRadius: '15px', border: 'none', backgroundColor: '#1db954', color: 'black', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.9em' }}>
@@ -196,7 +196,7 @@ function CommentsSection({ projectId, projectOwnerId }) {
     const getReplies = (parentId) => comments.filter(c => c.parent_id === parentId);
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', color: 'white', height: '100%' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', color: 'var(--text-primary)', height: '100%' }}>
             {/* Input Form at Top */}
             <form onSubmit={(e) => handleSubmit(e)} style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
                 <input
@@ -204,7 +204,7 @@ function CommentsSection({ projectId, projectOwnerId }) {
                     value={newComment}
                     onChange={e => setNewComment(e.target.value)}
                     placeholder={t('write_comment')}
-                    style={{ flex: 1, padding: '10px', borderRadius: '20px', border: 'none', backgroundColor: '#444', color: 'white' }}
+                    style={{ flex: 1, padding: '10px', borderRadius: '20px', border: 'none', backgroundColor: 'var(--bg-input)', color: 'white' }}
                 />
                 <button type="submit" style={{ padding: '10px 20px', borderRadius: '20px', border: 'none', backgroundColor: '#1db954', color: 'black', fontWeight: 'bold', cursor: 'pointer' }}>
                     {t('post')}
@@ -213,7 +213,7 @@ function CommentsSection({ projectId, projectOwnerId }) {
 
             {/* Comments List */}
             <div style={{ flex: 1, overflowY: 'auto', minHeight: '200px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                {loading ? <p>Loading...</p> : comments.length === 0 ? <p style={{ color: '#888' }}>No comments yet.</p> : (
+                {loading ? <p>Loading...</p> : comments.length === 0 ? <p style={{ color: 'var(--text-secondary)' }}>No comments yet.</p> : (
                     topLevelComments.map(comment => (
                         <div key={comment.id}>
                             {renderComment(comment)}

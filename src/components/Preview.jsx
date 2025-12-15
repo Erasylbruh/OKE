@@ -186,7 +186,7 @@ const LyricsDisplay = ({ lyrics = [], currentTime = 0, styles = {}, activeLineIn
                             <div style={{
                                 marginBottom: '10px',
                                 fontWeight: 'bold',
-                                color: getStyle('qrColor', '#ffffff'),
+                                color: getStyle('color', '#ffffff'),
                                 fontSize: '14px',
                                 fontFamily: getStyle('fontFamily', 'Inter, sans-serif')
                             }}>
@@ -203,7 +203,7 @@ const LyricsDisplay = ({ lyrics = [], currentTime = 0, styles = {}, activeLineIn
                             <div style={{
                                 marginTop: '5px',
                                 fontSize: '10px',
-                                color: getStyle('qrColor', '#ffffff'),
+                                color: getStyle('color', '#ffffff'),
                                 textAlign: 'center'
                             }}>
                                 Scan to play
