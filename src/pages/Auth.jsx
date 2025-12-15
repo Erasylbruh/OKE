@@ -98,7 +98,7 @@ function Auth() {
                     right: '15px',
                     background: 'none',
                     border: 'none',
-                    color: '#888',
+                    color: 'var(--text-secondary)',
                     fontSize: '24px',
                     cursor: 'pointer',
                     padding: '5px'
@@ -108,10 +108,10 @@ function Auth() {
             </button>
 
             <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-                <h1 style={{ margin: 0, fontFamily: 'Quicksand, sans-serif', fontSize: '2rem', color: 'white' }}>
-                    <span style={{ color: '#1db954' }}>Q</span>ara<span style={{ color: '#1db954' }}>O</span>ke
+                <h1 style={{ margin: 0, fontFamily: 'Quicksand, sans-serif', fontSize: '2rem', color: 'var(--text-primary)' }}>
+                    <span style={{ color: 'var(--brand-primary)' }}>Q</span>ara<span style={{ color: 'var(--brand-primary)' }}>O</span>ke
                 </h1>
-                <p style={{ color: '#888', marginTop: '5px' }}>
+                <p style={{ color: 'var(--text-secondary)', marginTop: '5px' }}>
                     {isLogin ? 'Welcome back' : 'Create your account'}
                 </p>
             </div>
@@ -119,7 +119,7 @@ function Auth() {
             {error && (
                 <div style={{
                     backgroundColor: 'rgba(229, 57, 53, 0.1)',
-                    color: '#E53935',
+                    color: 'var(--danger)',
                     padding: '10px',
                     borderRadius: '8px',
                     marginBottom: '20px',
@@ -132,7 +132,7 @@ function Auth() {
 
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <div>
-                    <label style={{ display: 'block', color: '#888', marginBottom: '8px', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                    <label style={{ display: 'block', color: 'var(--text-secondary)', marginBottom: '8px', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
                         {t('username')}
                     </label>
                     <input
@@ -140,12 +140,12 @@ function Auth() {
                         value={username}
                         onChange={(e) => setUsername(e.target.value.toLowerCase())}
                         required
-                        style={{ height: '48px', backgroundColor: '#121212' }}
+                        style={{ height: '48px', backgroundColor: 'var(--bg-main)' }}
                     />
                 </div>
 
                 <div>
-                    <label style={{ display: 'block', color: '#888', marginBottom: '8px', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                    <label style={{ display: 'block', color: 'var(--text-secondary)', marginBottom: '8px', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
                         {t('password')}
                     </label>
                     <div style={{ position: 'relative' }}>
@@ -154,7 +154,7 @@ function Auth() {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
-                            style={{ height: '48px', backgroundColor: '#121212', paddingRight: '40px' }}
+                            style={{ height: '48px', backgroundColor: 'var(--bg-main)', paddingRight: '40px' }}
                         />
                         <button
                             type="button"
@@ -166,7 +166,7 @@ function Auth() {
                                 transform: 'translateY(-50%)',
                                 background: 'none',
                                 border: 'none',
-                                color: '#888',
+                                color: 'var(--text-secondary)',
                                 cursor: 'pointer',
                                 padding: 0,
                                 display: 'flex',
@@ -179,16 +179,16 @@ function Auth() {
 
                     {!isLogin && (
                         <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                            <div style={{ fontSize: '12px', color: hasLength ? '#1db954' : '#ff5555', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                            <div style={{ fontSize: '12px', color: hasLength ? 'var(--brand-primary)' : 'var(--danger)', display: 'flex', alignItems: 'center', gap: '5px' }}>
                                 {hasLength ? '✓' : '○'} At least 8 characters
                             </div>
-                            <div style={{ fontSize: '12px', color: hasUpper ? '#1db954' : '#ff5555', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                            <div style={{ fontSize: '12px', color: hasUpper ? 'var(--brand-primary)' : 'var(--danger)', display: 'flex', alignItems: 'center', gap: '5px' }}>
                                 {hasUpper ? '✓' : '○'} At least one capital letter
                             </div>
-                            <div style={{ fontSize: '12px', color: hasNum ? '#1db954' : '#ff5555', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                            <div style={{ fontSize: '12px', color: hasNum ? 'var(--brand-primary)' : 'var(--danger)', display: 'flex', alignItems: 'center', gap: '5px' }}>
                                 {hasNum ? '✓' : '○'} At least one number
                             </div>
-                            <div style={{ fontSize: '12px', color: hasSpecial ? '#1db954' : '#ff5555', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                            <div style={{ fontSize: '12px', color: hasSpecial ? 'var(--brand-primary)' : 'var(--danger)', display: 'flex', alignItems: 'center', gap: '5px' }}>
                                 {hasSpecial ? '✓' : '○'} At least one special character (!,@,#,$,%,&)
                             </div>
                         </div>
@@ -210,7 +210,7 @@ function Auth() {
             </form>
 
             <div style={{ textAlign: 'center', marginTop: '20px' }}>
-                <span style={{ color: '#888' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>
                     {isLogin ? t('dont_have_account') : t('already_have_account')}{' '}
                 </span>
                 <button

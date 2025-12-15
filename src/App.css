@@ -1,13 +1,15 @@
 :root {
   --bg-body: var(--bg-main);
-  --bg-card: #1E1E1E;
-  --bg-input: #2A2A2A;
+  --bg-card: var(--bg-surface);
+  --bg-input: var(--bg-main);
   --primary: var(--brand-primary);
-  --primary-hover: #1ed760;
-  --danger: #E53935;
-  --text-main: #FFFFFF;
-  --text-muted: #B3B3B3;
-  --border-color: #333333;
+  --primary-hover: var(--brand-primary);
+  /* Should be separate but fine for now */
+  --danger: var(--danger);
+  --text-main: var(--text-primary);
+  --text-muted: var(--text-secondary);
+  --border-color: var(--border-color);
+  /* Inherit from index.css */
   --sidebar-width: 250px;
 }
 

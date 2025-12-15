@@ -162,6 +162,7 @@ function Sidebar() {
                     display: flex;
                     align-items: center;
                     justify-content: flex-start;
+                    flex-direction: row;
                     border-radius: 0.5rem;
                     font-weight: 600;
                     text-decoration: none;
@@ -301,7 +302,7 @@ function Sidebar() {
                     border: none;
                     color: white;
                     font-weight: bold;
-                    padding: 0.75rem;
+                    padding: 0.75rem 0;
                     border-radius: 0.5rem;
                     cursor: pointer;
                     width: 100%;

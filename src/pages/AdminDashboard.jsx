@@ -152,8 +152,8 @@ function AdminDashboard() {
                     marginBottom: '30px',
                     borderRadius: '24px',
                     border: '1px solid var(--border-color)',
-                    backgroundColor: 'var(--bg-card)',
-                    color: 'var(--text-main)',
+                    backgroundColor: 'var(--bg-surface)',
+                    color: 'var(--text-primary)',
                     fontSize: '16px'
                 }}
             />
@@ -162,12 +162,12 @@ function AdminDashboard() {
                 <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
-                            <tr style={{ borderBottom: '1px solid var(--border-color)', textAlign: 'left', backgroundColor: 'rgba(255,255,255,0.02)' }}>
-                                <th style={{ padding: '20px', color: 'var(--text-muted)' }}>ID</th>
-                                <th style={{ padding: '20px', color: 'var(--text-muted)' }}>{t('username')}</th>
-                                <th style={{ padding: '20px', color: 'var(--text-muted)' }}>Nickname</th>
-                                <th style={{ padding: '20px', color: 'var(--text-muted)' }}>Admin</th>
-                                <th style={{ padding: '20px', color: 'var(--text-muted)' }}>Actions</th>
+                            <tr style={{ borderBottom: '1px solid var(--border-color)', textAlign: 'left', backgroundColor: 'var(--bg-hover)' }}>
+                                <th style={{ padding: '20px', color: 'var(--text-secondary)' }}>ID</th>
+                                <th style={{ padding: '20px', color: 'var(--text-secondary)' }}>{t('username')}</th>
+                                <th style={{ padding: '20px', color: 'var(--text-secondary)' }}>Nickname</th>
+                                <th style={{ padding: '20px', color: 'var(--text-secondary)' }}>Admin</th>
+                                <th style={{ padding: '20px', color: 'var(--text-secondary)' }}>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -178,9 +178,9 @@ function AdminDashboard() {
                                     <td style={{ padding: '20px' }}>{user.nickname || '-'}</td>
                                     <td style={{ padding: '20px' }}>
                                         {user.is_admin ? (
-                                            <span style={{ color: '#1db954', fontWeight: 'bold' }}>Yes</span>
+                                            <span style={{ color: 'var(--brand-primary)', fontWeight: 'bold' }}>Yes</span>
                                         ) : (
-                                            <span style={{ color: 'var(--text-muted)' }}>No</span>
+                                            <span style={{ color: 'var(--text-secondary)' }}>No</span>
                                         )}
                                     </td>
                                     <td style={{ padding: '20px' }}>
@@ -198,7 +198,7 @@ function AdminDashboard() {
                             ))}
                             {users.length === 0 && (
                                 <tr>
-                                    <td colSpan="5" style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                                    <td colSpan="5" style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)' }}>
                                         No users found.
                                     </td>
                                 </tr>
@@ -221,7 +221,7 @@ function AdminDashboard() {
                             }}
                         />
                     ))}
-                    {projects.length === 0 && <p style={{ color: 'var(--text-muted)' }}>No projects found.</p>}
+                    {projects.length === 0 && <p style={{ color: 'var(--text-secondary)' }}>No projects found.</p>}
                 </div>
             )}
         </div>

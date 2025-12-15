@@ -1,20 +1,26 @@
 :root {
-  /* Dark Mode (Default) */
+  /* Dark Mode (Default) - Zinc Palette */
   --bg-main: #09090b;
+  /* Deep Black */
   --bg-surface: #18181b;
+  /* Zinc-900 */
   --bg-hover: #27272a;
-  
+
   --border-color: #27272a;
-  
+  /* Dark Zinc */
+
   --text-primary: #fafafa;
+  /* Almost White */
   --text-secondary: #a1a1aa;
-  
+  /* Light Gray */
+
   --brand-primary: #22c55e;
+  /* Neon Green */
   --brand-bg: #15803d;
-  
+
   --danger: #ef4444;
 
-  /* Legacy variable mappings for compatibility */
+  /* Legacy mappings */
   --bg-color: var(--bg-main);
   --secondary-bg: var(--bg-surface);
   --text-color: var(--text-primary);
@@ -22,7 +28,7 @@
   --text-muted: var(--text-secondary);
   --primary: var(--brand-primary);
   --accent-color: var(--brand-primary);
-  
+
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
@@ -30,20 +36,28 @@
 }
 
 [data-theme="light"] {
-  --bg-main: #f3f4f6;
+  /* Light Mode - Slate/Blue-gray Palette */
+  --bg-main: #eef2f6;
+  /* Soft Blue-Gray, absorptive */
   --bg-surface: #ffffff;
-  --bg-hover: #f9fafb;
-  
-  --border-color: #e5e7eb;
-  
-  --text-primary: #111827;
-  --text-secondary: #6b7280;
-  
-  --brand-primary: #16a34a;
-  --brand-bg: #dcfce7;
-  
+  /* Pure White */
+  --bg-hover: #f1f5f9;
+  /* Light Slate */
+
+  --border-color: #e2e8f0;
+  /* Slate-200, subtle */
+
+  --text-primary: #1e293b;
+  /* Slate-800, dark asphalt */
+  --text-secondary: #64748b;
+  /* Slate-500, cool gray */
+
+  --brand-primary: #059669;
+  /* Deep Emerald */
+  --brand-bg: #d1fae5;
+
   --danger: #dc2626;
-  
+
   color-scheme: light;
 }
 

@@ -24,7 +24,7 @@ function Editor() {
         activeFontSize: 32,
         color: '#ffffff',
         fillColor: '#1db954',
-        backgroundColor: '#121212',
+        backgroundColor: 'var(--bg-main)',
         fontFamily: 'Inter, sans-serif',
         fontUrl: ''
     });
@@ -421,8 +421,8 @@ function Editor() {
             height: '100dvh',
             display: 'flex',
             flexDirection: 'column',
-            backgroundColor: '#121212',
-            color: 'white',
+            backgroundColor: 'var(--bg-main)',
+            color: 'var(--text-primary)',
             overflow: 'hidden',
             zIndex: 2000 // Ensure it sits on top of everything
         }}>
@@ -430,7 +430,7 @@ function Editor() {
             {isOwner && (
                 <div className="phase-nav mobile-hidden" style={{
                     margin: 0,
-                    borderBottom: '1px solid #333',
+                    borderBottom: '1px solid var(--border-color)',
                     background: '#181818',
                     padding: '50px 0 15px'
                 }}>
@@ -454,10 +454,10 @@ function Editor() {
                     <div className="editor-desktop-container">
                         {/* Phase 1: Lyrics & Audio (Left Panel) */}
                         <div className={`editor-panel left-panel ${activePhase !== 1 ? 'mobile-hidden' : ''}`} style={{
-                            borderRight: '1px solid #333',
+                            borderRight: '1px solid var(--border-color)',
                             display: activePhase === 1 ? 'flex' : 'none',
                             flexDirection: 'column',
-                            backgroundColor: '#181818',
+                            backgroundColor: 'var(--bg-surface)',
                             overflowY: 'auto'
                         }}>
                             <div style={{ padding: '20px', flex: 1 }}>
@@ -498,7 +498,7 @@ function Editor() {
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
-                                            color: 'white',
+                                            color: 'var(--text-primary)',
                                             fontWeight: 'bold'
                                         }}>
                                             {isUploading ? '...' : (audioUrl ? '♫' : '+')}
@@ -506,7 +506,7 @@ function Editor() {
                                     </div>
 
                                     <div style={{ marginBottom: '10px' }}>
-                                        <span style={{ color: '#ccc', fontSize: '0.9rem' }}>
+                                        <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
                                             {audioUrl ? t('change_track') : t('upload_audio')}
                                         </span>
                                     </div>
@@ -532,13 +532,13 @@ function Editor() {
                                 </section>
 
                                 <section style={{ marginBottom: '30px' }}>
-                                    <h3 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>{t('lyrics')}</h3>
+                                    <h3 style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>{t('lyrics')}</h3>
                                     <LyricInput onParse={handleLyricsParsed} />
                                 </section>
 
                                 {lyrics.length > 0 && (
                                     <section>
-                                        <h3 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>{t('timing')}</h3>
+                                        <h3 style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>{t('timing')}</h3>
                                         <TimingEditor lyrics={lyrics} onUpdate={updateLyric} />
                                     </section>
                                 )}
@@ -547,59 +547,59 @@ function Editor() {
 
                         {/* Phase 2: Style (Right Panel) */}
                         <div className={`editor-panel right-panel ${activePhase !== 2 ? 'mobile-hidden' : ''}`} style={{
-                            borderRight: '1px solid #333',
+                            borderRight: '1px solid var(--border-color)',
                             display: activePhase === 2 ? 'flex' : 'none',
                             flexDirection: 'column',
-                            backgroundColor: '#181818',
+                            backgroundColor: 'var(--bg-surface)',
                             overflowY: 'auto'
                         }}>
                             <div style={{ padding: '20px', flex: 1 }}>
-                                <h3 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>{t('style')}</h3>
+                                <h3 style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>{t('style')}</h3>
                                 <StyleControls styles={styles} onUpdate={setStyles} />
                             </div>
                         </div>
 
                         {/* Phase 3: Publishing (Right Panel) */}
                         <div className={`editor-panel right-panel ${activePhase !== 3 ? 'mobile-hidden' : ''}`} style={{
-                            borderRight: '1px solid #333',
+                            borderRight: '1px solid var(--border-color)',
                             display: activePhase === 3 ? 'flex' : 'none',
                             flexDirection: 'column',
-                            backgroundColor: '#181818',
+                            backgroundColor: 'var(--bg-surface)',
                             overflowY: 'auto'
                         }}>
                             <div style={{ padding: '20px', flex: 1 }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                                    <button onClick={handleBack} style={{ background: 'none', border: 'none', color: '#ccc', cursor: 'pointer', fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                    <button onClick={handleBack} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '5px' }}>
                                         &larr; {t('back') || 'Back'}
                                     </button>
-                                    <h3 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase', margin: 0 }}>{t('publishing')}</h3>
+                                    <h3 style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', textTransform: 'uppercase', margin: 0 }}>{t('publishing')}</h3>
                                 </div>
 
                                 {/* Title Input */}
                                 <div style={{ marginBottom: '20px' }}>
-                                    <label style={{ display: 'block', marginBottom: '5px', color: '#ccc' }}>{t('project_name')}</label>
+                                    <label style={{ display: 'block', marginBottom: '5px', color: 'var(--text-secondary)' }}>{t('project_name')}</label>
                                     <input
                                         type="text"
                                         value={projectName}
                                         onChange={(e) => setProjectName(e.target.value)}
-                                        style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #333', background: '#222', color: 'white' }}
+                                        style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid var(--border-color)', background: '#222', color: 'var(--text-primary)' }}
                                     />
                                 </div>
 
                                 {/* Description Input */}
                                 <div style={{ marginBottom: '20px' }}>
-                                    <label style={{ display: 'block', marginBottom: '5px', color: '#ccc' }}>{t('description')}</label>
+                                    <label style={{ display: 'block', marginBottom: '5px', color: 'var(--text-secondary)' }}>{t('description')}</label>
                                     <textarea
                                         value={description}
                                         onChange={(e) => setDescription(e.target.value)}
                                         rows={5}
-                                        style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #333', background: '#222', color: 'white', resize: 'vertical' }}
+                                        style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid var(--border-color)', background: '#222', color: 'var(--text-primary)', resize: 'vertical' }}
                                     />
                                 </div>
 
                                 {/* Preview Uploads */}
                                 <section style={{ marginBottom: '20px' }}>
-                                    <h3 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>{t('preview')}</h3>
+                                    <h3 style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>{t('preview')}</h3>
                                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
                                         {previewUrls.map((url, index) => (
                                             <div
@@ -632,7 +632,7 @@ function Editor() {
                                                             left: '50%',
                                                             transform: 'translate(-50%, -50%)',
                                                             background: 'rgba(0,0,0,0.8)',
-                                                            color: 'white',
+                                                            color: 'var(--text-primary)',
                                                             border: 'none',
                                                             borderRadius: '50%',
                                                             width: '32px',
@@ -660,7 +660,7 @@ function Editor() {
                                                             left: '50%',
                                                             transform: 'translateX(-50%)',
                                                             background: 'rgba(0,0,0,0.8)',
-                                                            color: '#1db954',
+                                                            color: 'var(--brand-primary)',
                                                             border: 'none',
                                                             borderRadius: '50%',
                                                             width: '24px',
@@ -679,7 +679,7 @@ function Editor() {
                                             </div>
                                         ))}
                                     </div>
-                                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '10px' }}>{t('drag_drop_images')}</p>
+                                    <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '10px' }}>{t('drag_drop_images')}</p>
                                 </section>
 
                                 {/* Visibility & Save */}
@@ -713,7 +713,7 @@ function Editor() {
                                         onClick={handleSave}
                                         disabled={isSaving}
                                         className="primary save-btn"
-                                        style={{ flex: 1, padding: '12px', borderRadius: '25px', border: 'none', cursor: 'pointer', fontWeight: 'bold', backgroundColor: '#1db954', color: 'black' }}
+                                        style={{ flex: 1, padding: '12px', borderRadius: '25px', border: 'none', cursor: 'pointer', fontWeight: 'bold', backgroundColor: 'var(--brand-primary)', color: 'black' }}
                                     >
                                         {isSaving ? 'Saving...' : t('save')}
                                     </button>
@@ -751,12 +751,12 @@ function Editor() {
                         <div className={`editor-panel right-panel ${viewTab === 'info' ? 'mobile-visible' : 'mobile-hidden'}`} style={{
                             display: 'flex',
                             flexDirection: 'column',
-                            backgroundColor: '#181818',
+                            backgroundColor: 'var(--bg-surface)',
                             height: '100%',
                             overflowY: 'auto'
                         }}>
                             <div style={{ padding: '20px', flex: 1 }}>
-                                <button onClick={handleBack} style={{ background: 'none', border: 'none', color: '#ccc', cursor: 'pointer', fontSize: '1.2rem', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                <button onClick={handleBack} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '1.2rem', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '5px' }}>
                                     &larr; {t('back') || 'Back'}
                                 </button>
 
@@ -782,11 +782,11 @@ function Editor() {
 
                                 {/* Description */}
                                 <div className={`description-expander ${isDescriptionExpanded ? 'expanded' : ''}`} style={{ maxHeight: isDescriptionExpanded ? 'none' : '100px', marginBottom: '20px' }}>
-                                    <p style={{ color: '#ccc', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{description || t('no_description') || 'No description'}</p>
+                                    <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{description || t('no_description') || 'No description'}</p>
                                     {!isDescriptionExpanded && description && description.length > 100 && <div className="description-gradient" />}
                                 </div>
                                 {description && description.length > 100 && (
-                                    <button onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)} style={{ background: 'none', border: 'none', color: '#1db954', cursor: 'pointer', marginBottom: '20px', fontWeight: 'bold' }}>
+                                    <button onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)} style={{ background: 'none', border: 'none', color: 'var(--brand-primary)', cursor: 'pointer', marginBottom: '20px', fontWeight: 'bold' }}>
                                         {isDescriptionExpanded ? t('show_less') : t('show_more')}
                                     </button>
                                 )}
@@ -832,9 +832,9 @@ function Editor() {
                     position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
                     backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
                 }}>
-                    <div style={{ backgroundColor: '#181818', padding: '30px', borderRadius: '12px', maxWidth: '500px', width: '90%', border: '1px solid #333' }}>
-                        <h2 style={{ marginTop: 0, color: '#1db954', marginBottom: '20px' }}>{t('how_it_works')}</h2>
-                        <button onClick={() => setShowHelp(false)} style={{ width: '100%', padding: '12px', backgroundColor: '#1db954', border: 'none', borderRadius: '25px', color: 'black', fontWeight: 'bold', cursor: 'pointer' }}>OK</button>
+                    <div style={{ backgroundColor: 'var(--bg-surface)', padding: '30px', borderRadius: '12px', maxWidth: '500px', width: '90%', border: '1px solid var(--border-color)' }}>
+                        <h2 style={{ marginTop: 0, color: 'var(--brand-primary)', marginBottom: '20px' }}>{t('how_it_works')}</h2>
+                        <button onClick={() => setShowHelp(false)} style={{ width: '100%', padding: '12px', backgroundColor: 'var(--brand-primary)', border: 'none', borderRadius: '25px', color: 'black', fontWeight: 'bold', cursor: 'pointer' }}>OK</button>
                     </div>
                 </div>
             )}

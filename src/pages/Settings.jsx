@@ -106,7 +106,7 @@ function Settings() {
                         <button
                             onClick={() => navigate('/settings/profile')}
                             style={{
-                                background: '#333',
+                                background: 'var(--bg-hover)',
                                 border: 'none',
                                 color: 'white',
                                 padding: '6px 12px',
@@ -190,9 +190,9 @@ function Settings() {
                 </div>
 
                 {/* Danger Zone */}
-                <div style={{ marginTop: '40px', paddingTop: '20px', borderTop: '1px solid #333' }}>
+                <div style={{ marginTop: '40px', paddingTop: '20px', borderTop: '1px solid var(--border-color)' }}>
                     <h3 style={{ color: '#ff5555', marginTop: 0 }}>{t('danger_zone') || 'Danger Zone'}</h3>
-                    <p style={{ color: '#888', fontSize: '0.9rem', marginBottom: '15px' }}>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '15px' }}>
                         {t('delete_account_warning') || 'Once you delete your account, there is no going back. Please be certain.'}
                     </p>
                     <button
@@ -218,7 +218,7 @@ function Settings() {
                         localStorage.removeItem('user');
                         navigate('/auth');
                     }}
-                    style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', textDecoration: 'underline' }}
+                    style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', textDecoration: 'underline' }}
                 >
                     {t('logout') || 'Log Out'}
                 </button>
