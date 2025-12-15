@@ -1,8 +1,8 @@
 :root {
-  --bg-body: #121212;
+  --bg-body: var(--bg-main);
   --bg-card: #1E1E1E;
   --bg-input: #2A2A2A;
-  --primary: #1DB954;
+  --primary: var(--brand-primary);
   --primary-hover: #1ed760;
   --danger: #E53935;
   --text-main: #FFFFFF;

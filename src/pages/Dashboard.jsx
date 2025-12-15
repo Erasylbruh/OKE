@@ -51,7 +51,7 @@ function Dashboard() {
                 },
                 body: JSON.stringify({
                     name: newProjectName,
-                    data: { lyrics: [], styles: { fontSize: 24, activeFontSize: 32, color: '#ffffff', fillColor: '#1db954', backgroundColor: '#121212', fontFamily: 'Inter, sans-serif' } }
+                    data: { lyrics: [], styles: { fontSize: 24, activeFontSize: 32, color: 'var(--text-primary)', fillColor: 'var(--brand-primary)', backgroundColor: 'var(--bg-main)', fontFamily: 'Inter, sans-serif' } }
                 })
             });
 
@@ -139,7 +139,7 @@ function Dashboard() {
                         width: '80px',
                         height: '80px',
                         borderRadius: '50%',
-                        backgroundColor: '#333',
+                        backgroundColor: 'var(--bg-hover)',
                         backgroundImage: user.avatar_url ? `url(${user.avatar_url})` : 'none',
                         backgroundSize: 'cover',
                         backgroundPosition: 'center',

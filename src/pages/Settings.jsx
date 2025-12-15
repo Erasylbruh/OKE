@@ -125,7 +125,7 @@ function Settings() {
                             height: '60px',
                             borderRadius: '50%',
                             overflow: 'hidden',
-                            backgroundColor: '#333'
+                            backgroundColor: 'var(--bg-hover)'
                         }}>
                             {user.avatar_url ? (
                                 <img src={user.avatar_url} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -148,7 +148,7 @@ function Settings() {
                     <select
                         value={language}
                         onChange={(e) => setLanguage(e.target.value)}
-                        style={{ backgroundColor: '#121212' }}
+                        style={{ backgroundColor: 'var(--bg-main)' }}
                     >
                         <option value="en">English</option>
                         <option value="kk">Қазақша</option>
@@ -164,7 +164,7 @@ function Settings() {
                     {t('save_changes') || 'Save Changes'}
                 </button>
 
-                {message && <div style={{ color: '#1db954', textAlign: 'center', marginBottom: '20px' }}>{message}</div>}
+                {message && <div style={{ color: 'var(--brand-primary)', textAlign: 'center', marginBottom: '20px' }}>{message}</div>}
 
                 {/* Admin Dashboard - Mobile Only */}
                 <div className="mobile-visible" style={{ marginBottom: '20px' }}>

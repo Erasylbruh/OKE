@@ -85,13 +85,13 @@ const ProjectCard = ({ project, onClick, isOwner, onToggleVisibility, onDelete }
                 height: 'auto',
                 minHeight: '100px',
                 transition: 'transform 0.2s, box-shadow 0.2s',
-                backgroundColor: '#0f0f0f', // Very dark background
+                backgroundColor: 'var(--bg-surface)', // Very dark background
                 borderRadius: '8px',
-                border: '1px solid #222',
+                border: '1px solid var(--border-color)',
                 overflow: 'visible'
             }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1a1a1a'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#0f0f0f'}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-main)'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-surface)'}
         >
             {/* Vinyl Section */}
             <div style={{ position: 'relative', width: '100px', height: '100px', flexShrink: 0 }}>
@@ -121,7 +121,7 @@ const ProjectCard = ({ project, onClick, isOwner, onToggleVisibility, onDelete }
                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                         />
                     ) : (
-                        <div style={{ width: '100%', height: '100%', background: '#333' }} />
+                        <div style={{ width: '100%', height: '100%', background: 'var(--bg-hover)' }} />
                     )}
 
                     {/* Center Hole */}
@@ -130,7 +130,7 @@ const ProjectCard = ({ project, onClick, isOwner, onToggleVisibility, onDelete }
                         top: '50%', left: '50%',
                         transform: 'translate(-50%, -50%)',
                         width: '20%', height: '20%',
-                        backgroundColor: '#181818',
+                        backgroundColor: 'var(--bg-surface)',
                         borderRadius: '50%',
                         zIndex: 2
                     }} />
