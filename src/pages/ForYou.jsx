@@ -39,13 +39,13 @@ function ForYou() {
     return (
         <div className="main-feed-container">
             {/* Hero Section */}
-            <div className="hero-section">
-                <h1>{t('welcome_message') || 'Welcome to QaraOke'}</h1>
-                <p>{t('hero_subtitle') || 'Discover, Sing, and Share.'}</p>
+            <div className="hero-section bg-noise">
+                <h1 className="text-tight">{t('welcome_message') || 'Welcome to QaraOke'}</h1>
+                <p className="text-spaced" style={{ fontSize: '0.9rem', fontWeight: 600, opacity: 0.9 }}>{t('hero_subtitle') || 'Discover, Sing, and Share.'}</p>
                 {!token && (
                     <button
                         onClick={() => navigate('/auth')}
-                        className="hero-cta-btn"
+                        className="hero-cta-btn hover-scale"
                     >
                         {t('get_started') || 'Get Started'}
                     </button>

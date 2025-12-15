@@ -74,7 +74,7 @@ const ProjectCard = ({ project, onClick, isOwner, onToggleVisibility, onDelete }
 
     return (
         <div
-            className="card"
+            className="card hover-scale card-premium-border"
             onClick={onClick}
             style={{
                 padding: '10px 20px',
@@ -84,7 +84,7 @@ const ProjectCard = ({ project, onClick, isOwner, onToggleVisibility, onDelete }
                 gap: '20px',
                 height: 'auto',
                 minHeight: '100px',
-                transition: 'transform 0.2s, box-shadow 0.2s',
+                transition: 'transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s', // Smoother spring-like transition
                 backgroundColor: 'var(--bg-surface)', // Very dark background
                 borderRadius: '8px',
                 border: '1px solid var(--border-color)',
