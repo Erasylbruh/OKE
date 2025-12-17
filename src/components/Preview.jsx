@@ -635,8 +635,7 @@ function Preview({ lyrics = [], styles = {}, resetTrigger, audioUrl, backgroundI
                 <div style={{
                     ...cinematicInnerStyle,
                     width: '100%',
-                    height: '100%',
-                    position: 'relative'
+                    height: '100%'
                 }}>
                     <div className="preview-container" style={{
                         height: '100%',
