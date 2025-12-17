@@ -8,7 +8,7 @@ import QRCode from "react-qr-code";
  * Handles rendering of lyrics lines and auto-scrolling.
  * Includes defensive checks for lyrics data.
  */
-const LyricsDisplay = ({ lyrics = [], currentTime = 0, styles = {}, activeLineIndex = -1 }) => {
+const LyricsDisplay = ({ lyrics = [], currentTime = 0, styles = {}, activeLineIndex = -1, isFullscreen = false }) => {
     const scrollContainerRef = useRef(null);
     const contentRef = useRef(null);
     const lineRefs = useRef([]);
@@ -36,9 +36,9 @@ const LyricsDisplay = ({ lyrics = [], currentTime = 0, styles = {}, activeLineIn
         return 0; // Default to first line
     }, [activeLineIndex, safeLyrics, currentTime]);
 
-    // Calculate vertical shift to center the target line
+    // Calculate vertical shift to center the target line (Only for Normal Mode)
     useEffect(() => {
-        if (targetIndex !== -1 && lineRefs.current[targetIndex] && scrollContainerRef.current) {
+        if (!isFullscreen && targetIndex !== -1 && lineRefs.current[targetIndex] && scrollContainerRef.current) {
             const container = scrollContainerRef.current;
             const line = lineRefs.current[targetIndex];
 
@@ -53,11 +53,95 @@ const LyricsDisplay = ({ lyrics = [], currentTime = 0, styles = {}, activeLineIn
 
             setTranslateY(targetY);
         }
-    }, [targetIndex, safeLyrics]); // Re-run if target changes
+    }, [targetIndex, safeLyrics, isFullscreen]); // Re-run if target changes
 
     // Safe style access
     const getStyle = (key, fallback) => styles && styles[key] ? styles[key] : fallback;
 
+    // Helper to calculate fill percentage
+    const getFillPercentage = (line, index) => {
+        const isActive = index === activeLineIndex;
+        const isPast = activeLineIndex > index || (currentTime > line.end);
+
+        if (isPast && !isActive) return 100;
+        if (isActive) {
+            const duration = line.end - line.start;
+            if (duration > 0) {
+                const percentage = ((currentTime - line.start) / duration) * 100;
+                return Math.min(100, Math.max(0, percentage));
+            }
+        }
+        return 0;
+    };
+
+    // --- FULLSCREEN RENDER MODE ---
+    if (isFullscreen) {
+        const currentLine = safeLyrics[targetIndex];
+        const nextLine = safeLyrics[targetIndex + 1];
+
+        return (
+            <div style={{
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '40px',
+                textAlign: 'center',
+                transition: 'all 0.5s ease'
+            }}>
+                {/* Active / Current Line */}
+                {currentLine && (
+                    <div style={{
+                        position: 'relative',
+                        marginBottom: '6vh', // Space between lines
+                        fontSize: '7vh', // Big font for fullscreen
+                        fontWeight: 'bold',
+                        color: getStyle('color', '#ffffff'),
+                        fontFamily: getStyle('fontFamily', 'Inter, sans-serif'),
+                        lineHeight: 1.2,
+                        whiteSpace: 'nowrap'
+                    }}>
+                        {/* Background */}
+                        <div style={{ opacity: 0.3 }}>{currentLine.text}</div>
+
+                        {/* Fill */}
+                        <div style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: `${getFillPercentage(currentLine, targetIndex)}%`,
+                            overflow: 'hidden',
+                            whiteSpace: 'nowrap',
+                            color: getStyle('fillColor', '#1db954')
+                        }}>
+                            {currentLine.text}
+                        </div>
+                    </div>
+                )}
+
+                {/* Next Line (Preview) */}
+                {nextLine ? (
+                    <div style={{
+                        fontSize: '4vh', // Smaller than active but still big
+                        fontWeight: 'bold',
+                        color: getStyle('color', '#ffffff'),
+                        fontFamily: getStyle('fontFamily', 'Inter, sans-serif'),
+                        opacity: 0.5,
+                        whiteSpace: 'nowrap'
+                    }}>
+                        {nextLine.text}
+                    </div>
+                ) : (
+                    // Placeholder to keep layout stable if no next line
+                    <div style={{ height: '4vh' }}></div>
+                )}
+            </div>
+        );
+    }
+
+    // --- NORMAL RENDER MODE ---
     return (
         <div
             ref={scrollContainerRef}
@@ -99,19 +183,7 @@ const LyricsDisplay = ({ lyrics = [], currentTime = 0, styles = {}, activeLineIn
             >
                 {safeLyrics.map((line, index) => {
                     const isActive = index === activeLineIndex;
-                    const isPast = activeLineIndex > index || (currentTime > line.end);
-
-                    // Calculate fill percentage for karaoke effect
-                    let fillPercentage = 0;
-                    if (isPast && !isActive) {
-                        fillPercentage = 100;
-                    } else if (isActive) {
-                        const duration = line.end - line.start;
-                        if (duration > 0) {
-                            fillPercentage = ((currentTime - line.start) / duration) * 100;
-                            fillPercentage = Math.min(100, Math.max(0, fillPercentage));
-                        }
-                    }
+                    const fillPercentage = getFillPercentage(line, index);
 
                     return (
                         <div
@@ -258,7 +330,8 @@ const PlayerControls = ({
     return (
         <div style={{
             position: 'absolute',
-            top: '20px',
+            top: isFullscreen ? 'auto' : '20px',
+            bottom: isFullscreen ? '40px' : 'auto', // Move controls to bottom in fullscreen
             left: '20px',
             right: '20px',
             padding: '15px 20px',
@@ -269,7 +342,9 @@ const PlayerControls = ({
             backdropFilter: 'blur(10px)',
             borderRadius: '12px',
             boxShadow: '0 4px 6px rgba(0,0,0,0.2)',
-            zIndex: 10
+            zIndex: 10,
+            maxWidth: isFullscreen ? '600px' : '100%',
+            margin: isFullscreen ? '0 auto' : '0'
         }}>
             {/* Vinyl & Play Button */}
             <div style={{ position: 'relative', width: '60px', height: '60px', flexShrink: 0 }}>
@@ -732,6 +807,7 @@ function Preview({ lyrics = [], styles = {}, resetTrigger, audioUrl, backgroundI
                             currentTime={currentTime}
                             styles={styles}
                             activeLineIndex={activeLineIndex}
+                            isFullscreen={isFullscreen}
                         />
 
                         <PlayerControls
