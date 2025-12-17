@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API_URL from '../config';
 import { useLanguage } from '../context/LanguageContext';
+import { useTheme } from '../context/ThemeContext';
 
 function Settings() {
     const [user, setUser] = useState(null);
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState('');
     const { language, setLanguage, t } = useLanguage();
+    const { theme, toggleTheme } = useTheme();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -165,6 +167,36 @@ function Settings() {
                 </button>
 
                 {message && <div style={{ color: 'var(--brand-primary)', textAlign: 'center', marginBottom: '20px' }}>{message}</div>}
+
+                {/* Theme Switcher - Mobile Only */}
+                <div className="mobile-visible" style={{ marginBottom: '20px' }}>
+                    <label style={{ display: 'block', marginBottom: '10px', color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase' }}>
+                        {t('theme') || 'Theme'}
+                    </label>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', backgroundColor: 'var(--bg-input)', padding: '10px 15px', borderRadius: '25px' }}>
+                        <span style={{ fontSize: '0.9rem', color: theme === 'dark' ? '#fff' : '#1e293b', fontWeight: 'bold', flex: 1 }}>
+                            {theme === 'dark' ? (t('dark_mode') || 'Dark Mode') : (t('light_mode') || 'Light Mode')}
+                        </span>
+                        <label className="switch" style={{ position: 'relative', display: 'inline-block', width: '40px', height: '20px' }}>
+                            <input
+                                type="checkbox"
+                                checked={theme === 'light'}
+                                onChange={toggleTheme}
+                                style={{ opacity: 0, width: 0, height: 0 }}
+                            />
+                            <span className="slider round" style={{
+                                position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0,
+                                backgroundColor: theme === 'light' ? '#059669' : '#555', transition: '.4s', borderRadius: '20px'
+                            }}>
+                                <span style={{
+                                    position: 'absolute', content: '""', height: '16px', width: '16px',
+                                    left: theme === 'light' ? '22px' : '2px', bottom: '2px', backgroundColor: 'white',
+                                    transition: '.4s', borderRadius: '50%'
+                                }}></span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
 
                 {/* Admin Dashboard - Mobile Only */}
                 <div className="mobile-visible" style={{ marginBottom: '20px' }}>
