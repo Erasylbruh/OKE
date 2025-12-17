@@ -149,7 +149,7 @@ const LyricsDisplay = ({ lyrics = [], currentTime = 0, styles = {}, activeLineIn
                                 fontFamily: getStyle('fontFamily', 'Inter, sans-serif'),
                                 fontWeight: 'bold',
                                 // Transition all relevant properties for smooth "Growth" effect
-                                transition: 'transform 0.5s ease, opacity 0.5s ease, font-size 0.5s ease',
+                                transition: 'transform 0.2s, opacity 0.2s',
                                 whiteSpace: 'nowrap',
                                 opacity: opacity,
                                 transform: (!isFullscreen && isActive) ? 'scale(1.05)' : 'none', // Scale only in normal mode, FS uses font-size
@@ -201,6 +201,9 @@ const LyricsDisplay = ({ lyrics = [], currentTime = 0, styles = {}, activeLineIn
                                         width: '100%',
                                         textAlign: 'center',
                                         WebkitTextStroke: '0px',
+                                        fontSize: fontSize, // Match the main text size
+                                        fontFamily: getStyle('fontFamily', 'Inter, sans-serif'),
+                                        fontWeight: 'bold'
                                     }}>
                                         {line.text}
                                     </div>
