@@ -36,9 +36,9 @@ const LyricsDisplay = ({ lyrics = [], currentTime = 0, styles = {}, activeLineIn
         return 0; // Default to first line
     }, [activeLineIndex, safeLyrics, currentTime]);
 
-    // Calculate vertical shift to center the target line (Only for Normal Mode)
+    // Calculate vertical shift to center the target line
     useEffect(() => {
-        if (!isFullscreen && targetIndex !== -1 && lineRefs.current[targetIndex] && scrollContainerRef.current) {
+        if (targetIndex !== -1 && lineRefs.current[targetIndex] && scrollContainerRef.current) {
             const container = scrollContainerRef.current;
             const line = lineRefs.current[targetIndex];
 
@@ -53,7 +53,7 @@ const LyricsDisplay = ({ lyrics = [], currentTime = 0, styles = {}, activeLineIn
 
             setTranslateY(targetY);
         }
-    }, [targetIndex, safeLyrics, isFullscreen]); // Re-run if target changes
+    }, [targetIndex, safeLyrics, isFullscreen]); // Re-run if target or mode changes
 
     // Safe style access
     const getStyle = (key, fallback) => styles && styles[key] ? styles[key] : fallback;
@@ -74,74 +74,6 @@ const LyricsDisplay = ({ lyrics = [], currentTime = 0, styles = {}, activeLineIn
         return 0;
     };
 
-    // --- FULLSCREEN RENDER MODE ---
-    if (isFullscreen) {
-        const currentLine = safeLyrics[targetIndex];
-        const nextLine = safeLyrics[targetIndex + 1];
-
-        return (
-            <div style={{
-                width: '100%',
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '40px',
-                textAlign: 'center',
-                transition: 'all 0.5s ease'
-            }}>
-                {/* Active / Current Line */}
-                {currentLine && (
-                    <div style={{
-                        position: 'relative',
-                        marginBottom: '6vh', // Space between lines
-                        fontSize: '7vh', // Big font for fullscreen
-                        fontWeight: 'bold',
-                        color: getStyle('color', '#ffffff'),
-                        fontFamily: getStyle('fontFamily', 'Inter, sans-serif'),
-                        lineHeight: 1.2,
-                        whiteSpace: 'nowrap'
-                    }}>
-                        {/* Background */}
-                        <div style={{ opacity: 0.3 }}>{currentLine.text}</div>
-
-                        {/* Fill */}
-                        <div style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            width: `${getFillPercentage(currentLine, targetIndex)}%`,
-                            overflow: 'hidden',
-                            whiteSpace: 'nowrap',
-                            color: getStyle('fillColor', '#1db954')
-                        }}>
-                            {currentLine.text}
-                        </div>
-                    </div>
-                )}
-
-                {/* Next Line (Preview) */}
-                {nextLine ? (
-                    <div style={{
-                        fontSize: '4vh', // Smaller than active but still big
-                        fontWeight: 'bold',
-                        color: getStyle('color', '#ffffff'),
-                        fontFamily: getStyle('fontFamily', 'Inter, sans-serif'),
-                        opacity: 0.5,
-                        whiteSpace: 'nowrap'
-                    }}>
-                        {nextLine.text}
-                    </div>
-                ) : (
-                    // Placeholder to keep layout stable if no next line
-                    <div style={{ height: '4vh' }}></div>
-                )}
-            </div>
-        );
-    }
-
-    // --- NORMAL RENDER MODE ---
     return (
         <div
             ref={scrollContainerRef}
@@ -150,20 +82,10 @@ const LyricsDisplay = ({ lyrics = [], currentTime = 0, styles = {}, activeLineIn
                 position: 'relative',
                 width: '100%',
                 height: '100%',
-                overflow: 'auto', // Enable scrolling
+                overflow: 'hidden', // Disable manual scrolling, rely on auto-scroll
                 backgroundColor: 'transparent',
-                // Hide scrollbar for all browsers
-                msOverflowStyle: 'none',  // IE and Edge
-                scrollbarWidth: 'none',   // Firefox
             }}
         >
-            <style>
-                {`
-                    .lyrics-display::-webkit-scrollbar {
-                        display: none; /* Chrome, Safari, Edge */
-                    }
-                `}
-            </style>
             <div
                 ref={contentRef}
                 style={{
@@ -174,35 +96,65 @@ const LyricsDisplay = ({ lyrics = [], currentTime = 0, styles = {}, activeLineIn
                     transform: `translateY(${translateY}px)`,
                     willChange: 'transform',
                     transition: 'transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)', // Smooth implementation
-                    padding: '0 40px', // Horizontal padding moved here
-                    paddingLeft: '20px',
+                    padding: isFullscreen ? '0 10vw' : '0 40px',
+                    paddingLeft: isFullscreen ? '10vw' : '20px',
                     display: 'flex',
                     flexDirection: 'column',
-                    alignItems: 'flex-start',
+                    // Fullscreen: Center items. Normal: Left align.
+                    alignItems: isFullscreen ? 'center' : 'flex-start',
                 }}
             >
                 {safeLyrics.map((line, index) => {
                     const isActive = index === activeLineIndex;
                     const fillPercentage = getFillPercentage(line, index);
 
+                    // --- Visibility & Opacity Logic ---
+                    // "Show 2 str at time" in Fullscreen
+                    // We base visibility on targetIndex (which is either Active or Next)
+                    let opacity = isActive ? 1 : 0.3;
+
+                    if (isFullscreen) {
+                        const isTarget = index === targetIndex;
+                        const isNext = index === targetIndex + 1;
+
+                        if (isActive) {
+                            opacity = 1;
+                        } else if (isTarget || isNext) {
+                            opacity = 0.6;
+                        } else {
+                            opacity = 0; // Hide others
+                        }
+                    }
+
+                    // --- Font Size Logic ---
+                    // Fullscreen: Active is Huge (7vh), Others are Large (4vh)
+                    // Normal: Active is 24px (mapped), Others 18px
+                    let fontSize;
+                    if (isFullscreen) {
+                        fontSize = isActive ? '7vh' : '4vh';
+                    } else {
+                        fontSize = isActive ? `${getStyle('activeFontSize', 24)}px` : `${getStyle('fontSize', 18)}px`;
+                    }
+
                     return (
                         <div
                             key={index}
                             ref={el => lineRefs.current[index] = el}
                             style={{
-                                marginBottom: '5px',
+                                marginBottom: isFullscreen ? '5vh' : '5px', // More spacing in FS
                                 position: 'relative',
                                 display: 'block',
-                                width: 'fit-content',
-                                textAlign: 'left',
-                                fontSize: isActive ? `${getStyle('activeFontSize', 24)}px` : `${getStyle('fontSize', 18)}px`,
+                                width: isFullscreen ? '100%' : 'fit-content', // Center text in FS
+                                textAlign: isFullscreen ? 'center' : 'left',
+                                fontSize: fontSize,
                                 fontFamily: getStyle('fontFamily', 'Inter, sans-serif'),
                                 fontWeight: 'bold',
-                                transition: 'transform 0.3s ease-out, opacity 0.3s ease-out',
+                                // Transition all relevant properties for smooth "Growth" effect
+                                transition: 'transform 0.5s ease, opacity 0.5s ease, font-size 0.5s ease',
                                 whiteSpace: 'nowrap',
-                                opacity: isActive ? 1 : 0.3,
-                                transform: isActive ? 'scale(1.05)' : 'scale(1)',
-                                transformOrigin: 'left center',
+                                opacity: opacity,
+                                transform: (!isFullscreen && isActive) ? 'scale(1.05)' : 'none', // Scale only in normal mode, FS uses font-size
+                                transformOrigin: isFullscreen ? 'center' : 'left center',
                                 cursor: 'default',
                                 WebkitTextStroke: '0',
                             }}
@@ -216,22 +168,44 @@ const LyricsDisplay = ({ lyrics = [], currentTime = 0, styles = {}, activeLineIn
                             <div style={{
                                 position: 'absolute',
                                 top: 0,
-                                left: 0,
+                                left: isFullscreen ? '50%' : 0,
+                                transform: isFullscreen ? 'translateX(-50%)' : 'none',
                                 height: '100%',
-                                width: `${fillPercentage}%`,
+                                width: '100%',
+                                clipPath: isFullscreen
+                                    ? `inset(0 ${100 - fillPercentage}% 0 0)`
+                                    : undefined,
                                 overflow: 'hidden',
                                 pointerEvents: 'none',
-                                whiteSpace: 'nowrap'
+                                whiteSpace: 'nowrap',
+                                display: isFullscreen && !isActive ? 'none' : 'block'
                             }}>
-                                <div style={{
-                                    color: getStyle('fillColor', '#1db954'),
-                                    position: 'absolute',
-                                    left: 0,
-                                    top: 0,
-                                    WebkitTextStroke: '0px',
-                                }}>
-                                    {line.text}
-                                </div>
+                                {/* Normal Mode Fill Container Override */}
+                                {!isFullscreen && (
+                                    <div style={{
+                                        position: 'absolute', top: 0, left: 0, height: '100%',
+                                        width: `${fillPercentage}%`, overflow: 'hidden'
+                                    }}>
+                                        <div style={{
+                                            color: getStyle('fillColor', '#1db954'),
+                                            WebkitTextStroke: '0px',
+                                        }}>
+                                            {line.text}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Fullscreen Mode Fill Content (Used with ClipPath) */}
+                                {isFullscreen && (
+                                    <div style={{
+                                        color: getStyle('fillColor', '#1db954'),
+                                        width: '100%',
+                                        textAlign: 'center',
+                                        WebkitTextStroke: '0px',
+                                    }}>
+                                        {line.text}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     );
@@ -242,16 +216,14 @@ const LyricsDisplay = ({ lyrics = [], currentTime = 0, styles = {}, activeLineIn
                     </div>
                 )}
 
-                {/* Project QR Code Watermark */
-                    safeLyrics.length > 0 && (
+                {/* Project QR Code Watermark - Hide in Fullscreen to keep it clean */
+                    !isFullscreen && safeLyrics.length > 0 && (
                         <div style={{
                             marginTop: '80px',
                             marginBottom: '100px',
                             display: 'flex',
                             flexDirection: 'column',
-                            alignItems: 'center', // Center relative to container width?
-                            // Note: alignItems is 'flex-start' on the parent. 
-                            // To center this block, we might need alignSelf: center or width 100% + alignItems center.
+                            alignItems: 'center',
                             width: '100%',
                             opacity: 0.8
                         }}>
