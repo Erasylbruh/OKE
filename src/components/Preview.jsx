@@ -92,12 +92,11 @@ const LyricsDisplay = ({ lyrics = [], currentTime = 0, styles = {}, activeLineIn
                     position: 'absolute',
                     top: 0,
                     left: 0,
-                    width: '100%',
+                    width: isFullscreen ? '100%' : '90%',
                     transform: `translateY(${translateY}px)`,
                     willChange: 'transform',
                     transition: 'transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)', // Smooth implementation
-                    padding: isFullscreen ? '0 10vw' : '0 40px',
-                    paddingLeft: isFullscreen ? '10vw' : '20px',
+                    padding: isFullscreen ? '0' : '0px 40px 0px 20px',
                     display: 'flex',
                     flexDirection: 'column',
                     // Fullscreen: Center items. Normal: Left align.
