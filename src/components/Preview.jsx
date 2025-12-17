@@ -227,9 +227,10 @@ const PlayerControls = ({
     handleSeek,
     styles = {},
     backgroundImageUrl,
-    projectName
+    projectName,
+    isFullscreen = false,
+    toggleFullscreen = () => { }
 }) => {
-    const progressBarRef = useRef(null);
     const formatTime = (t) => {
         if (typeof t !== 'number' || isNaN(t)) return "00:00";
         const totalSeconds = Math.max(0, t);
@@ -245,6 +246,14 @@ const PlayerControls = ({
     const safeCurrentTime = Math.max(0, currentTime);
     const safeMaxTime = Math.max(0.1, maxTime || 1); // Avoid division by zero
     const progressPercent = Math.min(100, Math.max(0, (safeCurrentTime / safeMaxTime) * 100));
+
+    // High-precision progress bar click handler
+    const handleProgressBarClick = (e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const newTime = (clickX / rect.width) * safeMaxTime;
+        handleSeek({ target: { value: newTime } });
+    };
 
     return (
         <div style={{
@@ -324,6 +333,28 @@ const PlayerControls = ({
                 </button>
             </div>
 
+            {/* Fullscreen Toggle Button */}
+            <button
+                onClick={toggleFullscreen}
+                style={{
+                    background: 'rgba(0,0,0,0.6)',
+                    border: '1px solid rgba(255,255,255,0.3)',
+                    color: 'white',
+                    padding: '8px 12px',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontSize: '16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    transition: 'all 0.2s'
+                }}
+                title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+            >
+                {isFullscreen ? '⛶' : '⛶'}
+            </button>
+
             {/* Progress Bar & Info */}
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                 {(projectName || styles.headerText) && (
@@ -351,16 +382,7 @@ const PlayerControls = ({
                     `}
                 </style>
                 <div
-                    ref={progressBarRef}
-                    onClick={(e) => {
-                        if (progressBarRef.current) {
-                            const rect = progressBarRef.current.getBoundingClientRect();
-                            const clickX = e.clientX - rect.left;
-                            const percentage = Math.max(0, Math.min(1, clickX / rect.width));
-                            const newTime = percentage * safeMaxTime;
-                            handleSeek({ target: { value: newTime } });
-                        }
-                    }}
+                    onClick={handleProgressBarClick}
                     style={{
                         position: 'relative',
                         height: '4px',
@@ -389,7 +411,8 @@ const PlayerControls = ({
                         onChange={handleSeek}
                         style={{
                             position: 'absolute', top: '-8px', left: 0,
-                            width: '100%', opacity: 0, height: '20px', zIndex: 2
+                            width: '100%', opacity: 0, height: '20px', zIndex: 2,
+                            pointerEvents: 'none'
                         }}
                     />
                     <div style={{
@@ -417,12 +440,24 @@ const PlayerControls = ({
 function Preview({ lyrics = [], styles = {}, resetTrigger, audioUrl, backgroundImageUrl, projectName }) {
     const [currentTime, setCurrentTime] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
+    const [isFullscreen, setIsFullscreen] = useState(false);
+    const [isPortrait, setIsPortrait] = useState(false);
 
     const audioRef = useRef(null);
     const requestRef = useRef(null);
     const startTimeRef = useRef(0);
     const lyricsRef = useRef(lyrics);
     const isPlayingRef = useRef(isPlaying); // Track playing state in ref for loops
+
+    // Detect portrait orientation on mobile
+    useEffect(() => {
+        const checkOrientation = () => {
+            setIsPortrait(window.matchMedia('(max-width: 877px) and (orientation: portrait)').matches);
+        };
+        checkOrientation();
+        window.addEventListener('resize', checkOrientation);
+        return () => window.removeEventListener('resize', checkOrientation);
+    }, []);
 
     // Update refs when props/state change
     useEffect(() => {
@@ -528,6 +563,7 @@ function Preview({ lyrics = [], styles = {}, resetTrigger, audioUrl, backgroundI
     }, [isPlaying, audioUrl, animate, currentTime]);
 
     const togglePlay = () => setIsPlaying(prev => !prev);
+    const toggleFullscreen = () => setIsFullscreen(prev => !prev);
 
     const handleSeek = (e) => {
         const val = parseFloat(e.target.value);
@@ -549,127 +585,100 @@ function Preview({ lyrics = [], styles = {}, resetTrigger, audioUrl, backgroundI
     // Safe style access
     const getStyle = (key, fallback) => styles && styles[key] ? styles[key] : fallback;
 
+    const fullscreenContainerStyle = isFullscreen ? {
+        position: 'fixed',
+        inset: 0,
+        zIndex: 9999,
+        backgroundColor: 'black',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+    } : {};
+
+    const cinematicInnerStyle = isFullscreen ? {
+        width: isPortrait ? '100vh' : '100%',
+        height: isPortrait ? '100vw' : '100%',
+        maxWidth: '177.78vh', // 16:9 ratio (100vh / 9 * 16)
+        maxHeight: '56.25vw', // 16:9 ratio (100vw / 16 * 9)
+        transform: isPortrait ? 'rotate(90deg)' : 'none',
+        transformOrigin: 'center',
+        position: 'relative'
+    } : { height: '100%', width: '100%', position: 'relative' };
+
     return (
-        <div className="preview-wrapper" style={{
-            width: '100%',
-            height: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: '#000',
-            position: 'relative'
-        }}>
-            <style>
-                {`
-                    @media (max-width: 877px) {
-                        .preview-wrapper {
-                            position: fixed;
-                            top: 0;
-                            left: 0;
-                            width: 100vw;
-                            height: 100vh;
-                            z-index: 9999;
-                        }
-                        
-                        .preview-container {
-                            width: 100% !important;
-                            height: 100% !important;
-                            max-width: none !important;
-                            max-height: none !important;
-                        }
-                        
-                        @media (orientation: portrait) {
-                            .landscape-hint {
-                                display: block;
-                                position: absolute;
-                                top: 50%;
-                                left: 50%;
-                                transform: translate(-50%, -50%) rotate(90deg);
-                                background: rgba(0,0,0,0.8);
-                                color: white;
-                                padding: 20px;
-                                border-radius: 12px;
-                                text-align: center;
-                                z-index: 10000;
-                                pointer-events: none;
-                            }
-                        }
-                        
-                        @media (orientation: landscape) {
-                            .landscape-hint {
-                                display: none;
-                            }
-                        }
-                    }
-                    
-                    @media (min-width: 877px) {
-                        .preview-aspect-box {
-                            width: 100%;
-                            max-width: min(calc(100vh * 16 / 9), 100%);
-                            aspect-ratio: 16 / 9;
-                        }
-                        
-                        .landscape-hint {
-                            display: none;
-                        }
-                    }
-                `}
-            </style>
+        <>
+            {/* Fullscreen Close Button */}
+            {isFullscreen && (
+                <button
+                    onClick={toggleFullscreen}
+                    style={{
+                        position: 'fixed',
+                        top: '20px',
+                        right: '20px',
+                        zIndex: 10000,
+                        background: 'rgba(0,0,0,0.8)',
+                        border: '2px solid white',
+                        color: 'white',
+                        padding: '10px 20px',
+                        borderRadius: '8px',
+                        fontSize: '18px',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        backdropFilter: 'blur(10px)'
+                    }}
+                >
+                    ✕ Close
+                </button>
+            )}
 
-            <div className="landscape-hint">
-                <div style={{ fontSize: '48px', marginBottom: '10px' }}>📱</div>
-                <div style={{ fontSize: '18px', fontWeight: 'bold' }}>Rotate device for better experience</div>
-            </div>
+            <div style={fullscreenContainerStyle}>
+                <div style={cinematicInnerStyle}>
+                    <div className="preview-container" style={{
+                        height: '100%',
+                        width: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        backgroundColor: getStyle('backgroundColor', '#121212'),
+                        color: getStyle('color', '#ffffff'),
+                        fontFamily: getStyle('fontFamily', 'Inter, sans-serif'),
+                        borderRadius: isFullscreen ? '0' : '12px',
+                        position: 'relative',
+                        overflow: 'hidden'
+                    }}>
+                        {audioUrl && (
+                            <audio
+                                ref={audioRef}
+                                src={audioUrl}
+                                onError={(e) => {
+                                    console.error("Audio load error", e);
+                                    setIsPlaying(false);
+                                }}
+                            />
+                        )}
 
-            <div className="preview-aspect-box" style={{
-                width: '100%',
-                aspectRatio: '16 / 9',
-                maxWidth: 'min(calc(100vh * 16 / 9), 100%)',
-                position: 'relative'
-            }}>
-                <div className="preview-container" style={{
-                    height: '100%',
-                    width: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    backgroundColor: getStyle('backgroundColor', '#121212'),
-                    color: getStyle('color', '#ffffff'),
-                    fontFamily: getStyle('fontFamily', 'Inter, sans-serif'),
-                    borderRadius: '12px',
-                    position: 'relative',
-                    overflow: 'hidden'
-                }}>
-                    {audioUrl && (
-                        <audio
-                            ref={audioRef}
-                            src={audioUrl}
-                            onError={(e) => {
-                                console.error("Audio load error", e);
-                                setIsPlaying(false);
-                            }}
+                        <LyricsDisplay
+                            lyrics={lyrics}
+                            currentTime={currentTime}
+                            styles={styles}
+                            activeLineIndex={activeLineIndex}
                         />
-                    )}
 
-                    <LyricsDisplay
-                        lyrics={lyrics}
-                        currentTime={currentTime}
-                        styles={styles}
-                        activeLineIndex={activeLineIndex}
-                    />
-
-                    <PlayerControls
-                        isPlaying={isPlaying}
-                        togglePlay={togglePlay}
-                        currentTime={currentTime}
-                        maxTime={maxTime}
-                        handleSeek={handleSeek}
-                        styles={styles}
-                        backgroundImageUrl={backgroundImageUrl}
-                        projectName={projectName}
-                    />
+                        <PlayerControls
+                            isPlaying={isPlaying}
+                            togglePlay={togglePlay}
+                            currentTime={currentTime}
+                            maxTime={maxTime}
+                            handleSeek={handleSeek}
+                            styles={styles}
+                            backgroundImageUrl={backgroundImageUrl}
+                            projectName={projectName}
+                            isFullscreen={isFullscreen}
+                            toggleFullscreen={toggleFullscreen}
+                        />
+                    </div>
                 </div>
             </div>
-        </div>
+        </>
     );
 }
 
