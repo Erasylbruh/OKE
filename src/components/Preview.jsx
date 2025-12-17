@@ -229,6 +229,7 @@ const PlayerControls = ({
     backgroundImageUrl,
     projectName
 }) => {
+    const progressBarRef = useRef(null);
     const formatTime = (t) => {
         if (typeof t !== 'number' || isNaN(t)) return "00:00";
         const totalSeconds = Math.max(0, t);
@@ -349,7 +350,27 @@ const PlayerControls = ({
                         input[type=range].custom-range::-moz-range-thumb { height: 12px; width: 12px; border: none; border-radius: 50%; background: ${fillColor}; cursor: pointer; }
                     `}
                 </style>
-                <div style={{ position: 'relative', height: '4px', width: '100%', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '2px', margin: '8px 0' }}>
+                <div
+                    ref={progressBarRef}
+                    onClick={(e) => {
+                        if (progressBarRef.current) {
+                            const rect = progressBarRef.current.getBoundingClientRect();
+                            const clickX = e.clientX - rect.left;
+                            const percentage = Math.max(0, Math.min(1, clickX / rect.width));
+                            const newTime = percentage * safeMaxTime;
+                            handleSeek({ target: { value: newTime } });
+                        }
+                    }}
+                    style={{
+                        position: 'relative',
+                        height: '4px',
+                        width: '100%',
+                        backgroundColor: 'rgba(255,255,255,0.2)',
+                        borderRadius: '2px',
+                        margin: '8px 0',
+                        cursor: 'pointer'
+                    }}
+                >
                     <div style={{
                         position: 'absolute',
                         left: 0, top: 0, height: '100%',
@@ -529,46 +550,125 @@ function Preview({ lyrics = [], styles = {}, resetTrigger, audioUrl, backgroundI
     const getStyle = (key, fallback) => styles && styles[key] ? styles[key] : fallback;
 
     return (
-        <div className="preview-container" style={{
-            height: '100%',
+        <div className="preview-wrapper" style={{
             width: '100%',
+            height: '100%',
             display: 'flex',
-            flexDirection: 'column',
-            backgroundColor: getStyle('backgroundColor', '#121212'),
-            color: getStyle('color', '#ffffff'),
-            fontFamily: getStyle('fontFamily', 'Inter, sans-serif'),
-            borderRadius: '12px',
-            position: 'relative',
-            overflow: 'hidden'
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: '#000',
+            position: 'relative'
         }}>
-            {audioUrl && (
-                <audio
-                    ref={audioRef}
-                    src={audioUrl}
-                    onError={(e) => {
-                        console.error("Audio load error", e);
-                        setIsPlaying(false);
-                    }}
-                />
-            )}
+            <style>
+                {`
+                    @media (max-width: 877px) {
+                        .preview-wrapper {
+                            position: fixed;
+                            top: 0;
+                            left: 0;
+                            width: 100vw;
+                            height: 100vh;
+                            z-index: 9999;
+                        }
+                        
+                        .preview-container {
+                            width: 100% !important;
+                            height: 100% !important;
+                            max-width: none !important;
+                            max-height: none !important;
+                        }
+                        
+                        @media (orientation: portrait) {
+                            .landscape-hint {
+                                display: block;
+                                position: absolute;
+                                top: 50%;
+                                left: 50%;
+                                transform: translate(-50%, -50%) rotate(90deg);
+                                background: rgba(0,0,0,0.8);
+                                color: white;
+                                padding: 20px;
+                                border-radius: 12px;
+                                text-align: center;
+                                z-index: 10000;
+                                pointer-events: none;
+                            }
+                        }
+                        
+                        @media (orientation: landscape) {
+                            .landscape-hint {
+                                display: none;
+                            }
+                        }
+                    }
+                    
+                    @media (min-width: 877px) {
+                        .preview-aspect-box {
+                            width: 100%;
+                            max-width: min(calc(100vh * 16 / 9), 100%);
+                            aspect-ratio: 16 / 9;
+                        }
+                        
+                        .landscape-hint {
+                            display: none;
+                        }
+                    }
+                `}
+            </style>
 
-            <LyricsDisplay
-                lyrics={lyrics}
-                currentTime={currentTime}
-                styles={styles}
-                activeLineIndex={activeLineIndex}
-            />
+            <div className="landscape-hint">
+                <div style={{ fontSize: '48px', marginBottom: '10px' }}>📱</div>
+                <div style={{ fontSize: '18px', fontWeight: 'bold' }}>Rotate device for better experience</div>
+            </div>
 
-            <PlayerControls
-                isPlaying={isPlaying}
-                togglePlay={togglePlay}
-                currentTime={currentTime}
-                maxTime={maxTime}
-                handleSeek={handleSeek}
-                styles={styles}
-                backgroundImageUrl={backgroundImageUrl}
-                projectName={projectName}
-            />
+            <div className="preview-aspect-box" style={{
+                width: '100%',
+                aspectRatio: '16 / 9',
+                maxWidth: 'min(calc(100vh * 16 / 9), 100%)',
+                position: 'relative'
+            }}>
+                <div className="preview-container" style={{
+                    height: '100%',
+                    width: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    backgroundColor: getStyle('backgroundColor', '#121212'),
+                    color: getStyle('color', '#ffffff'),
+                    fontFamily: getStyle('fontFamily', 'Inter, sans-serif'),
+                    borderRadius: '12px',
+                    position: 'relative',
+                    overflow: 'hidden'
+                }}>
+                    {audioUrl && (
+                        <audio
+                            ref={audioRef}
+                            src={audioUrl}
+                            onError={(e) => {
+                                console.error("Audio load error", e);
+                                setIsPlaying(false);
+                            }}
+                        />
+                    )}
+
+                    <LyricsDisplay
+                        lyrics={lyrics}
+                        currentTime={currentTime}
+                        styles={styles}
+                        activeLineIndex={activeLineIndex}
+                    />
+
+                    <PlayerControls
+                        isPlaying={isPlaying}
+                        togglePlay={togglePlay}
+                        currentTime={currentTime}
+                        maxTime={maxTime}
+                        handleSeek={handleSeek}
+                        styles={styles}
+                        backgroundImageUrl={backgroundImageUrl}
+                        projectName={projectName}
+                    />
+                </div>
+            </div>
         </div>
     );
 }
