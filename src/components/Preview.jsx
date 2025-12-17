@@ -491,7 +491,6 @@ function Preview({ lyrics = [], styles = {}, resetTrigger, audioUrl, backgroundI
     const [currentTime, setCurrentTime] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
     const [isFullscreen, setIsFullscreen] = useState(false);
-    const [isPortrait, setIsPortrait] = useState(false);
 
     const audioRef = useRef(null);
     const requestRef = useRef(null);
@@ -499,15 +498,7 @@ function Preview({ lyrics = [], styles = {}, resetTrigger, audioUrl, backgroundI
     const lyricsRef = useRef(lyrics);
     const isPlayingRef = useRef(isPlaying); // Track playing state in ref for loops
 
-    // Detect portrait orientation on mobile
-    useEffect(() => {
-        const checkOrientation = () => {
-            setIsPortrait(window.matchMedia('(max-width: 877px) and (orientation: portrait)').matches);
-        };
-        checkOrientation();
-        window.addEventListener('resize', checkOrientation);
-        return () => window.removeEventListener('resize', checkOrientation);
-    }, []);
+    // No need for portrait detection - let fullscreen work naturally
 
     // Update refs when props/state change
     useEffect(() => {
@@ -703,12 +694,8 @@ function Preview({ lyrics = [], styles = {}, resetTrigger, audioUrl, backgroundI
     };
 
     const cinematicInnerStyle = isFullscreen ? {
-        width: isPortrait ? '100vh' : '100%',
-        height: isPortrait ? '100vw' : '100%',
-        maxWidth: '177.78vh', // 16:9 ratio (100vh / 9 * 16)
-        maxHeight: '56.25vw', // 16:9 ratio (100vw / 16 * 9)
-        transform: isPortrait ? 'rotate(90deg)' : 'none',
-        transformOrigin: 'center',
+        width: '100%',
+        height: '100%',
         position: 'relative'
     } : { height: '100%', width: '100%', position: 'relative' };
 
