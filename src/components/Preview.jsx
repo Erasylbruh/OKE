@@ -306,7 +306,7 @@ const PlayerControls = ({
                     onClick={togglePlay}
                     style={{
                         position: 'absolute',
-                        top: '50%', left: '50%',
+                        top: '54%', left: '53%',
                         transform: 'translate(-50%, -50%)',
                         width: '24px', height: '24px',
                         borderRadius: '50%',
@@ -333,27 +333,7 @@ const PlayerControls = ({
                 </button>
             </div>
 
-            {/* Fullscreen Toggle Button */}
-            <button
-                onClick={toggleFullscreen}
-                style={{
-                    background: 'rgba(0,0,0,0.6)',
-                    border: '1px solid rgba(255,255,255,0.3)',
-                    color: 'white',
-                    padding: '8px 12px',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontSize: '16px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                    transition: 'all 0.2s'
-                }}
-                title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
-            >
-                {isFullscreen ? '⛶' : '⛶'}
-            </button>
+
 
             {/* Progress Bar & Info */}
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
@@ -426,9 +406,30 @@ const PlayerControls = ({
                     }} />
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#ccc', marginTop: '0px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px', color: '#ccc', marginTop: '0px' }}>
                     <span>{formatTime(safeCurrentTime)}</span>
                     <span>{formatTime(maxTime)}</span>
+                    {/* Fullscreen Toggle Button */}
+                    <button
+                        onClick={toggleFullscreen}
+                        style={{
+                            background: 'rgba(0,0,0,0.6)',
+                            border: '1px solid rgba(255,255,255,0.3)',
+                            color: 'white',
+                            padding: '6px 10px',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            fontSize: '14px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            marginLeft: '10px',
+                            transition: 'all 0.2s'
+                        }}
+                        title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+                    >
+                        {isFullscreen ? '⛶' : '⛶'}
+                    </button>
                 </div>
             </div>
         </div>
@@ -563,7 +564,63 @@ function Preview({ lyrics = [], styles = {}, resetTrigger, audioUrl, backgroundI
     }, [isPlaying, audioUrl, animate, currentTime]);
 
     const togglePlay = () => setIsPlaying(prev => !prev);
-    const toggleFullscreen = () => setIsFullscreen(prev => !prev);
+
+    // Native fullscreen API implementation
+    const fullscreenContainerRef = useRef(null);
+
+    const toggleFullscreen = async () => {
+        try {
+            if (!document.fullscreenElement) {
+                // Enter fullscreen
+                const element = fullscreenContainerRef.current;
+                if (element) {
+                    if (element.requestFullscreen) {
+                        await element.requestFullscreen();
+                    } else if (element.webkitRequestFullscreen) { // Safari
+                        await element.webkitRequestFullscreen();
+                    } else if (element.mozRequestFullScreen) { // Firefox
+                        await element.mozRequestFullScreen();
+                    } else if (element.msRequestFullscreen) { // IE11
+                        await element.msRequestFullscreen();
+                    }
+                    setIsFullscreen(true);
+                }
+            } else {
+                // Exit fullscreen
+                if (document.exitFullscreen) {
+                    await document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) { // Safari
+                    await document.webkitExitFullscreen();
+                } else if (document.mozCancelFullScreen) { // Firefox
+                    await document.mozCancelFullScreen();
+                } else if (document.msExitFullscreen) { // IE11
+                    await document.msExitFullscreen();
+                }
+                setIsFullscreen(false);
+            }
+        } catch (error) {
+            console.error('Fullscreen error:', error);
+        }
+    };
+
+    // Listen for fullscreen changes (e.g., user presses Esc)
+    useEffect(() => {
+        const handleFullscreenChange = () => {
+            setIsFullscreen(!!document.fullscreenElement);
+        };
+
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+        document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+        document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+        return () => {
+            document.removeEventListener('fullscreenchange', handleFullscreenChange);
+            document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+            document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+            document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+        };
+    }, []);
 
     const handleSeek = (e) => {
         const val = parseFloat(e.target.value);
@@ -585,15 +642,16 @@ function Preview({ lyrics = [], styles = {}, resetTrigger, audioUrl, backgroundI
     // Safe style access
     const getStyle = (key, fallback) => styles && styles[key] ? styles[key] : fallback;
 
-    const fullscreenContainerStyle = isFullscreen ? {
-        position: 'fixed',
-        inset: 0,
-        zIndex: 9999,
-        backgroundColor: 'black',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-    } : {};
+    // For native fullscreen API, simplified styles
+    const fullscreenContainerStyle = {
+        width: '100%',
+        height: '100%',
+        position: 'relative',
+        backgroundColor: isFullscreen ? 'black' : 'transparent',
+        display: isFullscreen ? 'flex' : 'block',
+        alignItems: isFullscreen ? 'center' : 'normal',
+        justifyContent: isFullscreen ? 'center' : 'normal'
+    };
 
     const cinematicInnerStyle = isFullscreen ? {
         width: isPortrait ? '100vh' : '100%',
@@ -631,12 +689,15 @@ function Preview({ lyrics = [], styles = {}, resetTrigger, audioUrl, backgroundI
                 </button>
             )}
 
-            <div style={{
-                ...fullscreenContainerStyle,
-                width: '100%',
-                height: '100%',
-                position: 'relative'
-            }}>
+            <div
+                ref={fullscreenContainerRef}
+                style={{
+                    ...fullscreenContainerStyle,
+                    width: '100%',
+                    height: '100%',
+                    position: 'relative'
+                }}
+            >
                 <div style={{
                     ...cinematicInnerStyle,
                     width: '100%',
