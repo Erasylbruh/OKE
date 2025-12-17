@@ -711,30 +711,6 @@ function Preview({ lyrics = [], styles = {}, resetTrigger, audioUrl, backgroundI
 
     return (
         <>
-            {/* Fullscreen Close Button */}
-            {isFullscreen && (
-                <button
-                    onClick={toggleFullscreen}
-                    style={{
-                        position: 'fixed',
-                        top: '20px',
-                        right: '20px',
-                        zIndex: 10000,
-                        background: 'rgba(0,0,0,0.8)',
-                        border: '2px solid white',
-                        color: 'white',
-                        padding: '10px 20px',
-                        borderRadius: '8px',
-                        fontSize: '18px',
-                        fontWeight: 'bold',
-                        cursor: 'pointer',
-                        backdropFilter: 'blur(10px)'
-                    }}
-                >
-                    ✕ Close
-                </button>
-            )}
-
             <div
                 ref={fullscreenContainerRef}
                 style={{

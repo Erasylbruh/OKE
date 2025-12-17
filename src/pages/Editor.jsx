@@ -320,11 +320,64 @@ function Editor() {
     };
 
     const handleBack = () => {
-        if (location.state && location.state.from === 'main') {
-            navigate('/');
-        } else {
+        if (isOwner) {
             navigate('/dashboard');
+        } else {
+            navigate(-1);
         }
+    };
+
+    // Update all lyrics text without changing timestamps
+    const updateAllLyricsText = (newLyricsText) => {
+        const lines = newLyricsText.split('\n').filter(line => line.trim());
+        setLyrics(prev => {
+            const updated = [...prev];
+            lines.forEach((line, index) => {
+                if (updated[index]) {
+                    updated[index] = { ...updated[index], text: line.trim() };
+                }
+            });
+            return updated;
+        });
+    };
+
+    // Download lyrics as plain text file
+    const downloadLyricsText = () => {
+        const text = lyrics.map(l => l.text).join('\n');
+        const blob = new Blob([text], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${projectName || 'lyrics'}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
+
+    // Download lyrics with SRT timestamps
+    const downloadLyricsSRT = () => {
+        const formatSRTTime = (seconds) => {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = Math.floor(seconds % 60);
+            const ms = Math.floor((seconds % 1) * 1000);
+            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')},${ms.toString().padStart(3, '0')}`;
+        };
+
+        const srtContent = lyrics.map((lyric, index) => {
+            return `${index + 1}\n${formatSRTTime(lyric.start)} --> ${formatSRTTime(lyric.end)}\n${lyric.text}\n`;
+        }).join('\n');
+
+        const blob = new Blob([srtContent], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${projectName || 'lyrics'}.srt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
     };
 
     const handlePreviewUpload = async (slot, file) => {
@@ -540,7 +593,94 @@ function Editor() {
                                 {lyrics.length > 0 && (
                                     <section>
                                         <h3 style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>{t('timing')}</h3>
-                                        <TimingEditor lyrics={lyrics} onUpdate={updateLyric} />
+                                        {activePhase === 1 && (
+                                            <>
+                                                {/* Bulk Lyrics Text Editor */}
+                                                <div style={{
+                                                    marginBottom: '20px',
+                                                    padding: '15px',
+                                                    backgroundColor: 'var(--bg-card)',
+                                                    borderRadius: '12px',
+                                                    border: '1px solid var(--border-color)'
+                                                }}>
+                                                    <div style={{
+                                                        display: 'flex',
+                                                        justifyContent: 'space-between',
+                                                        alignItems: 'center',
+                                                        marginBottom: '10px'
+                                                    }}>
+                                                        <h3 style={{ margin: 0, fontSize: '16px', color: 'var(--text-primary)' }}>
+                                                            Edit All Lyrics
+                                                        </h3>
+                                                        <div style={{ display: 'flex', gap: '10px' }}>
+                                                            <button
+                                                                onClick={downloadLyricsText}
+                                                                disabled={lyrics.length === 0}
+                                                                style={{
+                                                                    background: 'var(--bg-input)',
+                                                                    border: '1px solid var(--border-color)',
+                                                                    color: 'var(--text-primary)',
+                                                                    padding: '8px 16px',
+                                                                    borderRadius: '8px',
+                                                                    cursor: lyrics.length === 0 ? 'not-allowed' : 'pointer',
+                                                                    fontSize: '14px',
+                                                                    opacity: lyrics.length === 0 ? 0.5 : 1,
+                                                                    transition: 'all 0.2s'
+                                                                }}
+                                                            >
+                                                                📄 Download TXT
+                                                            </button>
+                                                            <button
+                                                                onClick={downloadLyricsSRT}
+                                                                disabled={lyrics.length === 0}
+                                                                style={{
+                                                                    background: 'var(--bg-input)',
+                                                                    border: '1px solid var(--border-color)',
+                                                                    color: 'var(--text-primary)',
+                                                                    padding: '8px 16px',
+                                                                    borderRadius: '8px',
+                                                                    cursor: lyrics.length === 0 ? 'not-allowed' : 'pointer',
+                                                                    fontSize: '14px',
+                                                                    opacity: lyrics.length === 0 ? 0.5 : 1,
+                                                                    transition: 'all 0.2s'
+                                                                }}
+                                                            >
+                                                                🎬 Download SRT
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    <textarea
+                                                        value={lyrics.map(l => l.text).join('\n')}
+                                                        onChange={(e) => updateAllLyricsText(e.target.value)}
+                                                        placeholder="Paste or edit all lyrics here (one per line). Timestamps will be preserved."
+                                                        style={{
+                                                            width: '100%',
+                                                            minHeight: '150px',
+                                                            padding: '12px',
+                                                            backgroundColor: 'var(--bg-input)',
+                                                            border: '1px solid var(--border-color)',
+                                                            borderRadius: '8px',
+                                                            color: 'var(--text-primary)',
+                                                            fontSize: '14px',
+                                                            fontFamily: 'Inter, sans-serif',
+                                                            resize: 'vertical',
+                                                            lineHeight: '1.5'
+                                                        }}
+                                                    />
+                                                    <div style={{
+                                                        marginTop: '8px',
+                                                        fontSize: '12px',
+                                                        color: 'var(--text-secondary)',
+                                                        fontStyle: 'italic'
+                                                    }}>
+                                                        💡 Edit the lyrics text here. Timing will remain unchanged.
+                                                    </div>
+                                                </div>
+
+                                                {/* Individual Lyric Timing Editor */}
+                                                <TimingEditor lyrics={lyrics} onUpdate={updateLyric} />
+                                            </>
+                                        )}
                                     </section>
                                 )}
                             </div>
