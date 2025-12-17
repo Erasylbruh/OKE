@@ -631,7 +631,12 @@ function Preview({ lyrics = [], styles = {}, resetTrigger, audioUrl, backgroundI
                 </button>
             )}
 
-            <div style={fullscreenContainerStyle}>
+            <div style={{
+                ...fullscreenContainerStyle,
+                width: '100%',
+                height: '100%',
+                position: 'relative'
+            }}>
                 <div style={{
                     ...cinematicInnerStyle,
                     width: '100%',
