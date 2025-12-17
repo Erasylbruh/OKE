@@ -94,7 +94,7 @@ const LyricsDisplay = ({ lyrics = [], currentTime = 0, styles = {}, activeLineIn
                     paddingLeft: '20px',
                     display: 'flex',
                     flexDirection: 'column',
-                    alignItems: 'flex-start',
+                    alignItems: 'center',
                 }}
             >
                 {safeLyrics.map((line, index) => {
@@ -632,7 +632,12 @@ function Preview({ lyrics = [], styles = {}, resetTrigger, audioUrl, backgroundI
             )}
 
             <div style={fullscreenContainerStyle}>
-                <div style={cinematicInnerStyle}>
+                <div style={{
+                    ...cinematicInnerStyle,
+                    width: '100%',
+                    height: '100%',
+                    position: 'relative'
+                }}>
                     <div className="preview-container" style={{
                         height: '100%',
                         width: '100%',
