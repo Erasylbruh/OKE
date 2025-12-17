@@ -130,7 +130,7 @@ const LyricsDisplay = ({ lyrics = [], currentTime = 0, styles = {}, activeLineIn
                     // Normal: Active is 24px (mapped), Others 18px
                     let fontSize;
                     if (isFullscreen) {
-                        fontSize = isActive ? '7vh' : '4vh';
+                        fontSize = isActive ? '5vh' : '3vh';
                     } else {
                         fontSize = isActive ? `${getStyle('activeFontSize', 24)}px` : `${getStyle('fontSize', 18)}px`;
                     }
@@ -143,7 +143,7 @@ const LyricsDisplay = ({ lyrics = [], currentTime = 0, styles = {}, activeLineIn
                                 marginBottom: isFullscreen ? '5vh' : '5px', // More spacing in FS
                                 position: 'relative',
                                 display: 'block',
-                                width: isFullscreen ? '100%' : 'fit-content', // Center text in FS
+                                width: isFullscreen ? 'auto' : 'fit-content', // Center text in FS
                                 textAlign: isFullscreen ? 'center' : 'left',
                                 fontSize: fontSize,
                                 fontFamily: getStyle('fontFamily', 'Inter, sans-serif'),
@@ -170,7 +170,7 @@ const LyricsDisplay = ({ lyrics = [], currentTime = 0, styles = {}, activeLineIn
                                 left: isFullscreen ? '50%' : 0,
                                 transform: isFullscreen ? 'translateX(-50%)' : 'none',
                                 height: '100%',
-                                width: '100%',
+                                width: 'auto',
                                 clipPath: isFullscreen
                                     ? `inset(0 ${100 - fillPercentage}% 0 0)`
                                     : undefined,
