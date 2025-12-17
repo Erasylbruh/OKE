@@ -623,6 +623,16 @@ function Preview({ lyrics = [], styles = {}, resetTrigger, audioUrl, backgroundI
                     } else if (element.msRequestFullscreen) { // IE11
                         await element.msRequestFullscreen();
                     }
+
+                    // Lock orientation to landscape on mobile
+                    try {
+                        if (screen.orientation && screen.orientation.lock) {
+                            await screen.orientation.lock('landscape');
+                        }
+                    } catch (orientationError) {
+                        console.log('Orientation lock not supported or failed:', orientationError);
+                    }
+
                     setIsFullscreen(true);
                 }
             } else {
@@ -636,6 +646,16 @@ function Preview({ lyrics = [], styles = {}, resetTrigger, audioUrl, backgroundI
                 } else if (document.msExitFullscreen) { // IE11
                     await document.msExitFullscreen();
                 }
+
+                // Unlock orientation
+                try {
+                    if (screen.orientation && screen.orientation.unlock) {
+                        screen.orientation.unlock();
+                    }
+                } catch (orientationError) {
+                    console.log('Orientation unlock not needed or failed:', orientationError);
+                }
+
                 setIsFullscreen(false);
             }
         } catch (error) {
