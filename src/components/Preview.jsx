@@ -786,4 +786,15 @@ function Preview({ lyrics = [], styles = {}, resetTrigger, audioUrl, backgroundI
     );
 }
 
-export default Preview;
+// Memoize Preview component to prevent unnecessary re-renders
+export default React.memo(Preview, (prevProps, nextProps) => {
+    // Only re-render if these critical props change
+    return (
+        prevProps.resetTrigger === nextProps.resetTrigger &&
+        prevProps.audioUrl === nextProps.audioUrl &&
+        prevProps.projectName === nextProps.projectName &&
+        prevProps.backgroundImageUrl === nextProps.backgroundImageUrl &&
+        JSON.stringify(prevProps.styles) === JSON.stringify(nextProps.styles) &&
+        JSON.stringify(prevProps.lyrics) === JSON.stringify(nextProps.lyrics)
+    );
+});

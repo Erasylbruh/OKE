@@ -2,47 +2,51 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API_URL from '../config';
 import ProjectCard from '../components/ProjectCard';
+import { GridSkeleton } from '../components/LoadingSkeleton';
 import { useLanguage } from '../context/LanguageContext';
+import toast from 'react-hot-toast';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 function Dashboard() {
-    const [projects, setProjects] = useState([]);
-    const [user, setUser] = useState(JSON.parse(localStorage.getItem('user') || '{}'));
+    const [user] = useState(JSON.parse(localStorage.getItem('user') || '{}'));
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [newProjectName, setNewProjectName] = useState('');
-    const [isCreating, setIsCreating] = useState(false);
     const navigate = useNavigate();
     const { t } = useLanguage();
+    const queryClient = useQueryClient();
 
-    useEffect(() => {
-        const fetchProjects = async () => {
+    // Fetch projects with React Query
+    const { data: projects = [], isLoading } = useQuery({
+        queryKey: ['projects', 'user'],
+        queryFn: async () => {
             const token = localStorage.getItem('token');
-            if (!token) return navigate('/auth');
-
-            try {
-                const response = await fetch(`${API_URL}/api/projects`, {
-                    headers: { 'Authorization': `Bearer ${token}` },
-                });
-                if (response.ok) {
-                    const data = await response.json();
-                    setProjects(data);
-                } else {
-                    localStorage.removeItem('token');
-                    navigate('/auth');
-                }
-            } catch (err) {
-                console.error(err);
+            if (!token) {
+                navigate('/auth');
+                throw new Error('No token');
             }
-        };
-        fetchProjects();
-    }, [navigate]);
 
-    const handleCreateNew = async () => {
-        if (!newProjectName.trim()) return;
-        if (isCreating) return;
+            const response = await fetch(`${API_URL}/api/projects`, {
+                headers: { 'Authorization': `Bearer ${token}` },
+            });
 
-        const token = localStorage.getItem('token');
-        setIsCreating(true);
-        try {
+            if (response.ok) {
+                return response.json();
+            } else {
+                localStorage.removeItem('token');
+                navigate('/auth');
+                throw new Error('Unauthorized');
+            }
+        },
+        retry: false,
+        onError: (err) => {
+            toast.error('Failed to load projects');
+        }
+    });
+
+    // Create project mutation
+    const createProjectMutation = useMutation({
+        mutationFn: async (name) => {
+            const token = localStorage.getItem('token');
             const res = await fetch(`${API_URL}/api/projects`, {
                 method: 'POST',
                 headers: {
@@ -50,24 +54,42 @@ function Dashboard() {
                     'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({
-                    name: newProjectName,
-                    data: { lyrics: [], styles: { fontSize: 24, activeFontSize: 32, color: 'var(--text-primary)', fillColor: 'var(--brand-primary)', backgroundColor: 'var(--bg-main)', fontFamily: 'Inter, sans-serif' } }
+                    name,
+                    data: {
+                        lyrics: [],
+                        styles: {
+                            fontSize: 24,
+                            activeFontSize: 32,
+                            color: 'var(--text-primary)',
+                            fillColor: 'var(--brand-primary)',
+                            backgroundColor: 'var(--bg-main)',
+                            fontFamily: 'Inter, sans-serif'
+                        }
+                    }
                 })
             });
 
             if (res.ok) {
-                const data = await res.json();
-                navigate(`/editor/${data.id}`);
+                return res.json();
             } else {
                 const msg = await res.text();
-                alert(`Failed to create project: ${msg}`);
+                throw new Error(msg);
             }
-        } catch (err) {
-            console.error(err);
-            alert('Error creating project');
-        } finally {
-            setIsCreating(false);
+        },
+        onSuccess: (data) => {
+            toast.success('Project created!');
+            navigate(`/editor/${data.id}`);
+        },
+        onError: (err) => {
+            toast.error(`Failed to create project: ${err.message}`);
         }
+    });
+
+    const handleCreateNew = () => {
+        if (!newProjectName.trim()) return;
+        createProjectMutation.mutate(newProjectName);
+        setShowCreateModal(false);
+        setNewProjectName('');
     };
 
     const handleToggleVisibility = async (e, project) => {
@@ -89,12 +111,13 @@ function Dashboard() {
                 setProjects(projects.map(p =>
                     p.id === project.id ? { ...p, is_public: newStatus } : p
                 ));
+                toast.success(newStatus ? 'Project is now public' : 'Project is now private');
             } else {
-                alert('Failed to update visibility');
+                toast.error('Failed to update visibility');
             }
         } catch (err) {
             console.error(err);
-            alert('Error updating visibility');
+            toast.error('Error updating visibility');
         }
     };
 
@@ -189,38 +212,46 @@ function Dashboard() {
 
             {/* Projects Grid */}
             <div className="grid-3">
-                {projects.map((project) => (
-                    <ProjectCard
-                        key={project.id}
-                        project={{ ...project, username: user.username, nickname: user.nickname, avatar_url: user.avatar_url }}
-                        onClick={() => navigate(`/editor/${project.id}`)}
-                        isOwner={true}
-                        onToggleVisibility={handleToggleVisibility}
-                        onDelete={(e) => {
-                            e.stopPropagation();
-                            if (window.confirm(t('delete_confirm'))) {
-                                const token = localStorage.getItem('token');
-                                fetch(`${API_URL}/api/projects/${project.id}`, {
-                                    method: 'DELETE',
-                                    headers: { 'Authorization': `Bearer ${token}` }
-                                }).then(async res => {
-                                    if (res.ok) {
-                                        setProjects(projects.filter(p => p.id !== project.id));
-                                    } else {
-                                        const msg = await res.text();
-                                        alert(`Failed to delete project: ${msg}`);
-                                    }
-                                }).catch(err => {
-                                    console.error(err);
-                                    alert('Error deleting project');
-                                });
-                            }
-                        }}
-                    />
-                ))}
+                {isLoading ? (
+                    <GridSkeleton count={6} />
+                ) : (
+                    projects.map((project) => (
+                        <ProjectCard
+                            key={project.id}
+                            project={{ ...project, username: user.username, nickname: user.nickname, avatar_url: user.avatar_url }}
+                            onClick={() => navigate(`/editor/${project.id}`)}
+                            isOwner={true}
+                            onToggleVisibility={handleToggleVisibility}
+                            onDelete={(e) => {
+                                e.stopPropagation();
+                                if (window.confirm(t('delete_confirm'))) {
+                                    const token = localStorage.getItem('token');
+                                    const deletePromise = fetch(`${API_URL}/api/projects/${project.id}`, {
+                                        method: 'DELETE',
+                                        headers: { 'Authorization': `Bearer ${token}` }
+                                    }).then(async res => {
+                                        if (res.ok) {
+                                            setProjects(projects.filter(p => p.id !== project.id));
+                                            return 'Project deleted';
+                                        } else {
+                                            const msg = await res.text();
+                                            throw new Error(msg);
+                                        }
+                                    });
+
+                                    toast.promise(deletePromise, {
+                                        loading: 'Deleting...',
+                                        success: (msg) => msg,
+                                        error: (err) => `Failed: ${err.message}`
+                                    });
+                                }
+                            }}
+                        />
+                    ))
+                )}
             </div>
 
-            {projects.length === 0 && (
+            {!isLoading && projects.length === 0 && (
                 <div style={{ textAlign: 'center', color: 'var(--text-muted)', marginTop: '50px' }}>
                     <p>{t('no_projects')}</p>
                 </div>

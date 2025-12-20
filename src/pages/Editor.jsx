@@ -8,8 +8,11 @@ import Preview from '../components/Preview';
 import CommentsSection from '../components/CommentsSection';
 import LikeButton from '../components/LikeButton';
 import ProjectCard from '../components/ProjectCard';
+import KeyboardShortcutsHelp from '../components/KeyboardShortcutsHelp';
 import API_URL from '../config';
 import { useLanguage } from '../context/LanguageContext';
+import useKeyboardShortcuts from '../hooks/useKeyboardShortcuts';
+import toast from 'react-hot-toast';
 import '../App.css';
 
 function Editor() {
@@ -46,6 +49,7 @@ function Editor() {
     const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
     const [projectOwner, setProjectOwner] = useState(null);
     const [likesCount, setLikesCount] = useState(0);
+    const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
 
     // Load project
     useEffect(() => {
@@ -103,16 +107,41 @@ function Editor() {
                     setAudioUrl(project.audio_url);
                     setLikesCount(project.likes_count || 0);
                 } else {
-                    alert('Project not found or unauthorized');
+                    toast.error('Project not found or unauthorized');
                     navigate('/dashboard');
                 }
             } catch (err) {
                 console.error(err);
-                alert('Error loading project');
+                toast.error('Error loading project');
             }
         };
         fetchProject();
     }, [id, navigate, location.state]);
+
+    // Keyboard Shortcuts
+    useKeyboardShortcuts([
+        {
+            key: 's',
+            ctrl: true,
+            callback: () => {
+                if (isOwner) {
+                    handleSave();
+                }
+            }
+        },
+        {
+            key: '?',
+            callback: () => {
+                setShowKeyboardHelp(true);
+            }
+        },
+        {
+            key: 'Escape',
+            callback: () => {
+                setShowKeyboardHelp(false);
+            }
+        }
+    ]);
 
     // Reset animation on change
     useEffect(() => {
@@ -143,7 +172,7 @@ function Editor() {
 
         // Enforce MP3
         if (!file.name.toLowerCase().endsWith('.mp3')) {
-            alert(t('mp3_only_warning'));
+            toast.error(t('mp3_only_warning') || 'Please upload MP3 files only');
             return;
         }
 
@@ -174,19 +203,20 @@ function Editor() {
                 // Auto-set lyrics if returned
                 if (data.lyrics && data.lyrics.length > 0) {
                     setLyrics(data.lyrics);
-                    // Also update timing editor if needed (it uses the same lyrics state)
-                    alert('Audio uploaded and lyrics automatically transcribed!');
+                    toast.success('Audio uploaded and lyrics automatically transcribed!');
+                } else {
+                    toast.success('Audio uploaded successfully!');
                 }
             } else {
                 console.error('Audio upload failed:', xhr.responseText);
-                alert(`Failed to upload audio: ${xhr.responseText}`);
+                toast.error(`Failed to upload audio: ${xhr.responseText}`);
             }
         };
 
         xhr.onerror = () => {
             setIsUploading(false);
             console.error('Network Error');
-            alert('Error uploading audio');
+            toast.error('Error uploading audio - network issue');
         };
 
         xhr.send(formData);
@@ -205,12 +235,13 @@ function Editor() {
             });
             if (res.ok) {
                 setAudioUrl(null);
+                toast.success('Audio removed');
             } else {
-                alert('Failed to delete audio');
+                toast.error('Failed to delete audio');
             }
         } catch (err) {
             console.error(err);
-            alert('Error deleting audio');
+            toast.error('Error deleting audio');
         }
     };
 
@@ -281,7 +312,10 @@ function Editor() {
 
     const handleSave = async () => {
         const token = localStorage.getItem('token');
-        if (!token) return alert('Please login to save');
+        if (!token) {
+            toast.error('Please login to save');
+            return;
+        }
 
         const payload = {
             name: projectName,
@@ -289,34 +323,37 @@ function Editor() {
             data: { lyrics, styles, description }
         };
 
-        try {
-            setIsSaving(true);
-            const res = await fetch(`${API_URL}/api/projects/${id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(payload)
-            });
+        const savePromise = (async () => {
+            try {
+                setIsSaving(true);
+                const res = await fetch(`${API_URL}/api/projects/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
 
-            if (res.ok) {
-                const btn = document.getElementById('save-btn');
-                if (btn) {
-                    const originalText = btn.innerText;
-                    btn.innerText = 'Saved!';
-                    setTimeout(() => btn.innerText = originalText, 2000);
+                if (res.ok) {
+                    return 'Project saved successfully!';
+                } else {
+                    const msg = await res.text();
+                    throw new Error(msg);
                 }
-            } else {
-                const msg = await res.text();
-                alert(`Error saving project: ${msg}`);
+            } catch (err) {
+                console.error(err);
+                throw new Error(err.message);
+            } finally {
+                setIsSaving(false);
             }
-        } catch (err) {
-            console.error(err);
-            alert(`Error saving project: ${err.message}`);
-        } finally {
-            setIsSaving(false);
-        }
+        })();
+
+        toast.promise(savePromise, {
+            loading: 'Saving project...',
+            success: (message) => message,
+            error: (err) => `Error saving: ${err.message}`
+        });
     };
 
     const handleBack = () => {
@@ -978,6 +1015,11 @@ function Editor() {
                         <button onClick={() => setShowHelp(false)} style={{ width: '100%', padding: '12px', backgroundColor: 'var(--brand-primary)', border: 'none', borderRadius: '25px', color: 'black', fontWeight: 'bold', cursor: 'pointer' }}>OK</button>
                     </div>
                 </div>
+            )}
+
+            {/* Keyboard Shortcuts Help Modal */}
+            {showKeyboardHelp && (
+                <KeyboardShortcutsHelp onClose={() => setShowKeyboardHelp(false)} />
             )}
         </div>
     );

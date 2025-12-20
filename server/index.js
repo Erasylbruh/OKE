@@ -11,8 +11,12 @@ import { v2 as cloudinary } from 'cloudinary';
 import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import rateLimit from 'express-rate-limit';
 import db from './db.js';
+import { validateEnv } from './validateEnv.js';
 
 dotenv.config();
+
+// Validate environment variables before starting server
+validateEnv();
 
 const app = express();
 
@@ -183,6 +187,10 @@ const initDb = async () => {
         } else {
             console.warn('WARNING: ADMIN_USERNAME and ADMIN_PASSWORD not set. Admin user not seeded.');
         }
+
+        // Run migrations
+        const { runMigrations } = await import('./runMigrations.js');
+        await runMigrations(db);
     } catch (err) {
         console.error('Error initializing database:', err);
     }
@@ -692,13 +700,20 @@ app.put('/api/projects/:id/preview/main', authenticateToken, async (req, res) =>
 
 app.get('/api/projects/public', async (req, res) => {
     try {
+        // Optimized query: Use LEFT JOINs instead of subqueries for better performance
         const [projects] = await db.execute(`
-            SELECT p.id, p.name, p.preview_url, p.preview_urls, p.audio_url, p.created_at, p.updated_at, u.username, u.nickname, u.avatar_url,
-            (SELECT COUNT(*) FROM likes l WHERE l.project_id = p.id) as likes_count,
-            (SELECT COUNT(*) FROM comments c WHERE c.project_id = p.id) as comments_count
+            SELECT 
+                p.id, p.name, p.preview_url, p.preview_urls, p.audio_url, 
+                p.created_at, p.updated_at,
+                u.username, u.nickname, u.avatar_url,
+                COUNT(DISTINCT l.id) as likes_count,
+                COUNT(DISTINCT c.id) as comments_count
             FROM projects p 
-            JOIN users u ON p.user_id = u.id 
+            INNER JOIN users u ON p.user_id = u.id
+            LEFT JOIN likes l ON p.id = l.project_id
+            LEFT JOIN comments c ON p.id = c.project_id
             WHERE p.is_public = TRUE 
+            GROUP BY p.id, u.id
             ORDER BY p.updated_at DESC
         `);
         res.json(projects);
@@ -741,12 +756,18 @@ app.get('/api/projects/:id', async (req, res) => {
 
 app.get('/api/projects', authenticateToken, async (req, res) => {
     try {
+        // Optimized query with JOINs
         const [projects] = await db.execute(`
-            SELECT p.id, p.name, p.preview_url, p.preview_urls, p.audio_url, p.is_public, p.created_at, p.updated_at,
-            (SELECT COUNT(*) FROM likes l WHERE l.project_id = p.id) as likes_count,
-            (SELECT COUNT(*) FROM comments c WHERE c.project_id = p.id) as comments_count
+            SELECT 
+                p.id, p.name, p.preview_url, p.preview_urls, p.audio_url, 
+                p.is_public, p.created_at, p.updated_at,
+                COUNT(DISTINCT l.id) as likes_count,
+                COUNT(DISTINCT c.id) as comments_count
             FROM projects p 
+            LEFT JOIN likes l ON p.id = l.project_id
+            LEFT JOIN comments c ON p.id = c.project_id
             WHERE p.user_id = ? 
+            GROUP BY p.id
             ORDER BY p.updated_at DESC
         `, [req.user.id]);
         res.json(projects);
