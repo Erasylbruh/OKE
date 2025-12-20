@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { FaTimes } from 'react-icons/fa';
 import LyricInput from '../components/LyricInput';
@@ -46,6 +46,32 @@ function Editor() {
     const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
     const [projectOwner, setProjectOwner] = useState(null);
     const [likesCount, setLikesCount] = useState(0);
+
+    const previewRef = useRef();
+
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+
+            switch (e.code) {
+                case 'Space':
+                    e.preventDefault();
+                    if (previewRef.current) previewRef.current.togglePlay();
+                    break;
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    if (previewRef.current) previewRef.current.seekRelative(-5);
+                    break;
+                case 'ArrowRight':
+                    e.preventDefault();
+                    if (previewRef.current) previewRef.current.seekRelative(5);
+                    break;
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
 
     // Load project
     useEffect(() => {
@@ -739,6 +765,7 @@ function Editor() {
                                 <section style={{ marginBottom: '20px' }}>
                                     <h3 style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '15px' }}>{t('preview')}</h3>
                                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+
                                         {previewUrls.map((url, index) => (
                                             <div
                                                 key={index}
@@ -868,7 +895,7 @@ function Editor() {
                             position: 'relative',
                             height: '100%'
                         }}>
-                            <Preview lyrics={lyrics} styles={styles} resetTrigger={resetTrigger} audioUrl={audioUrl} backgroundImageUrl={previewUrls[0]} projectName={projectName} />
+                            <Preview ref={previewRef} lyrics={lyrics} styles={styles} resetTrigger={resetTrigger} audioUrl={audioUrl} backgroundImageUrl={previewUrls[0]} projectName={projectName} />
                         </div>
                     </div>
                 ) : (
@@ -882,7 +909,7 @@ function Editor() {
                             position: 'relative',
                             height: '100%'
                         }}>
-                            <Preview lyrics={lyrics} styles={styles} resetTrigger={resetTrigger} audioUrl={audioUrl} backgroundImageUrl={previewUrls[0]} projectName={projectName} />
+                            <Preview ref={previewRef} lyrics={lyrics} styles={styles} resetTrigger={resetTrigger} audioUrl={audioUrl} backgroundImageUrl={previewUrls[0]} projectName={projectName} />
                         </div>
 
                         {/* Tab 2: Information */}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback, forwardRef, useImperativeHandle } from 'react';
 import QRCode from "react-qr-code";
 
 // --- Sub-Components ---
@@ -487,7 +487,7 @@ const PlayerControls = ({
 
 // --- Main Component ---
 
-function Preview({ lyrics = [], styles = {}, resetTrigger, audioUrl, backgroundImageUrl, projectName }) {
+const Preview = forwardRef(({ lyrics = [], styles = {}, resetTrigger, audioUrl, backgroundImageUrl, projectName }, ref) => {
     const [currentTime, setCurrentTime] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
     const [isFullscreen, setIsFullscreen] = useState(false);
@@ -631,6 +631,8 @@ function Preview({ lyrics = [], styles = {}, resetTrigger, audioUrl, backgroundI
 
     const togglePlay = () => setIsPlaying(prev => !prev);
 
+
+
     // Native fullscreen API implementation
     const fullscreenContainerRef = useRef(null);
 
@@ -711,19 +713,31 @@ function Preview({ lyrics = [], styles = {}, resetTrigger, audioUrl, backgroundI
     const handleSeek = (e) => {
         const val = parseFloat(e.target.value);
         const newTime = isNaN(val) ? 0 : val;
-
         setCurrentTime(newTime);
 
         if (audioRef.current) {
-            // Check if audio is ready
             if (Number.isFinite(audioRef.current.duration)) {
                 audioRef.current.currentTime = newTime;
             }
         } else {
-            // Update timer reference
             startTimeRef.current = Date.now() - (newTime * 1000);
         }
     };
+
+    useImperativeHandle(ref, () => ({
+        togglePlay,
+        seekRelative: (seconds) => {
+            // Use current state or ref-based current time if possible?
+            // Actually currentTime state might be stale in closure if not relying on dependency array?
+            // But useImperativeHandle runs on render, so it refreshes the closure.
+            // Wait, we need to access the LATEST currentTime.
+            // Best to use audioRef.current.currentTime if available for accuracy.
+
+            const current = audioRef.current ? audioRef.current.currentTime : currentTime;
+            const newTime = Math.min(Math.max(current + seconds, 0), maxTime);
+            handleSeek({ target: { value: newTime } });
+        }
+    }));
 
     // Safe style access
     const getStyle = (key, fallback) => styles && styles[key] ? styles[key] : fallback;
@@ -810,6 +824,7 @@ function Preview({ lyrics = [], styles = {}, resetTrigger, audioUrl, backgroundI
             </div>
         </>
     );
-}
+
+});
 
 export default Preview;
