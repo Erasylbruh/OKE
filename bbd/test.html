@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QaraOke Prototype</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="test.css">
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h1>
+                <span>Q</span>ara<span>O</span>ke
+            </h1>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item active">
+                Main
+            </a>
+            <a href="#" class="nav-item">
+                Profile
+            </a>
+            <a href="#" class="nav-item">
+                Liked Projects
+            </a>
+            <a href="#" class="nav-item">
+                Settings
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="separator"></div>
+            <button class="logout-btn">
+                Logout
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content (ForYou Page) -->
+    <main class="main-content">
+        <div class="foryou-container">
+            <!-- Hero Section -->
+            <div class="hero-section">
+                <h1>Welcome to QaraOke</h1>
+                <p>This website helps you to make your karaoke fast and beauty</p>
+            </div>
+
+            <div class="content-wrapper">
+                <!-- Tab Switcher -->
+                <div class="tab-switcher">
+                    <button class="tab-button active">For You</button>
+                    <button class="tab-button">Following</button>
+                </div>
+
+                <!-- Trending Section -->
+                <section>
+                    <div class="section-title">
+                        <i class="fas fa-fire" style="color: #ff5500;"></i>
+                        Trending
+                    </div>
+                    <div class="trending-scroll-container">
+                        <!-- Mock Trending Card 1 -->
+                        <div class="trending-card">
+                            <div class="project-card">
+                                <div class="card-image">
+                                    <div class="play-overlay"><i class="fas fa-play"></i></div>
+                                </div>
+                                <div class="card-info">
+                                    <h3>Long project name to check running line</h3>
+                                    <div class="card-meta">
+                                        <span class="author"><i class="fas fa-user"></i> Boomie</span>
+                                    </div>
+                                    <div class="card-footer">
+                                        <span class="status private">Private</span>
+                                        <span class="likes"><i class="fas fa-heart"></i> 2</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Mock Trending Card 2 -->
+                        <div class="trending-card">
+                            <div class="project-card">
+                                <div class="card-image" style="background-color: #333;">
+                                    <div class="play-overlay"><i class="fas fa-play"></i></div>
+                                </div>
+                                <div class="card-info">
+                                    <h3>Test watch</h3>
+                                    <div class="card-meta">
+                                        <span class="author"><i class="fas fa-user"></i> Boomie</span>
+                                    </div>
+                                    <div class="card-footer">
+                                        <span class="status private">Private</span>
+                                        <span class="likes"><i class="fas fa-heart"></i> 2</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Mock Trending Card 3 -->
+                        <div class="trending-card">
+                            <div class="project-card">
+                                <div class="card-image" style="background-color: #444;">
+                                    <div class="play-overlay"><i class="fas fa-play"></i></div>
+                                </div>
+                                <div class="card-info">
+                                    <h3>Mobile</h3>
+                                    <div class="card-meta">
+                                        <span class="author"><i class="fas fa-user"></i> testmobile1</span>
+                                    </div>
+                                    <div class="card-footer">
+                                        <span class="status private">Private</span>
+                                        <span class="likes"><i class="fas fa-heart"></i> 2</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Recent Projects Section -->
+                <section>
+                    <div class="section-title">
+                        <i class="fas fa-clock" style="color: #1db954;"></i>
+                        Recent Projects
+                    </div>
+                    <div class="recent-list">
+                        <!-- Mock Recent Card 1 -->
+                        <div class="project-card horizontal">
+                            <div class="card-image">
+                                <div class="play-overlay"><i class="fas fa-play"></i></div>
+                            </div>
+                            <div class="card-info">
+                                <h3>natori Propose (kazakh cover by bakedeath)</h3>
+                                <div class="card-meta">
+                                    <span class="author"><i class="fas fa-user"></i> Boomie</span>
+                                </div>
+                                <div class="card-footer">
+                                    <span class="status private">Private</span>
+                                    <span class="likes"><i class="fas fa-heart"></i> 1</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Mock Recent Card 2 -->
+                        <div class="project-card horizontal">
+                            <div class="card-image">
+                                <div class="play-overlay"><i class="fas fa-play"></i></div>
+                            </div>
+                            <div class="card-info">
+                                <h3>Long project name to check running line</h3>
+                                <div class="card-meta">
+                                    <span class="author"><i class="fas fa-user"></i> Boomie</span>
+                                </div>
+                                <div class="card-footer">
+                                    <span class="status private">Private</span>
+                                    <span class="likes"><i class="fas fa-heart"></i> 2</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+</body>
+
+</html>
